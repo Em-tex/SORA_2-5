@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Containment Calculation</title>
+    <link rel="icon" href="smallLogo.png" type="image/png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            text-align: left;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        .logo-container {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .logo {
+            width: 150px; /* Adjust the width */
+            height: auto;
+            margin-top: 20px; /* Add margin above the logo */
+            cursor: pointer;
+        }
+        .header {
+            text-align: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            text-align: left;
+            font-weight: bold;
+        }
+        select, input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .flex-row {
+            display: flex;
+            align-items: center;
+        }
+        .flex-row input[type="number"] {
+            width: 50%;
+            margin-right: 5px;
+            padding-right: 5px;
+            /* Adds space between the number and the spinner */
+            box-sizing: border-box; /* Ensures padding doesn't affect the width */
+            text-align: right; /* Right-align the text inside the input */
+        }
+        .flex-row select {
+            width: 33%;
+        }
+        #result {
+            margin-top: 20px;
+            text-align: left;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .out-of-scope {
+            background-color: lightgrey;
+        }
+        .low {
+            background-color: lightyellow;
+        }
+        .medium {
+            background-color: #ffbd61;
+        }
+        .high {
+            background-color: lightcoral;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button-container a {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            background-color: #f06c00;
+            color: white;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .button-container a:hover {
+            background-color: #d65a00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <a href="https://luftfartstilsynet.no/en/drones/" target="_blank">
+                <img src="CAAnor.png" alt="Logo" class="logo">
+            </a>
+        </div>
+        <h1 class="header">Containment Calculation</h1>
+        <div class="form-group">
+            <label for="speedInput">Maximum speed of the UA</label>
+            <div class="flex-row">
+                <input type="number" id="speedInput" placeholder="Enter speed" value="20" style="width: 110px; text-align: right;" oninput="calculateAdjacentArea()" />
+                <select id="speedUnit" style="width: 70px;" onchange="calculateAdjacentArea()">
+                    <option value="m/s">m/s</option>
+                    <option value="km/h">km/h</option>
+                    <option value="kt">kt</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group" style="background-color: #f0f0f0; padding: 10px; border-radius: 4px;">
+            <div><strong style="font-size: 1.2em;">Adjacent area:</strong> <span id="adjacentArea" style="font-weight: bold; font-size: 1.2em;">-</span></div>
+            <div style="margin-top: 10px; font-size: 0.8em;">
+                The lateral outer limit of the adjacent area is calculated from the operational volume as the distance flown in 3 minutes at maximum speed of the UA. It is never less than 5 km or more than 35 km. See SORA 2.5 Main Body for details.
+            </div>
+        </div>
+        <div class="form-group" style="margin-top: 50px;">
+            <label for="uaSize">UA Size</label>
+            <select id="uaSize" onchange="updatePopulationDensityOptions(); calculateContainment();">
+                <option value="1m">&lt; 1 m UA (&lt; 25 m/s)</option>
+                <option value="3mShelterApplicable">&lt; 3 m UA (&lt; 35 m/s) - Shelter applicable in the adjacent area</option>
+                <option value="3mShelterNotApplicable">&lt; 3 m UA (&lt; 35 m/s) - Shelter not applicable in the adjacent area</option>
+                <option value="8m">&lt; 8 m UA (&lt; 75 m/s)</option>
+                <option value="20m">&lt; 20 m UA (&lt; 125 m/s)</option>
+                <option value="40m">&lt; 40 m UA (&lt; 200 m/s)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sail">SAIL</label>
+            <select id="sail" onchange="calculateContainment()">
+                <option value="I">I</option>
+                <option value="II" selected>II</option>
+                <option value="III">III</option>
+                <option value="IV">IV</option>
+                <option value="V">V</option>
+                <option value="VI">VI</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="populationDensity">Average population density allowed in the adjacent area</label>
+            <select id="populationDensity" onchange="calculateContainment()">
+                <option value="50">&lt; 50 ppl/km<sup>2</sup></option>
+                <option value="500">&lt; 500 ppl/km<sup>2</sup></option>
+                <option value="5k">&lt; 5 000 ppl/km<sup>2</sup></option>
+                <option value="50k">&lt; 50 000 ppl/km<sup>2</sup></option>
+                <option value="NoLimit">No upper limit</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="outdoorAssemblies">Outdoor assemblies allowed within 1 km of the OPS volume</label>
+            <select id="outdoorAssemblies" onchange="calculateContainment()">
+                <option value="40k">&lt; 40 k</option>
+                <option value="40kTo400k">40 k to 400 k</option>
+                <option value="400k">&gt; 400 k</option>
+            </select>
+        </div>
+        <div id="result"></div>
+        <div class="button-container">
+            <a href="https://training.caa.no/SORA-2.5-calculator/">Back to SAIL calculation</a>
+        </div>
+    </div>
+
+    <script>
+        const containmentData = {
+            "1m": {
+                "NoLimit": {
+                    "400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+                    "40kTo400k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"},
+                    "40k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+                },
+                "50k": {
+                    "400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+                    "40kTo400k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"},
+                    "40k": {"I": "Low", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+                }
+            },
+            "3mShelterApplicable": {
+                "NoLimit": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+                    "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+                    "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
+                },
+                "50k": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+                    "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+                    "40k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+                },
+                "5k": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+                    "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+                    "40k": {"I": "Low", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+                }
+            },
+            "3mShelterNotApplicable": {
+                "NoLimit": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+                    "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"}
+                },
+                "50k": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+                    "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+                    "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
+                },
+                "5k": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"},
+                    "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+                    "40k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+                },
+                "500": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+                    "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+                    "40k": {"I": "Low", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+                }
+            },
+            "8m": {
+                "NoLimit": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+                    "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"}
+                },
+                "50k": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"},
+                    "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"}
+                },
+                "5k": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"},
+                    "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
+                },
+                "500": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+                    "40k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+                },
+                "50": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+                    "40k": {"I": "Low", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+                }
+            },
+            "20m": {
+                "NoLimit": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+                    "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"}
+                },
+                "50k": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+                    "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"}
+                },
+                "5k": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+                    "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"}
+                },
+                "500": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+                    "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
+                },
+                "50": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+                    "40k": {"I": "Medium", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+                }
+            },
+            "40m": {
+                "NoLimit": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
+                    "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"}
+                },
+                "50k": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+                    "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"}
+                },
+                "5k": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+                    "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"}
+                },
+                "500": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+                    "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"}
+                },
+                "50": {
+                    "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
+                    "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+                    "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
+                }
+            }
+        };
+
+        function updatePopulationDensityOptions() {
+            const uaSize = document.getElementById('uaSize').value;
+            const populationDensity = document.getElementById('populationDensity');
+            populationDensity.innerHTML = '';
+
+            if (uaSize === '1m') {
+                populationDensity.innerHTML += '<option value="50k">&lt; 50 000 ppl/km<sup>2</sup></option>';
+                populationDensity.innerHTML += '<option value="NoLimit">No upper limit</option>';
+            } else if (uaSize === '3mShelterApplicable') {
+                populationDensity.innerHTML += '<option value="5k">&lt; 5 000 ppl/km<sup>2</sup></option>';
+                populationDensity.innerHTML += '<option value="50k">&lt; 50 000 ppl/km<sup>2</sup></option>';
+                populationDensity.innerHTML += '<option value="NoLimit">No upper limit</option>';
+            } else if (uaSize === '3mShelterNotApplicable') {
+                populationDensity.innerHTML += '<option value="500">&lt; 500 ppl/km<sup>2</sup></option>';
+                populationDensity.innerHTML += '<option value="5k">&lt; 5 000 ppl/km<sup>2</sup></option>';
+                populationDensity.innerHTML += '<option value="50k">&lt; 50 000 ppl/km<sup>2</sup></option>';
+                populationDensity.innerHTML += '<option value="NoLimit">No upper limit</option>';
+            } else {
+                populationDensity.innerHTML += '<option value="50">&lt; 50 ppl/km<sup>2</sup></option>';
+                populationDensity.innerHTML += '<option value="500">&lt; 500 ppl/km<sup>2</sup></option>';
+                populationDensity.innerHTML += '<option value="5k">&lt; 5 000 ppl/km<sup>2</sup></option>';
+                populationDensity.innerHTML += '<option value="50k">&lt; 50 000 ppl/km<sup>2</sup></option>';
+                populationDensity.innerHTML += '<option value="NoLimit">No upper limit</option>';
+            }
+        }
+
+        function getContainment(uaSize, sail, populationDensity, outdoorAssemblies) {
+            console.clear();
+            console.log(`UA Size: ${uaSize}`);
+            console.log(`SAIL: ${sail}`);
+            console.log(`Population Density: ${populationDensity}`);
+            console.log(`Outdoor Assemblies: ${outdoorAssemblies}`);
+
+            let selectedColumn = populationDensity;
+            if (outdoorAssemblies !== '40k' && (outdoorAssemblies === '400k' || populationDensity === 'NoLimit')) {
+                selectedColumn = outdoorAssemblies === '400k' ? '400k' : '40kTo400k';
+            }
+
+            console.log(`Selected Column: ${selectedColumn}`);
+
+            const values = containmentData[uaSize][selectedColumn] && containmentData[uaSize][selectedColumn][outdoorAssemblies] 
+                ? containmentData[uaSize][selectedColumn][outdoorAssemblies]
+                : containmentData[uaSize][populationDensity] && containmentData[uaSize][populationDensity][outdoorAssemblies];
+
+            console.log(`Values from table: ${JSON.stringify(values)}`);
+
+            if (!values) {
+                console.error('No values found for the given selection');
+                return 'Error';
+            }
+
+            let containment = values[sail];
+
+            if (containment === "Out of scope") {
+                console.log(`Containment Level: ${containment}`);
+                return containment;
+            }
+
+            console.log(`Containment Level: ${containment}`);
+            return containment;
+        }
+
+        function calculateAdjacentArea() {
+            const speed = parseFloat(document.getElementById('speedInput').value);
+            const unit = document.getElementById('speedUnit').value;
+            let speedInKmh;
+
+            if (isNaN(speed)) {
+                document.getElementById('adjacentArea').innerText = "-";
+                return;
+            }
+
+            switch (unit) {
+                case 'm/s':
+                    speedInKmh = speed * 3.6;
+                    break;
+                case 'km/h':
+                    speedInKmh = speed;
+                    break;
+                case 'kt':
+                    speedInKmh = speed * 1.852;
+                    break;
+            }
+
+            let distance = (speedInKmh * 3) / 60; // Convert km/h to km/min and multiply by 3 minutes
+            if (distance < 5) distance = 5;
+            if (distance > 35) distance = 35;
+
+            document.getElementById('adjacentArea').innerText = `${distance.toFixed(distance % 1 === 0 ? 0 : 1)} km`;
+        }
+
+        function calculateContainment() {
+            const uaSize = document.getElementById('uaSize').value;
+            const sail = document.getElementById('sail').value;
+            const populationDensity = document.getElementById('populationDensity').value;
+            const outdoorAssemblies = document.getElementById('outdoorAssemblies').value;
+
+            const containment = getContainment(uaSize, sail, populationDensity, outdoorAssemblies);
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div>Required containment: ${containment}</div>`;
+            resultDiv.className = ''; // Clear any existing class
+            if (containment === 'Out of scope') {
+                resultDiv.classList.add('out-of-scope');
+            } else if (containment === 'Low') {
+                resultDiv.classList.add('low');
+            } else if (containment === 'Medium') {
+                resultDiv.classList.add('medium');
+            } else if (containment === 'High') {
+                resultDiv.classList.add('high');
+            }
+        }
+
+        document.getElementById('uaSize').addEventListener('change', updatePopulationDensityOptions);
+        document.getElementById('uaSize').addEventListener('change', calculateContainment);
+        document.getElementById('sail').addEventListener('change', calculateContainment);
+        document.getElementById('populationDensity').addEventListener('change', calculateContainment);
+        document.getElementById('outdoorAssemblies').addEventListener('change', calculateContainment);
+        document.getElementById('speedInput').addEventListener('input', calculateAdjacentArea);
+        document.getElementById('speedUnit').addEventListener('change', calculateAdjacentArea);
+
+        // Initialize population density options based on default UA Size selection
+        updatePopulationDensityOptions();
+        calculateContainment();
+        calculateAdjacentArea(); // Calculate adjacent area on page load
+    </script>
+</body>
+</html>
