@@ -4,13 +4,15 @@
     text-align: center;
 }
 
+/* css/sail.css */
+
 .logo-sail {
     display: block;
-    margin: 0 0 20px 0; /* 20px margin below the logo */
-    width: 150px; /* Adjust size as needed */
+    margin: 0 0 20px 0; 
+    width: 150px; 
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 20px;  /* Endret fra 0 */
+    left: 20px; /* Endret fra 0 */
 }
 
 table {
