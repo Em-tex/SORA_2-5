@@ -80,12 +80,12 @@ td[data-clickable] {
 }
 
 /* Farger for SAIL-tabell */
-.sail-i { background-color: #e8f5e9; } /* Lys grønn */
-.sail-ii { background-color: #f1f8e9; }
-.sail-iii { background-color: #fffde7; } /* Lys gul */
-.sail-iv { background-color: #fff3e0; } /* Lys oransje */
-.sail-v { background-color: #ffebee; } /* Lys rød */
-.sail-vi { background-color: #ffcdd2; } /* Litt mørkere rød */
+.sail-i { background-color: #c8e6c9; } /* Tydeligere grønn */
+.sail-ii { background-color: #f0f4c3; } /* Lime/gul-grønn */
+.sail-iii { background-color: #fff9c4; } /* Lys gul */
+.sail-iv { background-color: #ffe0b2; } /* Tydeligere oransje */
+.sail-v { background-color: #ffcdd2; } /* Lys rød */
+.sail-vi { background-color: #ef9a9a; } /* Litt mørkere rød */
 
 
 .arc-buttons-container {
@@ -141,9 +141,10 @@ td[data-clickable] {
 
 /* ENDRET: Markering for beregnet SAIL-celle */
 .highlight {
-    border: 6px solid #F44336; /* Tykk rød kant (6px) */
-    font-weight: bold; /* Fet skrift */
-    box-sizing: border-box;
+    outline: 6px solid #F44336; /* Bruker outline i stedet for border */
+    outline-offset: -2px;         /* Trekker kanten innover i cellen */
+    font-weight: bold;            /* Fet skrift */
+    /* box-sizing er ikke lenger nødvendig for dette */
 }
 
 .annotation {
