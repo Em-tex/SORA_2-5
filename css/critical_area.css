@@ -1,0 +1,117 @@
+/* Stiler spesifikt for critical_area.html */
+
+.critical-area-container {
+    max-width: 800px; /* Litt bredere enn containment, men smalere enn index */
+    text-align: left;
+}
+
+.intro-text {
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+#criticalAreaForm {
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.form-group input[type="number"],
+.form-group input[type="text"] /* Just in case */ {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1em;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+    width: auto; /* Override default width */
+    height: 1.2em;
+    width: 1.2em;
+    cursor: pointer;
+}
+
+.checkbox-group label {
+    margin-bottom: 0; /* Override default label margin */
+    font-weight: normal; /* Normal weight for checkbox label */
+    cursor: pointer;
+}
+
+.form-text {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+
+#result {
+    font-size: 1.4em;
+    text-align: center;
+    margin-bottom: 10px; /* Mindre bunnmarging */
+}
+.result-detail {
+    font-size: 1em;
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px; /* Mer bunnmarging */
+    background-color: #e9e9e9; /* Litt annen bakgrunn for detaljer */
+    padding: 8px;
+    border-radius: 4px;
+}
+
+#summaryTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    text-align: center;
+}
+
+#summaryTable th,
+#summaryTable td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 0.95em;
+}
+
+#summaryTable thead th {
+    background-color: #03477F; /* Mørk Blå */
+    color: white;
+    font-weight: bold;
+}
+#summaryTable tbody td:first-child {
+    background-color: #f2f2f2; /* Lys grå for rad-header */
+    font-weight: bold;
+    text-align: left;
+}
+
+
+/* Markering for beregnet kolonne */
+.highlight-col {
+    outline: 6px solid #F44336; /* Tykk rød kant */
+    outline-offset: -6px;       /* Trekker kanten innover */
+    font-weight: bold !important; /* Gjør både header og verdi fet */
+}
+
+.table-caption {
+    font-size: 0.85em;
+    color: #555;
+    text-align: center;
+    margin-top: 5px;
+}
