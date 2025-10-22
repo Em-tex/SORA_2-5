@@ -4,15 +4,13 @@
     text-align: center;
 }
 
-/* css/sail.css */
-
 .logo-sail {
     display: block;
     margin: 0 0 20px 0; 
     width: 150px; 
     position: absolute;
-    top: 20px;  /* Endret fra 0 */
-    left: 20px; /* Endret fra 0 */
+    top: 20px;
+    left: 20px;
 }
 
 table {
@@ -87,6 +85,15 @@ td.selected {
 td[data-clickable] {
     background-color: #ffffff; /* Ensure selectable cells have white background */
 }
+
+/* Farger for SAIL-tabell */
+.sail-i { background-color: #e8f5e9; } /* Lys grønn */
+.sail-ii { background-color: #f1f8e9; }
+.sail-iii { background-color: #fffde7; } /* Lys gul */
+.sail-iv { background-color: #fff3e0; } /* Lys oransje */
+.sail-v { background-color: #ffebee; } /* Lys rød */
+.sail-vi { background-color: #ffcdd2; } /* Litt mørkere rød */
+
 
 .arc-buttons-container {
     display: flex;
@@ -165,6 +172,15 @@ td.white-background {
 #grcTable tbody tr {
     height: 50px;
 }
+
+/* Stil for fotnote med dato */
+.footer-timestamp {
+    text-align: right;
+    font-size: 0.8em;
+    color: #888;
+    margin-top: 20px;
+}
+
 
 /* Responsive design for mobile */
 @media (max-width: 600px) {

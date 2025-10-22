@@ -9,6 +9,12 @@
     <link rel="stylesheet" href="css/containment.css">
 </head>
 <body>
+
+<nav class="navbar">
+    <a href="index.html" class="nav-button">🏠 Hjem (SAIL)</a>
+    <a href="containment.html" class="nav-button active">🥅 Containment</a>
+</nav>
+
     <div class="container containment-container">
         <div class="logo-container">
             <a href="https://luftfartstilsynet.no/en/drones/" target="_blank">
@@ -16,6 +22,7 @@
             </a>
         </div>
         <h1 class="header">Containment Calculation</h1>
+        
         <div class="form-group">
             <label for="speedInput">Maximum speed of the UA</label>
             <div class="flex-row">
@@ -74,10 +81,8 @@
             </select>
         </div>
         <div id="result" class="result"></div>
-        <div class="button-container">
-            <a href="index.html">Back to SAIL calculation</a>
+        
         </div>
-    </div>
 
     <script src="js/containment.js"></script>
 </body>

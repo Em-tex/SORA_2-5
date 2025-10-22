@@ -1,4 +1,32 @@
 /* Felles stiler for hele applikasjonen */
+
+/* Navigasjonsbånd */
+.navbar {
+    width: 100%;
+    background-color: #03477F; /* Mørk Blå */
+    padding: 10px 0;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.nav-button {
+    color: #FFFFFF; /* Hvit */
+    text-decoration: none;
+    padding: 10px 20px;
+    margin: 0 5px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 1em;
+    transition: background-color 0.3s;
+}
+.nav-button:hover {
+    background-color: #6A8E7F; /* Dempet Grønn */
+}
+.nav-button.active {
+    background-color: #F06C00; /* Oransje */
+    cursor: default;
+}
+
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -45,13 +73,13 @@ h2 {
     box-sizing: border-box; /* Sørger for at padding er inkludert i bredden */
 }
 
-/* Felles knappe-stiler */
+/* Felles knappe-stiler (Bruker nå Oransje fra fargeprofil) */
 .continue-button, .button-container a {
     display: inline-block;
     margin: 40px auto 20px;
     padding: 10px 20px;
     font-size: 16px;
-    background-color: #F06C00;
+    background-color: #F06C00; /* Oransje */
     color: white;
     border: none;
     border-radius: 5px;
@@ -62,11 +90,16 @@ h2 {
 }
 
 .button-container a:hover, .continue-button:hover {
-    background-color: #d65a00;
+    background-color: #d65a00; /* En mørkere oransje for hover */
 }
 
 /* Felles mobil-justeringer */
 @media (max-width: 600px) {
+    .nav-button {
+        display: block;
+        margin: 5px auto;
+        width: 80%;
+    }
     .container {
         padding: 10px;
     }
