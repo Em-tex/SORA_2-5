@@ -1,21 +1,38 @@
 /* Stiler spesifikt for critical_area.html */
 
 .critical-area-container {
-    max-width: 800px; /* Litt bredere enn containment, men smalere enn index */
+    max-width: 800px;
     text-align: left;
 }
 
 .intro-text {
-    margin-bottom: 30px;
-    line-height: 1.6;
+    margin-bottom: 20px;
+    line-height: 1.5;
 }
+.intro-text:last-of-type {
+    margin-bottom: 30px;
+}
+
 
 #criticalAreaForm {
     margin-bottom: 30px;
 }
 
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 20px;
+}
+
+.form-group.half-width {
+    flex: 1 1 calc(50% - 10px);
+    min-width: 200px;
+}
+
+
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 0;
 }
 
 .form-group label {
@@ -25,7 +42,7 @@
 }
 
 .form-group input[type="number"],
-.form-group input[type="text"] /* Just in case */ {
+.form-group input[type="text"] {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
@@ -37,26 +54,26 @@
 .checkbox-group {
     display: flex;
     align-items: center;
+    padding-top: 25px; /* Justerer checkbox vertikalt med inputfelt */
 }
 
 .checkbox-group input[type="checkbox"] {
     margin-right: 10px;
-    width: auto; /* Override default width */
     height: 1.2em;
     width: 1.2em;
     cursor: pointer;
 }
 
 .checkbox-group label {
-    margin-bottom: 0; /* Override default label margin */
-    font-weight: normal; /* Normal weight for checkbox label */
+    margin-bottom: 0;
+    font-weight: normal;
     cursor: pointer;
 }
 
 .form-text {
     display: block;
     margin-top: 5px;
-    font-size: 0.9em;
+    font-size: 0.85em;
     color: #555;
 }
 
@@ -64,14 +81,14 @@
 #result {
     font-size: 1.4em;
     text-align: center;
-    margin-bottom: 10px; /* Mindre bunnmarging */
+    margin-bottom: 10px;
 }
 .result-detail {
     font-size: 1em;
     text-align: center;
     color: #333;
-    margin-bottom: 20px; /* Mer bunnmarging */
-    background-color: #e9e9e9; /* Litt annen bakgrunn for detaljer */
+    margin-bottom: 20px;
+    background-color: #e9e9e9;
     padding: 8px;
     border-radius: 4px;
 }
@@ -91,22 +108,27 @@
 }
 
 #summaryTable thead th {
-    background-color: #03477F; /* Mørk Blå */
+    background-color: #03477F;
     color: white;
     font-weight: bold;
 }
 #summaryTable tbody td:first-child {
-    background-color: #f2f2f2; /* Lys grå for rad-header */
+    background-color: #f2f2f2;
     font-weight: bold;
     text-align: left;
 }
 
 
-/* Markering for beregnet kolonne */
-.highlight-col {
-    outline: 6px solid #F44336; /* Tykk rød kant */
-    outline-offset: -6px;       /* Trekker kanten innover */
-    font-weight: bold !important; /* Gjør både header og verdi fet */
+/* ENDRET: Markering gjelder kun header (th) */
+#summaryTable th.highlight-col {
+    outline: 6px solid #F44336;
+    outline-offset: -6px;
+    font-weight: bold !important;
+}
+/* Sikrer at td ikke får outline eller fet skrift */
+#summaryTable td.highlight-col {
+    outline: none;
+    font-weight: normal;
 }
 
 .table-caption {
@@ -114,4 +136,21 @@
     color: #555;
     text-align: center;
     margin-top: 5px;
+}
+
+/* Responsiv justering for smale skjermer */
+@media (max-width: 650px) {
+    .form-row {
+        flex-direction: column; /* Stabler kolonner */
+        gap: 0; /* Fjerner gap, styres av form-group */
+        margin-bottom: 0;
+    }
+    .form-group.half-width {
+        flex-basis: auto; /* Tilbakestiller basis */
+        min-width: unset; /* Tilbakestiller min-width */
+        margin-bottom: 15px; /* Legger til bunnmarging igjen */
+    }
+     .checkbox-group {
+        padding-top: 0; /* Fjerner ekstra padding */
+    }
 }

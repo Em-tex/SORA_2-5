@@ -1,30 +1,30 @@
 // Constants based on EASA guidelines and Annex F
-const R_PERSON = 0.3; // Radius of a person (m) [cite: 3486, 648]
-const H_PERSON = 1.8; // Height of a person (m) [cite: 3486, 638]
-const G = 9.81; // Gravitational acceleration (m/s^2) [cite: 3486, 638]
-const RHO = 1.225; // Air density (kg/m^3) [cite: 2744, 3602]
-const CD_BALLISTIC = 0.8; // Drag coefficient for ballistic descent [cite: 2743, 3601]
-const K_NON_LETHAL = 290; // Non-lethal kinetic energy limit (J) for slide [cite: 3486, 638, 2719]
-const JARUS_IMPACT_ANGLE_DEG = 35; // Standard impact angle for JARUS model (degrees) [cite: 3486, 2648]
-const HIGH_ANGLE_THRESHOLD_DEG = 60; // Threshold for using High Impact Angle Model (degrees) [cite: 3370]
-const COEFF_RESTITUTION_JARUS = 0.65; // Coefficient of restitution (e) for JARUS model at 35 deg [cite: 3486] - Note Annex F Eq(51) makes this angle dependent, but EASA doc uses fixed 0.65 [cite: 3486]
-const COEFF_FRICTION = 0.75; // Coefficient of friction (Cg) [cite: 3486, 638]
-const OBSTACLE_REDUCTION_FACTOR = 0.6; // For JARUS Case 2 (1m < w < 8m) [cite: 3486, 667]
+const R_PERSON = 0.3; // Radius of a person (m)
+const H_PERSON = 1.8; // Height of a person (m)
+const G = 9.81; // Gravitational acceleration (m/s^2)
+const RHO = 1.225; // Air density (kg/m^3)
+const CD_BALLISTIC = 0.8; // Drag coefficient for ballistic descent
+const K_NON_LETHAL = 290; // Non-lethal kinetic energy limit (J) for slide
+const JARUS_IMPACT_ANGLE_DEG = 35; // Standard impact angle for JARUS model (degrees)
+const HIGH_ANGLE_THRESHOLD_DEG = 60; // Threshold for using High Impact Angle Model (degrees)
+const COEFF_RESTITUTION_JARUS = 0.65; // Coefficient of restitution (e) for JARUS model at 35 deg
+const COEFF_FRICTION = 0.75; // Coefficient of friction (Cg)
+const OBSTACLE_REDUCTION_FACTOR = 0.6; // For JARUS Case 2 (1m < w <= 8m) - Korrigert <=
 
 /**
  * Linearly interpolates the frontal area based on characteristic dimension.
- * Uses Table 7 from EASA Guidelines doc.
+ * Uses Table 7 from EASA Guidelines doc[cite: 7045].
  * @param {number} dimension Characteristic dimension (m).
  * @returns {number} Estimated frontal area (m^2).
  */
 function interpolateFrontalArea(dimension) {
-    // Data points from EASA Table 7 [cite: 3547]
+    // Data points from EASA Table 7 [cite: 7046]
     const points = [
         { dim: 1, area: 0.1 },
         { dim: 3, area: 0.5 },
-        { dim: 8, area: 2.5 },   // Note: EASA doc Table 7 typo says 2.5, Annex F Table 29 says 2.0. Using EASA value.
-        { dim: 20, area: 12.5 }, // Note: EASA doc Table 7 typo says 12.5, Annex F Table 29 says 8.0. Using EASA value.
-        { dim: 40, area: 25.0 }  // Note: EASA doc Table 7 typo says 25, Annex F Table 29 says 14.0. Using EASA value.
+        { dim: 8, area: 2.5 },
+        { dim: 20, area: 12.5 },
+        { dim: 40, area: 25.0 }
     ];
 
     if (dimension <= points[0].dim) return points[0].area;
@@ -40,7 +40,6 @@ function interpolateFrontalArea(dimension) {
             return area1 + ((dimension - dim1) * (area2 - area1)) / (dim2 - dim1);
         }
     }
-    // Should not happen if dimension is within bounds checked earlier
     console.error("Interpolation failed for dimension:", dimension);
     return points[points.length - 1].area; // Fallback
 }
@@ -48,7 +47,7 @@ function interpolateFrontalArea(dimension) {
 
 /**
  * Calculates the impact angle for a ballistic descent using iteration.
- * Based on EASA Guidelines Annex 1 [cite: 3558-3608].
+ * Based on EASA Guidelines Annex 1 .
  * @param {number} initialHorizontalSpeed Max cruise speed (m/s).
  * @param {number} altitude AGL (m).
  * @param {number} frontalArea Frontal area (m^2).
@@ -56,45 +55,55 @@ function interpolateFrontalArea(dimension) {
  * @returns {number} Impact angle in degrees.
  */
 function calculateImpactAngle(initialHorizontalSpeed, altitude, frontalArea, mass) {
-    if (altitude <= 0) return 90; // Cannot calculate for zero or negative altitude
+    if (altitude <= 0) return 90; // Vertical impact at ground level or below
 
     let vHorizontal = initialHorizontalSpeed;
     let vVertical = 0;
-    let verticalDistance = 0;
-    const dt = 0.01; // Time step for iteration (s)
+    let verticalPosition = 0; // Start at altitude 0 (relative)
+    const dt = 0.01; // Time step (s)
+    let time = 0;
+    const maxTime = 300; // Safety break after 5 minutes
 
-    while (verticalDistance > -altitude) {
+    while (verticalPosition > -altitude && time < maxTime) {
         const vMagnitude = Math.sqrt(vHorizontal * vHorizontal + vVertical * vVertical);
-        if (vMagnitude === 0) { // Avoid division by zero if starting from hover with zero speed
-             vVertical -= G * dt; // Only gravity acts initially if speed is zero
-        } else {
-            const dragForceMagnitude = 0.5 * RHO * vMagnitude * vMagnitude * frontalArea * CD_BALLISTIC;
-            // Angle theta of velocity vector relative to horizontal (negative downwards)
-            const thetaRad = Math.atan2(vVertical, vHorizontal);
 
-            const dragForceHorizontal = Math.cos(thetaRad) * dragForceMagnitude;
-            const dragForceVertical = Math.sin(thetaRad) * dragForceMagnitude;
-
-            // Update velocities [cite: 3587, 3588]
-            vHorizontal += (dragForceHorizontal / mass) * dt; // Drag opposes horizontal motion
-            vVertical += (dragForceVertical / mass - G) * dt; // Drag opposes vertical motion, gravity accelerates downwards
+        let dragForceMagnitude = 0;
+        if (vMagnitude > 1e-6) { // Avoid issues at zero speed
+             dragForceMagnitude = 0.5 * RHO * vMagnitude * vMagnitude * frontalArea * CD_BALLISTIC;
         }
 
-        // Update vertical distance (using average velocity over the timestep) [cite: 3564, 3569]
-        // Approximation: Use end velocity of step for simplicity, small dt minimizes error
-         verticalDistance += vVertical * dt;
+        // Acceleration components
+        let accHorizontal = 0;
+        let accVertical = -G; // Gravity always acts downwards
 
-         // Safety break for extremely long calculations (e.g., very high altitude)
-         if (Math.abs(vVertical * dt) < 1e-6 && verticalDistance < -altitude) {
-             console.warn("Impact angle calculation potentially stalled or took too long.");
-             break;
-         }
+        if (vMagnitude > 1e-6) {
+            // Drag components oppose velocity components
+            accHorizontal -= (dragForceMagnitude * (vHorizontal / vMagnitude)) / mass;
+            accVertical -= (dragForceMagnitude * (vVertical / vMagnitude)) / mass;
+        }
+
+        // Update velocities using Euler integration (simple but works for small dt)
+        vHorizontal += accHorizontal * dt;
+        vVertical += accVertical * dt;
+
+        // Update vertical position
+        verticalPosition += vVertical * dt;
+        time += dt;
+
+        // Ensure horizontal speed doesn't go negative due to drag model simplicity
+        if (initialHorizontalSpeed > 0 && vHorizontal < 0) vHorizontal = 0;
+        if (initialHorizontalSpeed === 0) vHorizontal = 0; // If started with 0 horizontal, keep it 0
     }
 
-    // Calculate final impact angle [cite: 3606, 3608]
-    if (vHorizontal === 0 && vVertical < 0) return 90; // Pure vertical impact
-    if (vHorizontal === 0 && vVertical === 0) return 0; // No movement? Should not happen.
-    const finalImpactAngleRad = Math.atan(Math.abs(vVertical) / vHorizontal); // Angle with the ground
+     if (time >= maxTime) {
+        console.warn("Impact angle calculation timed out.");
+        return 90; // Assume vertical impact if calculation takes too long
+    }
+
+
+    // Calculate final impact angle relative to the ground
+    if (Math.abs(vHorizontal) < 1e-6) return 90; // Pure vertical impact
+    const finalImpactAngleRad = Math.atan(Math.abs(vVertical) / Math.abs(vHorizontal));
     return finalImpactAngleRad * (180 / Math.PI); // Convert to degrees
 }
 
@@ -102,38 +111,38 @@ function calculateImpactAngle(initialHorizontalSpeed, altitude, frontalArea, mas
  * Calculates Critical Area using the JARUS model.
  * Based on EASA Guidelines Chapter 4 [cite: 3442-3487] and Annex F Sections 1.8 & B.3 [cite: 627-682, 3080-3089].
  * @param {number} dimension Characteristic dimension (w) (m).
- * @param {number} cruiseSpeed Max cruise speed (V) (m/s).
+ * @param {number} cruiseSpeed Max cruise speed (V) (m/s). Used as impact speed V in formula.
  * @param {number} mass MTOM (m) (kg).
  * @returns {number} Calculated Critical Area (Ac) (m^2).
  */
 function calculateJarusModel(dimension, cruiseSpeed, mass) {
     const w = dimension;
-    const vCruise = cruiseSpeed;
+    const vImpact = cruiseSpeed; // Using cruise speed as impact speed V per EASA doc
     const m = mass;
     const thetaRad = JARUS_IMPACT_ANGLE_DEG * (Math.PI / 180);
 
-    const rD = R_PERSON + w / 2;
-    const dGlide = H_PERSON / Math.tan(thetaRad);
+    const rD = R_PERSON + w / 2; // [cite: 3457, 7104]
+    const dGlide = H_PERSON / Math.tan(thetaRad); // [cite: 3460, 7104]
 
     let dSlideReduced = 0;
-    // Slide calculation only relevant for > 1m (Case 1 and 2) [cite: 671, 2825]
+    // Slide calculation only relevant for > 1m (Case 1 and 2)
     if (w > 1) {
-        // Horizontal speed component at impact [cite: 3463, 644]
-        // NOTE: EASA doc formula uses V (cruise speed) here[cite: 3463], Annex F uses v (impact speed). Sticking to EASA doc.
-        const vHorizontal = vCruise * Math.cos(thetaRad);
+        // Horizontal speed component at impact
+        const vHorizontalImpact = vImpact * Math.cos(thetaRad); // [cite: 3464, 7104]
 
-        // Calculate non-lethal speed based on energy threshold [cite: 3481, 655]
-        const vNonLethal = Math.sqrt((2 * K_NON_LETHAL) / m);
+        // Calculate non-lethal speed based on energy threshold [cite: 3481, 7104]
+        const vNonLethal = (m > 0) ? Math.sqrt((2 * K_NON_LETHAL) / m) : Infinity;
 
-        // Horizontal speed immediately after impact (considering restitution) [cite: 3486]
-        const vHorizontalAfterImpact = COEFF_RESTITUTION_JARUS * vHorizontal;
+        // Horizontal speed immediately after impact (considering restitution)
+        const vHorizontalAfterImpact = COEFF_RESTITUTION_JARUS * vHorizontalImpact;
 
         if (vHorizontalAfterImpact > vNonLethal) {
-             // Calculate time to reach non-lethal speed (Corrected based on Annex F)
+             // Calculate time to reach non-lethal speed [cite: 3480, 7104] (Corrected formula)
              const tSafe = (vHorizontalAfterImpact - vNonLethal) / (COEFF_FRICTION * G);
 
-             // Calculate reduced slide distance
+             // Calculate reduced slide distance [cite: 3462, 7104]
              dSlideReduced = vHorizontalAfterImpact * tSafe - 0.5 * COEFF_FRICTION * G * tSafe * tSafe;
+             dSlideReduced = Math.max(0, dSlideReduced); // Ensure non-negative distance
         } else {
             dSlideReduced = 0; // Already non-lethal at impact
         }
@@ -141,12 +150,12 @@ function calculateJarusModel(dimension, cruiseSpeed, mass) {
 
     let Ac = 0;
     if (w >= 8) { // Case 1 [cite: 3447-3449, 650]
-        Ac = 2 * rD * (dGlide + dSlideReduced) + Math.PI * rD * rD;
-    } else if (w > 1 && w < 8) { // Case 2 [cite: 3450-3452, 664]
-        Ac = OBSTACLE_REDUCTION_FACTOR * (2 * rD * (dGlide + dSlideReduced) + Math.PI * rD * rD);
-    } else { // Case 3 (w <= 1) - Using EASA doc formula [cite: 3453-3454], slide ignored [cite: 671]
-        Ac = 2 * rD * dGlide + 0.5 * (Math.PI * rD * rD); // EASA formula
-        // Ac = 2 * rD * dGlide + Math.PI * rD * rD; // Annex F formula [cite: 673]
+        Ac = 2 * rD * (dGlide + dSlideReduced) + Math.PI * rD * rD; // [cite: 3448]
+    } else if (w > 1 && w < 8) { // Case 2 [cite: 3450-3452, 664] - Corrected upper bound to <8
+        Ac = OBSTACLE_REDUCTION_FACTOR * (2 * rD * (dGlide + dSlideReduced) + Math.PI * rD * rD); // [cite: 3451]
+    } else { // Case 3 (w <= 1)
+        // Using EASA doc formula [cite: 3453-3454] which differs slightly from Annex F B.3 [cite: 3086-3089]
+        Ac = 2 * rD * dGlide + 0.5 * (Math.PI * rD * rD); // [cite: 3454]
     }
 
     return Ac;
@@ -165,34 +174,36 @@ function calculateHighImpactModel(dimension, mass, frontalArea) {
     const m = mass;
     const A = frontalArea;
 
-    // Calculate terminal velocity [cite: 3542, 3543]
-    const vTerminal = Math.sqrt((2 * m * G) / (RHO * A * CD_BALLISTIC));
+    // Calculate terminal velocity [cite: 7042]
+    const vTerminal = (RHO * A * CD_BALLISTIC > 0) ? Math.sqrt((2 * m * G) / (RHO * A * CD_BALLISTIC)) : 0;
 
-    // Calculate kinetic energy at terminal velocity [cite: 3541]
+    // Calculate kinetic energy at terminal velocity [cite: 7041]
     const eKTerminal = 0.5 * m * vTerminal * vTerminal; // Joules
     const eKTerminalKJ = eKTerminal / 1000; // Convert to kJ for Fs calculation
 
-    // Determine Safety Factor (Fs) based on EASA Table 6 [cite: 3533]
+    // Determine Safety Factor (Fs) based on EASA Table 6 [cite: 7037]
     let Fs = 0;
     if (eKTerminalKJ < 12) {
         Fs = 2.3;
     } else if (eKTerminalKJ >= 12 && eKTerminalKJ <= 3125) {
+        // Formula from EASA doc Figure: Fs = 1.4 * Ek_tot^0.2
         Fs = 1.4 * Math.pow(eKTerminalKJ, 0.2);
     } else { // eKTerminalKJ > 3125
         Fs = 7.0;
     }
+     Fs = Math.max(2.3, Math.min(Fs, 7.0)); // Ensure Fs is within [2.3, 7.0] bounds
 
-    // Calculate rD [cite: 3457]
+    // Calculate rD [cite: 3457, 7019]
     const rD = R_PERSON + w / 2;
 
-    // Calculate Critical Area [cite: 3518]
+    // Calculate Critical Area [cite: 7018]
     const Ac = Fs * Math.PI * rD * rD;
 
     return Ac;
 }
 
 /**
- * Highlights the correct column in the summary table based on calculated Ac.
+ * Highlights the correct column HEADER in the summary table based on calculated Ac.
  * @param {number} criticalArea Calculated Critical Area (m^2).
  */
 function highlightTableColumn(criticalArea) {
@@ -206,7 +217,9 @@ function highlightTableColumn(criticalArea) {
 
     let highlightedId = null;
 
-    if (criticalArea <= thresholds[0].limit) {
+    if (criticalArea <= 0) { // Handle invalid/zero case
+        highlightedId = null;
+    } else if (criticalArea <= thresholds[0].limit) {
         highlightedId = thresholds[0].id;
     } else if (criticalArea <= thresholds[1].limit) {
         highlightedId = thresholds[1].id;
@@ -218,16 +231,16 @@ function highlightTableColumn(criticalArea) {
         highlightedId = thresholds[4].id;
     }
 
-    // Remove highlight from all columns first
+    // Remove highlight from all headers first
     thresholds.forEach(th => {
         document.getElementById(`col-${th.id}-head`)?.classList.remove('highlight-col');
-        document.getElementById(`col-${th.id}-val`)?.classList.remove('highlight-col');
+        // document.getElementById(`col-${th.id}-val`)?.classList.remove('highlight-col'); // Don't highlight value cell
     });
 
-    // Add highlight to the correct column
+    // Add highlight to the correct header
     if (highlightedId) {
         document.getElementById(`col-${highlightedId}-head`)?.classList.add('highlight-col');
-        document.getElementById(`col-${highlightedId}-val`)?.classList.add('highlight-col');
+        // document.getElementById(`col-${highlightedId}-val`)?.classList.add('highlight-col'); // Don't highlight value cell
     }
 }
 
@@ -237,25 +250,31 @@ function highlightTableColumn(criticalArea) {
 function calculateCriticalArea() {
     // Get inputs
     const isRotorcraft = document.getElementById('isRotorcraft').checked;
-    const dimension = parseFloat(document.getElementById('dimension').value);
-    const cruiseSpeed = parseFloat(document.getElementById('cruiseSpeed').value);
-    const mtom = parseFloat(document.getElementById('mtom').value);
-    const minAltitude = parseFloat(document.getElementById('minAltitude').value);
+    const dimensionInput = document.getElementById('dimension');
+    const cruiseSpeedInput = document.getElementById('cruiseSpeed');
+    const mtomInput = document.getElementById('mtom');
+    const minAltitudeInput = document.getElementById('minAltitude');
+
+    const dimension = parseFloat(dimensionInput.value);
+    const cruiseSpeed = parseFloat(cruiseSpeedInput.value);
+    const mtom = parseFloat(mtomInput.value);
+    const minAltitude = parseFloat(minAltitudeInput.value);
 
     const resultValueEl = document.getElementById('criticalAreaValue');
     const modelUsedEl = document.getElementById('modelUsed');
     const impactAngleResultEl = document.getElementById('impactAngleResult');
-    const impactAngleSpan = impactAngleResultEl.querySelector('span'); // Assuming span exists inside
 
-    // Basic Validation
-    if (isNaN(dimension) || isNaN(cruiseSpeed) || isNaN(mtom) || isNaN(minAltitude) ||
+     // Clear previous results if any input is empty or invalid
+    if (dimensionInput.value === '' || cruiseSpeedInput.value === '' || mtomInput.value === '' || minAltitudeInput.value === '' ||
+        isNaN(dimension) || isNaN(cruiseSpeed) || isNaN(mtom) || isNaN(minAltitude) ||
         dimension <= 0 || cruiseSpeed < 0 || mtom <= 0 || minAltitude < 0) {
-        resultValueEl.textContent = 'Invalid Input';
+        resultValueEl.textContent = '-';
         modelUsedEl.textContent = 'Model Used: -';
         impactAngleResultEl.style.display = 'none';
         highlightTableColumn(-1); // Clear highlight
         return;
     }
+
 
     let criticalArea = 0;
     let modelUsed = "";
@@ -269,27 +288,34 @@ function calculateCriticalArea() {
         impactAngleResultEl.innerHTML = `Calculated Impact Angle: <span>${impactAngle.toFixed(1)}</span> °`;
 
 
-        if (impactAngle > HIGH_ANGLE_THRESHOLD_DEG) {
+        if (impactAngle > HIGH_ANGLE_THRESHOLD_DEG) { // [cite: 3467]
             modelUsed = "High Impact Angle Model";
-            criticalArea = calculateHighImpactModel(dimension, mtom, frontalArea);
+            criticalArea = calculateHighImpactModel(dimension, mtom, frontalArea); // [cite: 3488-3549]
         } else {
             modelUsed = "JARUS Model (Rotorcraft/Multirotor)";
-            criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom);
+            criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom); // [cite: 3442-3487]
         }
     } else { // Fixed Wing or similar
         modelUsed = "JARUS Model (Fixed Wing)";
         impactAngleResultEl.style.display = 'none';
-        criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom);
+        criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom); // [cite: 3442-3487]
     }
 
     // Display Results
     resultValueEl.textContent = criticalArea.toFixed(2);
     modelUsedEl.textContent = `Model Used: ${modelUsed}`;
 
-    // Highlight Table Column
+    // Highlight Table Column Header
     highlightTableColumn(criticalArea);
 }
 
 
-// Initial calculation on page load
-document.addEventListener('DOMContentLoaded', calculateCriticalArea);
+// Initial setup on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // Set default values to blank
+    document.getElementById('dimension').value = '';
+    document.getElementById('cruiseSpeed').value = '';
+    document.getElementById('mtom').value = '';
+    document.getElementById('minAltitude').value = '';
+    calculateCriticalArea(); // Run once to clear results initially
+});
