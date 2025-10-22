@@ -1,641 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SORA 2.5 calculator</title>
-<link rel="icon" href="smallLogo.png" type="image/png">
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    margin: 20px;
-  }
-  .container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px;
-    text-align: center;
-    position: relative;
-  }
-  .logo {
-    display: block;
-    margin: 0 0 20px 0; /* 20px margin below the logo */
-    width: 150px; /* Adjust size as needed */
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px auto;
-    text-align: center;
-    table-layout: fixed;
-  }
-  th, td {
-    border: 1px solid #000;
-    padding: 5px;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-  }
-  th[colspan="7"], th[colspan="6"] {
-    background-color: #d6d6d6;
-  }
-  th[colspan="2"], td[colspan="2"], th[colspan="2"] + th, td[colspan="2"] + td {
-    background-color: #cce5ff;
-  }
-  td[colspan="2"]:nth-child(3),
-  td[colspan="2"]:nth-child(3) ~ td {
-    background-color: #d4edda;
-  }
-  td[rowspan="7"], td[class*="unselectable"], th[class*="unselectable"] {
-    background-color: #f8d7da;
-    text-align: left;
-    font-weight: bold;
-    white-space: normal;
-  }
-  td[data-clickable]:hover {
-    cursor: pointer;
-    background-color: #ffffcc;
-  }
-  td.na {
-    background-color: #e0e0e0; /* Grey background for N/A cells */
-    pointer-events: none; /* Make N/A cells non-selectable */
-  }
-  td.selected {
-    background-color: #ffff99 !important;
-  }
-  .not-part {
-    background-color: #e0e0e0;
-    text-align: center;
-  }
-  .unselectable {
-    background-color: #f8d7da;
-    white-space: normal;
-  }
-  th, td {
-    font-size: 14px;
-  }
-  .wide-column {
-    width: 66.66%;
-  }
-  .small-column {
-    width: 8.33%;
-  }
-  td[data-clickable] {
-    background-color: #ffffff; /* Ensure selectable cells have white background */
-  }
-  .arc-buttons-container {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  .arc-button {
-    display: inline-block;
-    margin: 10px;
-    padding: 10px;
-    border-radius: 10px;
-    border: 2px solid transparent;
-    cursor: pointer;
-    background-color: #f5f5f5;
-    text-align: center;
-    width: 120px;
-    height: 60px;
-    vertical-align: middle;
-  }
-  .arc-button span {
-    display: block;
-    font-size: 12px;
-  }
-  .arc-button strong {
-    display: block;
-    font-size: 14px;
-    font-weight: bold;
-  }
-  .arc-button.selected-arc-a {
-    border-color: #4CAF50; /* Green */
-    background-color: #e8f5e9;
-  }
-  .arc-button.selected-arc-b {
-    border-color: #FFEB3B; /* Yellow */
-    background-color: #fffde7;
-  }
-  .arc-button.selected-arc-c {
-    border-color: #FF9800; /* Orange */
-    background-color: #fff3e0;
-  }
-  .arc-button.selected-arc-d {
-    border-color: #F44336; /* Red */
-    background-color: #ffebee;
-  }
-  .highlight {
-    background-color: #ffff99 !important;
-  }
-  .annotation {
-    text-align: left;
-    margin: 20px auto;
-    width: 100%;
-  }
-  .annotation p {
-    margin: 10px 0; /* Add margin between bullet points */
-  }
-  .result {
-    margin: 20px auto;
-    width: 100%;
-    text-align: left;
-    background-color: #f0f0f0; /* Light grey background */
-    padding: 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    font-size: larger;
-  }
-  th.grey-background, td.grey-background {
-    background-color: #e0e0e0;
-  }
-  td.white-background {
-    background-color: #ffffff;
-  }
-  .continue-button {
-    margin: 40px auto; /* Added margins above and below */
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #F06C00; /* Change button color */
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-decoration: none; /* Ensure the button appears correctly */
-    font-weight: bold; /* Make text bold */
-  }
-  /* Ensuring consistent row heights in GRC table */
-  #grcTable tbody tr {
-    height: 50px;
-  }
-
-  /* Responsive design for mobile */
-  @media (max-width: 600px) {
-    .container {
-      padding: 10px;
-    }
-    th, td {
-      font-size: 12px;
-      padding: 3px;
-    }
-    .arc-button {
-      width: 90px;
-      height: 50px;
-      font-size: 10px;
-      margin: 5px;
-    }
-    .arc-button span {
-      font-size: 10px;
-    }
-    .arc-button strong {
-      font-size: 12px;
-    }
-    .result {
-      width: 90%;
-      font-size: medium;
-    }
-    .continue-button {
-      font-size: 14px;
-      padding: 8px 16px;
-    }
-    .arc-buttons-container {
-      flex-direction: column;
-      align-items: center;
-    }
-    .wide-column {
-      min-width: 120px;
-    }
-    .small-column {
-      min-width: 100px;
-    }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SORA 2.5 calculator</title>
+    <link rel="icon" href="assets/smallLogo.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/sail.css">
 </head>
 <body>
 
 <div class="container">
-  <a href="https://luftfartstilsynet.no/en/drones/">
-    <img src="CAAnor.png" alt="Logo" class="logo">
-  </a>
+    <a href="https://luftfartstilsynet.no/en/drones/">
+        <img src="assets/CAAnor.png" alt="Logo" class="logo-sail">
+    </a>
 
-  <!-- Select intrinsic Ground Risk Class Header -->
-  <h2>Select intrinsic Ground Risk Class</h2>
+    <h2>Select intrinsic Ground Risk Class</h2>
 
-  <!-- Intrinsic UAS Ground Risk Class Table -->
-  <table id="grcTable">
-    <thead>
-      <tr>
-        <th colspan="7">Intrinsic UAS Ground Risk Class</th>
-      </tr>
-      <tr>
-        <th colspan="2">Maximum UA characteristic dimension</th>
-        <th style="background-color: #cce5ff;">1m / approx. 3 ft</th>
-        <th style="background-color: #cce5ff;">3 m / approx. 10 ft</th>
-        <th style="background-color: #cce5ff;">8 m / approx. 25 ft</th>
-        <th style="background-color: #cce5ff;">20 m / approx. 65 ft</th>
-        <th style="background-color: #cce5ff;">40 m / approx. 130 ft</th>
-      </tr>
-      <tr>
-        <th colspan="2" style="background-color: #d4edda;">Maximum speed</th>
-        <th style="background-color: #d4edda;">25 m/s</th>
-        <th style="background-color: #d4edda;">35 m/s</th>
-        <th style="background-color: #d4edda;">75 m/s</th>
-        <th style="background-color: #d4edda;">120 m/s</th>
-        <th style="background-color: #d4edda;">200 m/s</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td rowspan="7">Maximum iGRC population density (people/km²)</td>
-        <td class="unselectable wide-column">Controlled Ground Area</td>
-        <td data-clickable="true" class="selected">1</td>
-        <td data-clickable="true">1</td>
-        <td data-clickable="true">2</td>
-        <td data-clickable="true">3</td>
-        <td data-clickable="true">3</td>
-      </tr>
-      <tr>
-        <td class="unselectable wide-column">&lt; 5</td>
-        <td data-clickable="true">2</td>
-        <td data-clickable="true">3</td>
-        <td data-clickable="true">4</td>
-        <td data-clickable="true">5</td>
-        <td data-clickable="true">6</td>
-      </tr>
-      <tr>
-        <td class="unselectable wide-column">&lt; 50</td>
-        <td data-clickable="true">3</td>
-        <td data-clickable="true">4</td>
-        <td data-clickable="true">5</td>
-        <td data-clickable="true">6</td>
-        <td data-clickable="true">7</td>
-      </tr>
-      <tr>
-        <td class="unselectable wide-column">&lt; 500</td>
-        <td data-clickable="true">4</td>
-        <td data-clickable="true">5</td>
-        <td data-clickable="true">6</td>
-        <td data-clickable="true">7</td>
-        <td data-clickable="true">8</td>
-      </tr>
-      <tr>
-        <td class="unselectable wide-column">&lt; 5,000</td>
-        <td data-clickable="true">5</td>
-        <td data-clickable="true">6</td>
-        <td data-clickable="true">7</td>
-        <td data-clickable="true">8</td>
-        <td data-clickable="true">9</td>
-      </tr>
-      <tr>
-        <td class="unselectable wide-column">&lt; 50,000</td>
-        <td data-clickable="true">6</td>
-        <td data-clickable="true">7</td>
-        <td data-clickable="true">8</td>
-        <td data-clickable="true">9</td>
-        <td data-clickable="true">10</td>
-      </tr>
-      <tr>
-        <td class="unselectable wide-column">&gt; 50,000</td>
-        <td data-clickable="true">7</td>
-        <td data-clickable="true">8</td>
-        <td colspan="3" class="not-part">Not part of SORA</td>
-      </tr>
-    </tbody>
-  </table>
+    <table id="grcTable">
+        <thead>
+        <tr>
+            <th colspan="7">Intrinsic UAS Ground Risk Class</th>
+        </tr>
+        <tr>
+            <th colspan="2">Maximum UA characteristic dimension</th>
+            <th style="background-color: #cce5ff;">1m / approx. 3 ft</th>
+            <th style="background-color: #cce5ff;">3 m / approx. 10 ft</th>
+            <th style="background-color: #cce5ff;">8 m / approx. 25 ft</th>
+            <th style="background-color: #cce5ff;">20 m / approx. 65 ft</th>
+            <th style="background-color: #cce5ff;">40 m / approx. 130 ft</th>
+        </tr>
+        <tr>
+            <th colspan="2" style="background-color: #d4edda;">Maximum speed</th>
+            <th style="background-color: #d4edda;">25 m/s</th>
+            <th style="background-color: #d4edda;">35 m/s</th>
+            <th style="background-color: #d4edda;">75 m/s</th>
+            <th style="background-color: #d4edda;">120 m/s</th>
+            <th style="background-color: #d4edda;">200 m/s</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td rowspan="7">Maximum iGRC population density (people/km²)</td>
+            <td class="unselectable wide-column">Controlled Ground Area</td>
+            <td data-clickable="true" class="selected">1</td>
+            <td data-clickable="true">1</td>
+            <td data-clickable="true">2</td>
+            <td data-clickable="true">3</td>
+            <td data-clickable="true">3</td>
+        </tr>
+        <tr>
+            <td class="unselectable wide-column">&lt; 5</td>
+            <td data-clickable="true">2</td>
+            <td data-clickable="true">3</td>
+            <td data-clickable="true">4</td>
+            <td data-clickable="true">5</td>
+            <td data-clickable="true">6</td>
+        </tr>
+        <tr>
+            <td class="unselectable wide-column">&lt; 50</td>
+            <td data-clickable="true">3</td>
+            <td data-clickable="true">4</td>
+            <td data-clickable="true">5</td>
+            <td data-clickable="true">6</td>
+            <td data-clickable="true">7</td>
+        </tr>
+        <tr>
+            <td class="unselectable wide-column">&lt; 500</td>
+            <td data-clickable="true">4</td>
+            <td data-clickable="true">5</td>
+            <td data-clickable="true">6</td>
+            <td data-clickable="true">7</td>
+            <td data-clickable="true">8</td>
+        </tr>
+        <tr>
+            <td class="unselectable wide-column">&lt; 5,000</td>
+            <td data-clickable="true">5</td>
+            <td data-clickable="true">6</td>
+            <td data-clickable="true">7</td>
+            <td data-clickable="true">8</td>
+            <td data-clickable="true">9</td>
+        </tr>
+        <tr>
+            <td class="unselectable wide-column">&lt; 50,000</td>
+            <td data-clickable="true">6</td>
+            <td data-clickable="true">7</td>
+            <td data-clickable="true">8</td>
+            <td data-clickable="true">9</td>
+            <td data-clickable="true">10</td>
+        </tr>
+        <tr>
+            <td class="unselectable wide-column">&gt; 50,000</td>
+            <td data-clickable="true">7</td>
+            <td data-clickable="true">8</td>
+            <td colspan="3" class="not-part">Not part of SORA</td>
+        </tr>
+        </tbody>
+    </table>
 
-  <div class="annotation">
-    <p>• A UA weighing less than or equal to 250 g and having a maximum speed less than or equal to 25 m/s is considered to have an iGRC of 1 regardless of population density.</p>
-    <p>• A UA expected to not penetrate a standard dwelling will get a -1 GRC reduction from the M1(A) sheltering mitigation when not overflying large open assemblies of people, see Annex B for additional details.</p>
-  </div>
-
-  <!-- Select Ground Risk mitigations Header -->
-  <h2>Select Ground Risk mitigations</h2>
-
-  <!-- GRC Mitigation Table -->
-  <table id="mitigationTable">
-    <thead>
-      <tr>
-        <th rowspan="2" colspan="2" class="unselectable wide-column">Mitigations for ground risk</th>
-        <th colspan="4" style="background-color: #cce5ff;">Level of Robustness</th>
-      </tr>
-      <tr>
-        <th style="background-color: #cce5ff;">None</th>
-        <th style="background-color: #cce5ff;">Low</th>
-        <th style="background-color: #cce5ff;">Medium</th>
-        <th style="background-color: #cce5ff;">High</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td colspan="2" class="unselectable wide-column">M1(A) - Strategic mitigations - Sheltering</td>
-        <td data-clickable="true" class="selected" style="background-color: #ffffff;">0</td>
-        <td data-clickable="true" style="background-color: #ffffff;">-1</td>
-        <td data-clickable="true" style="background-color: #ffffff;">-2</td>
-        <td class="na grey-background">N/A</td>
-      </tr>
-      <tr>
-        <td colspan="2" class="unselectable wide-column">M1(B) - Strategic mitigations - Operational restrictions</td>
-        <td data-clickable="true" class="selected" style="background-color: #ffffff;">0</td>
-        <td class="na grey-background">N/A</td>
-        <td data-clickable="true" style="background-color: #ffffff;">-1</td>
-        <td data-clickable="true" style="background-color: #ffffff;">-2</td>
-      </tr>
-      <tr>
-        <td colspan="2" class="unselectable wide-column">M1(C) - Tactical mitigations - Ground observation</td>
-        <td data-clickable="true" class="selected" style="background-color: #ffffff;">0</td>
-        <td data-clickable="true" style="background-color: #ffffff;">-1</td>
-        <td class="na grey-background">N/A</td>
-        <td class="na grey-background">N/A</td>
-      </tr>
-      <tr>
-        <td colspan="2" class="unselectable wide-column">M2 - Effects of UA impact dynamics are reduced</td>
-        <td data-clickable="true" class="selected" style="background-color: #ffffff;">0</td>
-        <td class="na grey-background">N/A</td>
-        <td data-clickable="true" style="background-color: #ffffff;">-1</td>
-        <td data-clickable="true" style="background-color: #ffffff;">-2</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div class="result">
-    <p>Final GRC: <span id="finalGRC">-</span></p>
-  </div>
-
-  <!-- Select residual Air Risk Class -->
-  <h2>Select residual Air Risk Class</h2>
-  <div class="arc-buttons-container">
-    <div class="arc-button selected-arc-a" data-arc="arc-a">
-      <strong>ARC-a</strong> <br><span>(encounter rate = extremely low)</span>
+    <div class="annotation">
+        <p>• A UA weighing less than or equal to 250 g and having a maximum speed less than or equal to 25 m/s is considered to have an iGRC of 1 regardless of population density.</p>
+        <p>• A UA expected to not penetrate a standard dwelling will get a -1 GRC reduction from the M1(A) sheltering mitigation when not overflying large open assemblies of people, see Annex B for additional details.</p>
     </div>
-    <div class="arc-button" data-arc="arc-b">
-      <strong>ARC-b</strong> <br><span>(encounter rate = low)</span>
+
+    <h2>Select Ground Risk mitigations</h2>
+
+    <table id="mitigationTable">
+        <thead>
+        <tr>
+            <th rowspan="2" colspan="2" class="unselectable wide-column">Mitigations for ground risk</th>
+            <th colspan="4" style="background-color: #cce5ff;">Level of Robustness</th>
+        </tr>
+        <tr>
+            <th style="background-color: #cce5ff;">None</th>
+            <th style="background-color: #cce5ff;">Low</th>
+            <th style="background-color: #cce5ff;">Medium</th>
+            <th style="background-color: #cce5ff;">High</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td colspan="2" class="unselectable wide-column">M1(A) - Strategic mitigations - Sheltering</td>
+            <td data-clickable="true" class="selected" style="background-color: #ffffff;">0</td>
+            <td data-clickable="true" style="background-color: #ffffff;">-1</td>
+            <td data-clickable="true" style="background-color: #ffffff;">-2</td>
+            <td class="na grey-background">N/A</td>
+        </tr>
+        <tr>
+            <td colspan="2" class="unselectable wide-column">M1(B) - Strategic mitigations - Operational restrictions</td>
+            <td data-clickable="true" class="selected" style="background-color: #ffffff;">0</td>
+            <td class="na grey-background">N/A</td>
+            <td data-clickable="true" style="background-color: #ffffff;">-1</td>
+            <td data-clickable="true" style="background-color: #ffffff;">-2</td>
+        </tr>
+        <tr>
+            <td colspan="2" class="unselectable wide-column">M1(C) - Tactical mitigations - Ground observation</td>
+            <td data-clickable="true" class="selected" style="background-color: #ffffff;">0</td>
+            <td data-clickable="true" style="background-color: #ffffff;">-1</td>
+            <td class="na grey-background">N/A</td>
+            <td class="na grey-background">N/A</td>
+        </tr>
+        <tr>
+            <td colspan="2" class="unselectable wide-column">M2 - Effects of UA impact dynamics are reduced</td>
+            <td data-clickable="true" class="selected" style="background-color: #ffffff;">0</td>
+            <td class="na grey-background">N/A</td>
+            <td data-clickable="true" style="background-color: #ffffff;">-1</td>
+            <td data-clickable="true" style="background-color: #ffffff;">-2</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="result">
+        <p>Final GRC: <span id="finalGRC">-</span></p>
     </div>
-    <div class="arc-button" data-arc="arc-c">
-      <strong>ARC-c</strong> <br><span>(encounter rate = medium)</span>
+
+    <h2>Select residual Air Risk Class</h2>
+    <div class="arc-buttons-container">
+        <div class="arc-button selected-arc-a" data-arc="arc-a">
+            <strong>ARC-a</strong> <br><span>(encounter rate = extremely low)</span>
+        </div>
+        <div class="arc-button" data-arc="arc-b">
+            <strong>ARC-b</strong> <br><span>(encounter rate = low)</span>
+        </div>
+        <div class="arc-button" data-arc="arc-c">
+            <strong>ARC-c</strong> <br><span>(encounter rate = medium)</span>
+        </div>
+        <div class="arc-button" data-arc="arc-d">
+            <strong>ARC-d</strong> <br><span>(encounter rate = high)</span>
+        </div>
     </div>
-    <div class="arc-button" data-arc="arc-d">
-      <strong>ARC-d</strong> <br><span>(encounter rate = high)</span>
+
+    <h2>SAIL</h2>
+
+    <table id="sailTable">
+        <thead>
+        <tr>
+            <th rowspan="2" class="grey-background">Final GRC</th>
+            <th colspan="4" class="grey-background">Residual ARC</th>
+        </tr>
+        <tr>
+            <th class="grey-background">a</th>
+            <th class="grey-background">b</th>
+            <th class="grey-background">c</th>
+            <th class="grey-background">d</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td class="grey-background">≤2</td>
+            <td>I</td>
+            <td>I</td>
+            <td>IV</td>
+            <td>VI</td>
+        </tr>
+        <tr>
+            <td class="grey-background">3</td>
+            <td>II</td>
+            <td>II</td>
+            <td>IV</td>
+            <td>VI</td>
+        </tr>
+        <tr>
+            <td class="grey-background">4</td>
+            <td>III</td>
+            <td>III</td>
+            <td>IV</td>
+            <td>VI</td>
+        </tr>
+        <tr>
+            <td class="grey-background">5</td>
+            <td>IV</td>
+            <td>IV</td>
+            <td>IV</td>
+            <td>VI</td>
+        </tr>
+        <tr>
+            <td class="grey-background">6</td>
+            <td>V</td>
+            <td>V</td>
+            <td>V</td>
+            <td>VI</td>
+        </tr>
+        <tr>
+            <td class="grey-background">7</td>
+            <td>VI</td>
+            <td>VI</td>
+            <td>VI</td>
+            <td>VI</td>
+        </tr>
+        <tr>
+            <td class="grey-background">&gt;7</td>
+            <td colspan="4" class="grey-background white-background">Certified category</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="result">
+        <p>SAIL: <span id="sail">-</span></p>
     </div>
-  </div>
 
-  <!-- SAIL Header -->
-  <h2>SAIL</h2>
-
-  <!-- SAIL Determination Table -->
-  <table id="sailTable">
-    <thead>
-      <tr>
-        <th rowspan="2" class="grey-background">Final GRC</th>
-        <th colspan="4" class="grey-background">Residual ARC</th>
-      </tr>
-      <tr>
-        <th class="grey-background">a</th>
-        <th class="grey-background">b</th>
-        <th class="grey-background">c</th>
-        <th class="grey-background">d</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="grey-background">≤2</td>
-        <td>I</td>
-        <td>I</td>
-        <td>IV</td>
-        <td>VI</td>
-      </tr>
-      <tr>
-        <td class="grey-background">3</td>
-        <td>II</td>
-        <td>II</td>
-        <td>IV</td>
-        <td>VI</td>
-      </tr>
-      <tr>
-        <td class="grey-background">4</td>
-        <td>III</td>
-        <td>III</td>
-        <td>IV</td>
-        <td>VI</td>
-      </tr>
-      <tr>
-        <td class="grey-background">5</td>
-        <td>IV</td>
-        <td>IV</td>
-        <td>IV</td>
-        <td>VI</td>
-      </tr>
-      <tr>
-        <td class="grey-background">6</td>
-        <td>V</td>
-        <td>V</td>
-        <td>V</td>
-        <td>VI</td>
-      </tr>
-      <tr>
-        <td class="grey-background">7</td>
-        <td>VI</td>
-        <td>VI</td>
-        <td>VI</td>
-        <td>VI</td>
-      </tr>
-      <tr>
-        <td class="grey-background">&gt;7</td>
-        <td colspan="4" class="grey-background white-background">Certified category</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div class="result">
-    <p>SAIL: <span id="sail">-</span></p>
-  </div>
-
-  <a href="https://training.caa.no/SORA-2.5-calculator/containment.html#/" class="continue-button">Continue to containment calculation</a> <!-- Added link -->
+    <a href="containment.html" class="continue-button">Continue to containment calculation</a>
 
 </div>
 
-<script>
-  function handleSelection(tableId) {
-    const table = document.getElementById(tableId);
-    table.querySelectorAll('td[data-clickable]').forEach(cell => {
-      cell.addEventListener('click', function() {
-        // If it's the GRC table, only allow one cell to be selected
-        if (tableId === 'grcTable') {
-          table.querySelectorAll('td[data-clickable]').forEach(cell => {
-            cell.classList.remove('selected');
-          });
-          this.classList.add('selected');
-        } else { // For mitigation table, allow one cell per row
-          const row = this.parentElement;
-          row.querySelectorAll('td[data-clickable]').forEach(cell => {
-            cell.classList.remove('selected');
-          });
-          this.classList.add('selected');
-
-          // Disable conflicting selections
-          handleMitigationSelection(this);
-        }
-        calculateFinalGRC(); // Recalculate GRC whenever a selection is made
-      });
-    });
-  }
-
-  function handleMitigationSelection(selectedCell) {
-    const table = document.getElementById('mitigationTable');
-    const rowIndex = selectedCell.parentElement.rowIndex;
-    const cellIndex = selectedCell.cellIndex;
-
-    console.log(`Selected cell at row: ${rowIndex}, column: ${cellIndex}`);
-
-    // Reset only the M1(B) conflicting cells to be selectable again if a different M1(A) cell is selected
-    if (rowIndex === 2 && cellIndex !== 3) {
-      console.log('Re-enabling M1(B) cells');
-      table.querySelectorAll('td.na').forEach(cell => {
-        if (cell.parentElement.rowIndex === 3 && (cell.cellIndex === 3 || cell.cellIndex === 4)) {
-          cell.classList.remove('na');
-          if (cell.getAttribute('data-original-text')) {
-            cell.textContent = cell.getAttribute('data-original-text');
-          }
-          cell.setAttribute('data-clickable', 'true');
-          cell.style.backgroundColor = '#ffffff';
-          console.log(`Re-enabled cell at row: ${cell.parentElement.rowIndex}, column: ${cell.cellIndex}, content: ${cell.textContent}`);
-        }
-      });
-    }
-
-    // If M1(A) -2 is selected, disable M1(B) -1 and -2
-    if (rowIndex === 2 && cellIndex === 3) {
-      disableMitigationCell(table.rows[3].cells[3]);
-      disableMitigationCell(table.rows[3].cells[4]);
-    }
-  }
-
-  function disableMitigationCell(cell) {
-    cell.classList.add('na');
-    cell.setAttribute('data-original-text', cell.textContent);
-    cell.textContent = 'N/A';
-    cell.removeAttribute('data-clickable');
-    cell.classList.remove('selected'); // Remove selected class if the cell was selected
-    cell.style.backgroundColor = '#e0e0e0';
-    console.log(`Disabled cell at row: ${cell.parentElement.rowIndex}, column: ${cell.cellIndex}, content: ${cell.textContent}`);
-  }
-
-  function handleARCSelection() {
-    document.querySelectorAll('.arc-button').forEach(button => {
-      button.addEventListener('click', function() {
-        // Remove selected class from all buttons
-        document.querySelectorAll('.arc-button').forEach(btn => {
-          btn.classList.remove('selected-arc-a', 'selected-arc-b', 'selected-arc-c', 'selected-arc-d');
-        });
-
-        // Add selected class based on data-arc attribute
-        const arcClass = this.getAttribute('data-arc');
-        this.classList.add(`selected-${arcClass}`);
-      });
-    });
-  }
-
-  function calculateFinalGRC() {
-    let finalGRC = 1;
-    let m1MitigationValue = 0;
-    let m2MitigationValue = 0;
-    const selectedGRC = document.querySelector('#grcTable .selected');
-    const selectedMitigations = document.querySelectorAll('#mitigationTable .selected');
-    const selectedARC = document.querySelector('.arc-button.selected-arc-a, .arc-button.selected-arc-b, .arc-button.selected-arc-c, .arc-button.selected-arc-d');
-
-    if (selectedGRC) {
-      finalGRC = parseInt(selectedGRC.textContent);
-      console.log(`Selected GRC: ${finalGRC}`);
-    }
-
-    selectedMitigations.forEach(selectedMitigation => {
-      const value = parseInt(selectedMitigation.textContent);
-      if (!isNaN(value)) {
-        if (selectedMitigation.parentElement.textContent.includes("M2")) {
-          m2MitigationValue += value;
-        } else {
-          m1MitigationValue += value;
-        }
-      }
-    });
-
-    console.log(`M1 Mitigation Value: ${m1MitigationValue}`);
-    console.log(`M2 Mitigation Value: ${m2MitigationValue}`);
-
-    const gRCColIndex = selectedGRC ? selectedGRC.cellIndex : -1;
-    const m1Used = m1MitigationValue !== 0;
-
-    if (m1Used && (gRCColIndex >= 5 && gRCColIndex <= 6)) {
-      finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 3);
-    } else if (finalGRC == 5 && (m1Used && gRCColIndex === 4)) {
-      finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 3); // GRC cannot be lower than 3 before M2
-    } else if (finalGRC == 6 && (m1Used && gRCColIndex === 4)) {
-      finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 3); // GRC cannot be lower than 3 before M2
-    } else if (finalGRC == 4 && (m1Used && gRCColIndex === 3)) {
-      finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 2); // GRC cannot be lower than 2 before M2
-    } else if (finalGRC == 5 && (m1Used && gRCColIndex === 3)) {
-      finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 2); // GRC cannot be lower than 2 before M2
-    } else if (finalGRC == 2 && (m1Used && gRCColIndex === 4)) {
-      finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 2); // GRC cannot be lower than 2 before M2
-    } else {
-      finalGRC -= Math.abs(m1MitigationValue); // Apply M1 mitigation values to reduce GRC
-    }
-
-    finalGRC -= Math.abs(m2MitigationValue); // Apply M2 mitigation values to reduce GRC further
-
-    finalGRC = Math.max(finalGRC, 1); // Final GRC cannot be lower than 1
-
-    document.getElementById('finalGRC').textContent = finalGRC;
-    console.log(`Final GRC: ${finalGRC}`);
-    
-    // Highlight the SAIL in the table
-    highlightSAIL(finalGRC, selectedARC ? selectedARC.getAttribute('data-arc') : null);
-  }
-
-  function highlightSAIL(finalGRC, selectedARC) {
-    const sailTable = document.getElementById('sailTable');
-    sailTable.querySelectorAll('td').forEach(cell => {
-      cell.classList.remove('highlight');
-    });
-
-    if (finalGRC <= 2) {
-      finalGRC = '≤2';
-    } else if (finalGRC >= 8) {
-      document.getElementById('sail').textContent = 'Certified category';
-      const row = Array.from(sailTable.rows).find(row => row.cells[0].textContent.trim() == '>7');
-      if (row) {
-        row.cells[1].classList.add('highlight');
-      }
-      return;
-    }
-
-    if (finalGRC && selectedARC) {
-      const row = Array.from(sailTable.rows).find(row => row.cells[0].textContent.trim() == finalGRC);
-      const arcIndex = { 'arc-a': 1, 'arc-b': 2, 'arc-c': 3, 'arc-d': 4 }[selectedARC];
-      if (row && arcIndex !== undefined) {
-        row.cells[arcIndex].classList.add('highlight');
-        document.getElementById('sail').textContent = row.cells[arcIndex].textContent;
-      }
-    }
-  }
-
-  // Initialize selection handling for each table and ARC buttons
-  handleSelection('grcTable');
-  handleSelection('mitigationTable');
-  handleARCSelection();
-
-  // Calculate final GRC and SAIL whenever a selection is made
-  document.querySelectorAll('td[data-clickable], .arc-button').forEach(item => {
-    item.addEventListener('click', calculateFinalGRC);
-  });
-
-  // Calculate initial GRC and SAIL
-  calculateFinalGRC();
-</script>
+<script src="js/sail.js"></script>
 
 </body>
 </html>

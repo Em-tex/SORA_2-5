@@ -1,0 +1,199 @@
+/* Stiler spesifikt for SAIL-kalkulatoren (index.html) */
+
+.container {
+    text-align: center;
+}
+
+.logo-sail {
+    display: block;
+    margin: 0 0 20px 0; /* 20px margin below the logo */
+    width: 150px; /* Adjust size as needed */
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px auto;
+    text-align: center;
+    table-layout: fixed;
+}
+
+th, td {
+    border: 1px solid #000;
+    padding: 5px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    font-size: 14px;
+}
+
+th[colspan="7"], th[colspan="6"] {
+    background-color: #d6d6d6;
+}
+
+th[colspan="2"], td[colspan="2"], th[colspan="2"] + th, td[colspan="2"] + td {
+    background-color: #cce5ff;
+}
+
+td[colspan="2"]:nth-child(3),
+td[colspan="2"]:nth-child(3) ~ td {
+    background-color: #d4edda;
+}
+
+td[rowspan="7"], td[class*="unselectable"], th[class*="unselectable"] {
+    background-color: #f8d7da;
+    text-align: left;
+    font-weight: bold;
+    white-space: normal;
+}
+
+td[data-clickable]:hover {
+    cursor: pointer;
+    background-color: #ffffcc;
+}
+
+td.na {
+    background-color: #e0e0e0; /* Grey background for N/A cells */
+    pointer-events: none; /* Make N/A cells non-selectable */
+}
+
+td.selected {
+    background-color: #ffff99 !important;
+}
+
+.not-part {
+    background-color: #e0e0e0;
+    text-align: center;
+}
+
+.unselectable {
+    background-color: #f8d7da;
+    white-space: normal;
+}
+
+.wide-column {
+    width: 66.66%;
+}
+
+.small-column {
+    width: 8.33%;
+}
+
+td[data-clickable] {
+    background-color: #ffffff; /* Ensure selectable cells have white background */
+}
+
+.arc-buttons-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.arc-button {
+    display: inline-block;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background-color: #f5f5f5;
+    text-align: center;
+    width: 120px;
+    height: 60px;
+    vertical-align: middle;
+}
+
+.arc-button span {
+    display: block;
+    font-size: 12px;
+}
+
+.arc-button strong {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.arc-button.selected-arc-a {
+    border-color: #4CAF50; /* Green */
+    background-color: #e8f5e9;
+}
+
+.arc-button.selected-arc-b {
+    border-color: #FFEB3B; /* Yellow */
+    background-color: #fffde7;
+}
+
+.arc-button.selected-arc-c {
+    border-color: #FF9800; /* Orange */
+    background-color: #fff3e0;
+}
+
+.arc-button.selected-arc-d {
+    border-color: #F44336; /* Red */
+    background-color: #ffebee;
+}
+
+.highlight {
+    background-color: #ffff99 !important;
+}
+
+.annotation {
+    text-align: left;
+    margin: 20px auto;
+    width: 100%;
+}
+
+.annotation p {
+    margin: 10px 0; /* Add margin between bullet points */
+}
+
+th.grey-background, td.grey-background {
+    background-color: #e0e0e0;
+}
+
+td.white-background {
+    background-color: #ffffff;
+}
+
+/* Ensuring consistent row heights in GRC table */
+#grcTable tbody tr {
+    height: 50px;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 600px) {
+    th, td {
+        font-size: 12px;
+        padding: 3px;
+    }
+    .arc-button {
+        width: 90px;
+        height: 50px;
+        font-size: 10px;
+        margin: 5px;
+    }
+    .arc-button span {
+        font-size: 10px;
+    }
+    .arc-button strong {
+        font-size: 12px;
+    }
+    .result {
+        width: 90%;
+        font-size: medium;
+    }
+    .arc-buttons-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    .wide-column {
+        min-width: 120px;
+    }
+    .small-column {
+        min-width: 100px;
+    }
+}

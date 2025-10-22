@@ -1,0 +1,82 @@
+/* Stiler spesifikt for Containment-kalkulatoren (containment.html) */
+
+.containment-container {
+    max-width: 600px;
+    text-align: left;
+}
+
+.header {
+    text-align: center;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.adjacent-area-box {
+    background-color: #f0f0f0; 
+    padding: 10px; 
+    border-radius: 4px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    text-align: left;
+    font-weight: bold;
+}
+
+select, input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Viktig for konsistent størrelse */
+}
+
+.flex-row {
+    display: flex;
+    align-items: center;
+}
+
+.flex-row input[type="number"] {
+    width: 110px;
+    margin-right: 5px;
+    text-align: right;
+}
+
+.flex-row select {
+    width: 70px;
+}
+
+#result {
+    margin-top: 20px;
+    font-size: 1.2em;
+    padding: 10px;
+}
+
+/* Resultatfarger */
+.out-of-scope {
+    background-color: lightgrey;
+}
+.low {
+    background-color: lightyellow;
+}
+.medium {
+    background-color: #ffbd61;
+}
+.high {
+    background-color: lightcoral;
+}
+
+.button-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.button-container a {
+    margin-top: 20px; /* Mindre margin enn på index */
+}
