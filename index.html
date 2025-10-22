@@ -5,21 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SORA 2.5 calculator</title>
     <link rel="icon" href="assets/smallLogo.png" type="image/png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/sail.css">
 </head>
 <body>
 
-<nav class="navbar">
-    <a href="index.html" class="nav-button active">🏠 Hjem (SAIL)</a>
-    <a href="containment.html" class="nav-button">🥅 Containment</a>
-</nav>
+<div id="navbar-placeholder"></div>
 
 <div class="container">
-    <a href="https://luftfartstilsynet.no/en/drones/">
-        <img src="assets/CAAnor.png" alt="Logo" class="logo-sail">
-    </a>
-
+    
     <h2>Select intrinsic Ground Risk Class</h2>
 
     <table id="grcTable">
@@ -170,7 +169,7 @@
         <div class="arc-button" data-arc="arc-c">
             <strong>ARC-c</strong> <br><span>(encounter rate = medium)</span>
         </div>
-        <div class="arc-button" data-arc="arc-d">
+        <div class="arc-button" data-arc="d">
             <strong>ARC-d</strong> <br><span>(encounter rate = high)</span>
         </div>
     </div>
@@ -194,7 +193,7 @@
         <tr>
             <td class="grey-background">≤2</td>
             <td class="sail-i">I</td>
-            <td class="sail-i">I</td>
+            <td class="sail-ii">II</td> 
             <td class="sail-iv">IV</td>
             <td class="sail-vi">VI</td>
         </tr>
@@ -244,12 +243,15 @@
         <p>SAIL: <span id="sail">-</span></p>
     </div>
 
+    <a href="containment.html" class="continue-button">Continue to containment calculation</a>
+
     <div class="footer-timestamp">
         updated 22.10.2025
     </div>
 </div>
 
 <script src="js/sail.js"></script>
+<script src="js/navbar.js"></script>
 
 </body>
 </html>

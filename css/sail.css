@@ -4,14 +4,7 @@
     text-align: center;
 }
 
-.logo-sail {
-    display: block;
-    margin: 0 0 20px 0; 
-    width: 150px; 
-    position: absolute;
-    top: 20px;
-    left: 20px;
-}
+/* .logo-sail er fjernet */
 
 table {
     width: 100%;
@@ -56,8 +49,8 @@ td[data-clickable]:hover {
 }
 
 td.na {
-    background-color: #e0e0e0; /* Grey background for N/A cells */
-    pointer-events: none; /* Make N/A cells non-selectable */
+    background-color: #e0e0e0;
+    pointer-events: none;
 }
 
 td.selected {
@@ -83,7 +76,7 @@ td.selected {
 }
 
 td[data-clickable] {
-    background-color: #ffffff; /* Ensure selectable cells have white background */
+    background-color: #ffffff;
 }
 
 /* Farger for SAIL-tabell */
@@ -127,27 +120,30 @@ td[data-clickable] {
 }
 
 .arc-button.selected-arc-a {
-    border-color: #4CAF50; /* Green */
+    border-color: #4CAF50;
     background-color: #e8f5e9;
 }
 
 .arc-button.selected-arc-b {
-    border-color: #FFEB3B; /* Yellow */
+    border-color: #FFEB3B;
     background-color: #fffde7;
 }
 
 .arc-button.selected-arc-c {
-    border-color: #FF9800; /* Orange */
+    border-color: #FF9800;
     background-color: #fff3e0;
 }
 
 .arc-button.selected-arc-d {
-    border-color: #F44336; /* Red */
+    border-color: #F44336;
     background-color: #ffebee;
 }
 
+/* ENDRET: Markering for beregnet SAIL-celle */
 .highlight {
-    background-color: #ffff99 !important;
+    border: 6px solid #F44336; /* Tykk rød kant (6px) */
+    font-weight: bold; /* Fet skrift */
+    box-sizing: border-box;
 }
 
 .annotation {
@@ -157,7 +153,7 @@ td[data-clickable] {
 }
 
 .annotation p {
-    margin: 10px 0; /* Add margin between bullet points */
+    margin: 10px 0;
 }
 
 th.grey-background, td.grey-background {
@@ -168,12 +164,10 @@ td.white-background {
     background-color: #ffffff;
 }
 
-/* Ensuring consistent row heights in GRC table */
 #grcTable tbody tr {
     height: 50px;
 }
 
-/* Stil for fotnote med dato */
 .footer-timestamp {
     text-align: right;
     font-size: 0.8em;

@@ -5,85 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Containment Calculation</title>
     <link rel="icon" href="assets/smallLogo.png" type="image/png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/containment.css">
 </head>
 <body>
 
-<nav class="navbar">
-    <a href="index.html" class="nav-button">🏠 Hjem (SAIL)</a>
-    <a href="containment.html" class="nav-button active">🥅 Containment</a>
-</nav>
+<div id="navbar-placeholder"></div>
 
-    <div class="container containment-container">
-        <div class="logo-container">
-            <a href="https://luftfartstilsynet.no/en/drones/" target="_blank">
-                <img src="assets/CAAnor.png" alt="Logo" class="logo">
-            </a>
-        </div>
-        <h1 class="header">Containment Calculation</h1>
-        
-        <div class="form-group">
-            <label for="speedInput">Maximum speed of the UA</label>
-            <div class="flex-row">
-                <input type="number" id="speedInput" placeholder="Enter speed" value="20" style="width: 110px; text-align: right;" oninput="calculateAdjacentArea()" />
-                <select id="speedUnit" style="width: 70px;" onchange="calculateAdjacentArea()">
-                    <option value="m/s">m/s</option>
-                    <option value="km/h">km/h</option>
-                    <option value="kt">kt</option>
-                </select>
-            </div>
-        </div>
-        <div class="form-group adjacent-area-box">
-            <div><strong style="font-size: 1.2em;">Adjacent area:</strong> <span id="adjacentArea" style="font-weight: bold; font-size: 1.2em;">-</span></div>
-            <div style="margin-top: 10px; font-size: 0.8em;">
-                The lateral outer limit of the adjacent area is calculated from the operational volume as the distance flown in 3 minutes at maximum speed of the UA. It is never less than 5 km or more than 35 km. See SORA 2.5 Main Body for details.
-            </div>
-        </div>
-        <div class="form-group" style="margin-top: 50px;">
-            <label for="uaSize">UA Size</label>
-            <select id="uaSize" onchange="updatePopulationDensityOptions(); calculateContainment();">
-                <option value="1m">&lt; 1 m UA (&lt; 25 m/s)</option>
-                <option value="3mShelterApplicable">&lt; 3 m UA (&lt; 35 m/s) - Shelter applicable in the adjacent area</option>
-                <option value="3mShelterNotApplicable">&lt; 3 m UA (&lt; 35 m/s) - Shelter not applicable in the adjacent area</option>
-                <option value="8m">&lt; 8 m UA (&lt; 75 m/s)</option>
-                <option value="20m">&lt; 20 m UA (&lt; 125 m/s)</option>
-                <option value="40m">&lt; 40 m UA (&lt; 200 m/s)</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="sail">SAIL</label>
-            <select id="sail" onchange="calculateContainment()">
-                <option value="I">I</option>
-                <option value="II" selected>II</option>
-                <option value="III">III</option>
-                <option value="IV">IV</option>
-                <option value="V">V</option>
-                <option value="VI">VI</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="populationDensity">Average population density allowed in the adjacent area</label>
-            <select id="populationDensity" onchange="calculateContainment()">
-                <option value="50">&lt; 50 ppl/km<sup>2</sup></option>
-                <option value="500">&lt; 500 ppl/km<sup>2</sup></option>
-                <option value="5k">&lt; 5 000 ppl/km<sup>2</sup></option>
-                <option value="50k">&lt; 50 000 ppl/km<sup>2</sup></option>
-                <option value="NoLimit">No upper limit</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="outdoorAssemblies">Outdoor assemblies allowed within 1 km of the OPS volume</label>
-            <select id="outdoorAssemblies" onchange="calculateContainment()">
-                <option value="40k">&lt; 40 k</option>
-                <option value="40kTo400k">40 k to 400 k</option>
-                <option value="400k">&gt; 400 k</option>
-            </select>
-        </div>
-        <div id="result" class="result"></div>
-        
-        </div>
+<div class="container containment-container">
+    <div class="logo-container">
+        <a href="https://luftfartstilsynet.no/en/drones/" target="_blank">
+            <img src="assets/CAAnor.png" alt="Logo" class="logo">
+        </a>
+    </div>
+    <h1 class="header">Containment Calculation</h1>
 
-    <script src="js/containment.js"></script>
+    <div class="form-group">
+        <label for="speedInput">Maximum speed of the UA</label>
+        <div class="flex-row">
+            <input type="number" id="speedInput" placeholder="Enter speed" value="20" style="width: 110px; text-align: right;" oninput="calculateAdjacentArea()" />
+            <select id="speedUnit" style="width: 70px;" onchange="calculateAdjacentArea()">
+                <option value="m/s">m/s</option>
+                <option value="km/h">km/h</option>
+                <option value="kt">kt</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group adjacent-area-box">
+        <div><strong style="font-size: 1.2em;">Adjacent area:</strong> <span id="adjacentArea" style="font-weight: bold; font-size: 1.2em;">-</span></div>
+        <div style="margin-top: 10px; font-size: 0.8em;">
+            The lateral outer limit of the adjacent area is calculated from the operational volume as the distance flown in 3 minutes at maximum speed of the UA. It is never less than 5 km or more than 35 km. See SORA 2.5 Main Body for details.
+        </div>
+    </div>
+    <div class="form-group" style="margin-top: 50px;">
+        <label for="uaSize">UA Size</label>
+        <select id="uaSize" onchange="updatePopulationDensityOptions(); calculateContainment();">
+            <option value="1m">&lt; 1 m UA (&lt; 25 m/s)</option>
+            <option value="3mShelterApplicable">&lt; 3 m UA (&lt; 35 m/s) - Shelter applicable in the adjacent area</option>
+            <option value="3mShelterNotApplicable">&lt; 3 m UA (&lt; 35 m/s) - Shelter not applicable in the adjacent area</option>
+            <option value="8m">&lt; 8 m UA (&lt; 75 m/s)</option>
+            <option value="20m">&lt; 20 m UA (&lt; 125 m/s)</option>
+            <option value="40m">&lt; 40 m UA (&lt; 200 m/s)</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="sail">SAIL</label>
+        <select id="sail" onchange="calculateContainment()">
+            <option value="I">I</option>
+            <option value="II" selected>II</option>
+            <option value="III">III</option>
+            <option value="IV">IV</option>
+            <option value="V">V</option>
+            <option value="VI">VI</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="populationDensity">Average population density allowed in the adjacent area</label>
+        <select id="populationDensity" onchange="calculateContainment()">
+            <option value="50">&lt; 50 ppl/km<sup>2</sup></option>
+            <option value="500">&lt; 500 ppl/km<sup>2</sup></option>
+            <option value="5k">&lt; 5 000 ppl/km<sup>2</sup></option>
+            <option value="50k">&lt; 50 000 ppl/km<sup>2</sup></option>
+            <option value="NoLimit">No upper limit</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="outdoorAssemblies">Outdoor assemblies allowed within 1 km of the OPS volume</label>
+        <select id="outdoorAssemblies" onchange="calculateContainment()">
+            <option value="40k">&lt; 40 k</option>
+            <option value="40kTo400k">40 k to 400 k</option>
+            <option value="400k">&gt; 400 k</option>
+        </select>
+    </div>
+    <div id="result" class="result"></div>
+</div>
+
+<script src="js/containment.js"></script>
+<script src="js/navbar.js"></script>
+
 </body>
 </html>

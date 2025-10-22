@@ -1,34 +1,66 @@
+/* Importerer Overpass fonten fra Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap');
+
 /* Felles stiler for hele applikasjonen */
 
 /* Navigasjonsbånd */
 .navbar {
     width: 100%;
     background-color: #03477F; /* Mørk Blå */
-    padding: 10px 0;
-    text-align: center;
+    padding: 15px 20px; /* Økt padding for større logo */
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center; /* Dette "midtjusterer" (vertikalt) */
+    
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
+
+/* Stil for selve lenken rundt logoen */
+.nav-logo-link {
+    line-height: 0; /* Hindrer ekstra luft rundt lenken */
+    margin-right: 25px; /* Avstand mellom logo og knapper */
+}
+
+.nav-logo {
+    height: 50px; /* ØKT: Fra 30px til 50px */
+    width: auto;
+}
+
 .nav-button {
     color: #FFFFFF; /* Hvit */
     text-decoration: none;
-    padding: 10px 20px;
+    padding: 10px 15px;
     margin: 0 5px;
     border-radius: 5px;
     font-weight: bold;
     font-size: 1em;
     transition: background-color 0.3s;
+    display: inline-flex;
+    align-items: center;
 }
 .nav-button:hover {
-    background-color: #6A8E7F; /* Dempet Grønn */
+    background-color: #F06C00; /* Oransje (Hover) */
 }
 .nav-button.active {
-    background-color: #F06C00; /* Oransje */
+    background-color: #6A8E7F; /* Dempet Grønn (Aktiv) */
     cursor: default;
+}
+
+.nav-icon {
+    color: #FFFFFF;
+    vertical-align: middle;
+    margin-right: 8px;
+    width: 1.1em;
+    height: 1.1em;
+    flex-shrink: 0;
 }
 
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Overpass', Arial, sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f0f0f0;
@@ -40,11 +72,11 @@ body {
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     position: relative;
-    max-width: 1000px; /* Bred default, containment-siden kan overstyre */
+    max-width: 1000px;
     margin: 20px auto;
 }
 
-/* Logo-stiler */
+/* Logo-stiler (for logoen inne på containment-siden) */
 .logo-container {
     text-align: left;
     margin-bottom: 20px;
@@ -65,21 +97,22 @@ h2 {
     margin: 20px auto;
     width: 100%;
     text-align: left;
-    background-color: #f0f0f0; /* Light grey background */
+    background-color: #f0f0f0;
     padding: 10px;
     border-radius: 5px;
     font-weight: bold;
     font-size: larger;
-    box-sizing: border-box; /* Sørger for at padding er inkludert i bredden */
+    box-sizing: border-box;
 }
 
-/* Felles knappe-stiler (Bruker nå Oransje fra fargeprofil) */
+/* Felles knappe-stiler */
 .continue-button, .button-container a {
     display: inline-block;
     margin: 40px auto 20px;
     padding: 10px 20px;
     font-size: 16px;
-    background-color: #F06C00; /* Oransje */
+    /* ENDRET: Knappefarge er nå mørkeblå */
+    background-color: #03477F; /* Mørk Blå */
     color: white;
     border: none;
     border-radius: 5px;
@@ -90,15 +123,27 @@ h2 {
 }
 
 .button-container a:hover, .continue-button:hover {
-    background-color: #d65a00; /* En mørkere oransje for hover */
+     /* ENDRET: Hover er nå oransje */
+    background-color: #F06C00; /* Oransje (Hover) */
 }
 
 /* Felles mobil-justeringer */
 @media (max-width: 600px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+    }
+    .nav-logo-link {
+        margin-bottom: 10px; /* Plass under logo på mobil */
+    }
+    .nav-logo {
+        height: 40px; /* Litt mindre på mobil */
+    }
     .nav-button {
         display: block;
-        margin: 5px auto;
-        width: 80%;
+        width: calc(100% - 30px); /* Full bredde minus padding */
+        text-align: left;
     }
     .container {
         padding: 10px;
