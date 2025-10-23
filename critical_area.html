@@ -66,12 +66,14 @@
         </div>
     </form>
 
-    <button type="button" id="resetCriticalAreaForm" class="reset-button">
-        <svg class="reset-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
-        </svg>
-        <span>Nullstill skjema</span>
-    </button>
+    <div class="button-bar">
+        <button type="button" id="resetCriticalAreaForm" class="reset-button">
+            <svg class="reset-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+            </svg>
+            <span>Reset form</span>
+        </button>
+    </div>
     <div id="result" class="result">
         Calculated Critical Area: <span id="criticalAreaValue">-</span> m²
     </div>
@@ -105,7 +107,8 @@
      <p class="table-caption">Table B.8 — Critical areas associated with the maximum characteristic dimension (non-mitigated)</p>
 
 
-</div> <script src="js/critical_area.js"></script>
+</div> 
+<script src="js/critical_area.js"></script>
 <script src="js/navbar.js"></script>
 
 </body>

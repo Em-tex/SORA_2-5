@@ -106,12 +106,23 @@ h2 {
 }
 
 /* Felles knappe-stiler */
+
+/* NY: Beholder for å justere knapper på én linje */
+.button-bar {
+    display: flex;
+    justify-content: center; /* Senterer knapper */
+    align-items: center;
+    flex-wrap: wrap; /* Lar knapper bryte på mobil */
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
 .continue-button, .button-container a {
     display: inline-block;
-    margin: 40px auto 20px;
+    /* ENDRET: Fjernet 'auto' margin, bruker nå felles 'margin: 10px' */
+    margin: 10px;
     padding: 10px 20px;
     font-size: 16px;
-    /* ENDRET: Knappefarge er nå mørkeblå */
     background-color: #03477F; /* Mørk Blå */
     color: white;
     border: none;
@@ -127,44 +138,17 @@ h2 {
     background-color: #F06C00; /* Oransje (Hover) */
 }
 
-/* Felles mobil-justeringer */
-@media (max-width: 600px) {
-    .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 10px;
-    }
-    .nav-logo-link {
-        margin-bottom: 10px; /* Plass under logo på mobil */
-    }
-    .nav-logo {
-        height: 40px; /* Litt mindre på mobil */
-    }
-    .nav-button {
-        display: block;
-        width: calc(100% - 30px); /* Full bredde minus padding */
-        text-align: left;
-    }
-    .container {
-        padding: 10px;
-    }
-    .continue-button, .button-container a {
-        font-size: 14px;
-        padding: 8px 16px;
-    }
-}
-
-/* css/style.css (LEGG TIL PÅ SLUTTEN) */
-
 /* Ny knapp for å nullstille skjema */
 .reset-button {
-    display: inline-flex; /* For å justere ikon og tekst */
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin: 20px auto 20px;
+     /* ENDRET: Fjernet 'auto' margin, bruker nå felles 'margin: 10px' */
+    margin: 10px;
     padding: 10px 20px;
     font-size: 16px;
-    background-color: #6c757d; /* Nøytral grå farge */
+    /* ENDRET: Farge er nå oransje */
+    background-color: #F06C00;
     color: white;
     border: none;
     border-radius: 5px;
@@ -175,7 +159,8 @@ h2 {
     transition: background-color 0.3s;
 }
 .reset-button:hover {
-    background-color: #5a6268; /* Mørkere grå ved hover */
+     /* ENDRET: Hover er nå mørkeblå */
+    background-color: #03477F;
 }
 .reset-icon {
     width: 1.1em;
@@ -184,7 +169,8 @@ h2 {
     fill: white; /* Sørger for at SVG-ikonet er hvitt */
 }
 
-/* Felles mobil-justeringer (OPPDATERT) */
+
+/* Felles mobil-justeringer */
 @media (max-width: 600px) {
     .navbar {
         flex-direction: column;
@@ -209,5 +195,13 @@ h2 {
     .reset-button { /* Lagt til .reset-button her */
         font-size: 14px;
         padding: 8px 16px;
+        width: 100%; /* La knapper ta full bredde på mobil i stedet for side-ved-side */
+        margin: 5px 0; /* Justert margin for stabling */
+    }
+    
+    /* NY: Fjern flex-oppførsel på mobil, la knapper stable */
+    .button-bar {
+        display: block;
+        margin-top: 20px;
     }
 }
