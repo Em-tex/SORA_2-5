@@ -104,3 +104,80 @@
         margin-bottom: 15px; /* Legger til margin under på mobil */
     }
 }
+
+
+/* --- NY: Stiler for Custom Select --- */
+.custom-select-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Skjul den originale select-boksen */
+.custom-select-container select {
+    display: none;
+}
+
+/* Den synlige "boksen" */
+.custom-select-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    min-height: 40px; /* Samme som andre inputs */
+    height: 40px;
+    box-sizing: border-box;
+    font-size: 1em;
+}
+.custom-select-trigger span {
+    display: flex;
+    align-items: center;
+}
+.custom-select-trigger .fas { /* Ikonet */
+    margin-right: 10px;
+    width: 18px; /* Gir litt fast bredde for justering */
+    text-align: center;
+}
+.custom-select-arrow {
+    font-size: 0.8em;
+    color: #555;
+}
+
+/* Listen med valg */
+.custom-select-options {
+    display: none; /* Skjult som standard */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    z-index: 10;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Vises med JS */
+.custom-select-options.open {
+    display: block;
+}
+
+.custom-select-option {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+}
+.custom-select-option:hover {
+    background-color: #f0f0f0;
+}
+.custom-select-option .fas { /* Ikonet */
+    margin-right: 10px;
+    width: 18px; /* Samme som over */
+    text-align: center;
+}

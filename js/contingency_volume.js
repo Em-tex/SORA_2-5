@@ -68,12 +68,17 @@ function loadContingencyForm() {
     } else {
         applyDefaultValues();
     }
-    updateUIBasedOnSelections(); // Update UI after loading
+    // UI-oppdatering flyttet til initializeApp for å inkludere custom selects
 }
 
 function resetContingencyForm() {
     localStorage.removeItem(CONTINGENCY_KEY);
     applyDefaultValues();
+    
+    // NY: Oppdater visual etter reset
+    updateCustomSelectVisual(elements.aircraftType);
+    updateCustomSelectVisual(elements.contingencyMethod);
+
     updateUIBasedOnSelections();
     calculateAndDisplay();
 }
@@ -93,6 +98,76 @@ function applyDefaultValues() {
     elements.altitudeMeasurement.value = 'barometric';
 }
 // --- END: Storage Functions ---
+
+
+// --- NY: Funksjoner for Custom Select ---
+/**
+ * Initialiserer alle custom select-bokser på siden.
+ */
+function initCustomSelects() {
+    document.querySelectorAll('.custom-select-container').forEach(container => {
+        const hiddenSelect = container.querySelector('select');
+        const trigger = container.querySelector('.custom-select-trigger');
+        const optionsContainer = container.querySelector('.custom-select-options');
+        const options = container.querySelectorAll('.custom-select-option');
+        const arrow = trigger.querySelector('.custom-select-arrow');
+
+        // Åpne/lukke listen
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation(); // Forhindre at body-klikket lukker med en gang
+            optionsContainer.classList.toggle('open');
+        });
+
+        // Håndter valg fra listen
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                const selectedValue = option.getAttribute('data-value');
+                const selectedHTML = option.innerHTML;
+
+                // 1. Oppdater den skjulte select-boksen
+                hiddenSelect.value = selectedValue;
+                
+                // 2. Oppdater den synlige trigger-boksen
+                trigger.innerHTML = `<span>${selectedHTML}</span>` + (arrow ? arrow.outerHTML : '<span class="custom-select-arrow">▼</span>');
+                
+                // 3. Lukk listen
+                optionsContainer.classList.remove('open');
+
+                // 4. Utløs 'change'-eventet på den skjulte select-boksen
+                // Dette gjør at den eksisterende calculateAndDisplay()-lytteren fanger opp endringen.
+                hiddenSelect.dispatchEvent(new Event('change'));
+            });
+        });
+    });
+
+    // Lukk alle åpne lister hvis man klikker utenfor
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.custom-select-options.open').forEach(container => {
+            container.classList.remove('open');
+        });
+    });
+}
+
+/**
+ * Oppdaterer den synlige delen av en custom select basert på verdien
+ * til den underliggende (skjulte) select-boksen.
+ * @param {HTMLElement} selectElement - Det skjulte <select>-elementet.
+ */
+function updateCustomSelectVisual(selectElement) {
+    const container = selectElement.closest('.custom-select-container');
+    if (!container) return;
+
+    const trigger = container.querySelector('.custom-select-trigger');
+    const currentValue = selectElement.value;
+    const correspondingOption = container.querySelector(`.custom-select-option[data-value="${currentValue}"]`);
+    const arrow = trigger.querySelector('.custom-select-arrow');
+
+    if (trigger && correspondingOption) {
+         trigger.innerHTML = `<span>${correspondingOption.innerHTML}</span>` + (arrow ? arrow.outerHTML : '<span class="custom-select-arrow">▼</span>');
+    }
+}
+// --- SLUTT: Funksjoner for Custom Select ---
+
 
 function calculateHorizontalCV() {
     const v0 = parseFloat(elements.v0.value) || 0;
@@ -212,12 +287,20 @@ function calculateAndDisplay() {
 
 function initializeApp() {
     loadContingencyForm();
-    calculateAndDisplay();
+    
+    // NY: Initialiser custom selects og oppdater visningen
+    initCustomSelects();
+    updateCustomSelectVisual(elements.aircraftType);
+    updateCustomSelectVisual(elements.contingencyMethod);
+
+    calculateAndDisplay(); // Første kalkulering
 
     inputIds.forEach(id => { // Denne trenger inputIds
         const el = document.getElementById(id);
         if (el) {
             const eventType = (el.tagName === 'SELECT') ? 'change' : 'input';
+            // De eksisterende lytterne vil nå fange opp 'change'-eventet
+            // som utløses av initCustomSelects
             el.addEventListener(eventType, calculateAndDisplay);
         }
     });

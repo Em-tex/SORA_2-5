@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/critical_area.css"> <link rel="stylesheet" href="css/contingency_volume.css"> </head>
@@ -29,31 +31,65 @@
         <div class="form-row">
             <div class="form-group half-width">
                 <label for="aircraftType">Aircraft Type:</label>
-                <select id="aircraftType">
-                    <option value="multirotor" selected>🚁 Multirotor</option>
-                    <option value="fixedwing">✈️ Fixed-wing</option>
-                </select>
+                <div class="custom-select-container">
+                    <select id="aircraftType">
+                        <option value="multirotor" selected>Multirotor</option>
+                        <option value="fixedwing">Fixed-wing</option>
+                    </select>
+                    <div class="custom-select-trigger">
+                        <span><i class="fas fa-helicopter"></i> Multirotor</span>
+                        <span class="custom-select-arrow">▼</span>
+                    </div>
+                    <div class="custom-select-options">
+                        <div class="custom-select-option" data-value="multirotor">
+                            <i class="fas fa-helicopter"></i>
+                            <span>Multirotor</span>
+                        </div>
+                        <div class="custom-select-option" data-value="fixedwing">
+                            <i class="fas fa-plane"></i>
+                            <span>Fixed-wing</span>
+                        </div>
+                    </div>
+                </div>
             </div>
+            
+            <div class="form-group half-width">
+                <label for="contingencyMethod">Contingency Method:</label>
+                <div class="custom-select-container">
+                    <select id="contingencyMethod">
+                        <option value="maneuver" selected>Standard Maneuver</option>
+                        <option value="parachute">Parachute</option>
+                    </select>
+                    <div class="custom-select-trigger">
+                        <span><i class="fas fa-undo"></i> Standard Maneuver</span>
+                        <span class="custom-select-arrow">▼</span>
+                    </div>
+                    <div class="custom-select-options">
+                        <div class="custom-select-option" data-value="maneuver">
+                            <i class="fas fa-undo"></i>
+                            <span>Standard Maneuver</span>
+                        </div>
+                        <div class="custom-select-option" data-value="parachute">
+                            <i class="fas fa-parachute-box"></i>
+                            <span>Parachute</span>
+                        </div>
+                    </div>
+                </div>
+                <small class="form-text">Selects calculation method upon entering CV.</small>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group half-width">
+                <label for="tr">Reaction time (s):</label>
+                <input type="number" id="tr" min="0" step="0.1" value="1" required>
+                <small class="form-text">Default: 1 s for manual intervention.</small>
+            </div>
+            
             <div class="form-group half-width">
                  <label for="v0">Max operational speed (m/s):</label>
                  <input type="number" id="v0" min="0" step="0.1" value="10" required>
                  <small class="form-text" id="speedHelpText">Must be ≥ 3 m/s for multirotor.</small>
              </div>
-        </div>
-        <div class="form-row">
-             <div class="form-group half-width">
-                <label for="tr">Reaction time (s):</label>
-                <input type="number" id="tr" min="0" step="0.1" value="1" required>
-                <small class="form-text">Default: 1 s for manual intervention.</small>
-            </div>
-            <div class="form-group half-width">
-                <label for="contingencyMethod">Contingency Method:</label>
-                <select id="contingencyMethod">
-                    <option value="maneuver" selected>Standard Maneuver</option>
-                    <option value="parachute">Parachute</option>
-                </select>
-                <small class="form-text">Selects calculation method upon entering CV.</small>
-            </div>
         </div>
         <div class="form-row" id="parachuteTimeRow" style="display: none;">
             <div class="form-group half-width">
