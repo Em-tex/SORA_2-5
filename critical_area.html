@@ -37,7 +37,7 @@
     <form id="criticalAreaForm">
         <div class="form-row">
             <div class="form-group checkbox-group half-width">
-                <input type="checkbox" id="isRotorcraft" onchange="calculateCriticalArea()">
+                <input type="checkbox" id="isRotorcraft">
                 <label for="isRotorcraft">Is your UA a rotorcraft or a multirotor?</label>
             </div>
              <div class="form-group half-width">
@@ -46,26 +46,32 @@
         <div class="form-row">
             <div class="form-group half-width">
                 <label for="dimension">UAS characteristic dimension (m):</label>
-                <input type="number" id="dimension" min="0" step="0.1" oninput="calculateCriticalArea()" required>
+                <input type="number" id="dimension" min="0" step="0.1" required>
             </div>
             <div class="form-group half-width">
                 <label for="cruiseSpeed">Cruise speed (m/s):</label>
-                 <input type="number" id="cruiseSpeed" min="0" step="1" oninput="calculateCriticalArea()" required>
+                 <input type="number" id="cruiseSpeed" min="0" step="1" required>
             </div>
         </div>
         <div class="form-row">
             <div class="form-group half-width">
                 <label for="mtom">Aircraft maximum take-off mass MTOM (kg):</label>
-                 <input type="number" id="mtom" min="0" step="0.1" oninput="calculateCriticalArea()" required>
+                 <input type="number" id="mtom" min="0" step="0.1" required>
             </div>
             <div class="form-group half-width">
                 <label for="minAltitude">Minimum operational flight altitude AGL (m):</label>
-                 <input type="number" id="minAltitude" min="0" step="1" oninput="calculateCriticalArea()" required>
+                 <input type="number" id="minAltitude" min="0" step="1" required>
                 <small class="form-text">(Relevant for High Impact Angle Model selection)</small>
             </div>
         </div>
     </form>
 
+    <button type="button" id="resetCriticalAreaForm" class="reset-button">
+        <svg class="reset-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+        </svg>
+        <span>Nullstill skjema</span>
+    </button>
     <div id="result" class="result">
         Calculated Critical Area: <span id="criticalAreaValue">-</span> m²
     </div>

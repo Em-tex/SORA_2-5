@@ -28,8 +28,8 @@
     <div class="form-group">
         <label for="speedInput">Maximum speed of the UA</label>
         <div class="flex-row">
-            <input type="number" id="speedInput" placeholder="Enter speed" value="20" style="width: 110px; text-align: right;" oninput="calculateAdjacentArea()" />
-            <select id="speedUnit" style="width: 70px;" onchange="calculateAdjacentArea()">
+            <input type="number" id="speedInput" placeholder="Enter speed" value="20" style="width: 110px; text-align: right;" />
+            <select id="speedUnit" style="width: 70px;">
                 <option value="m/s">m/s</option>
                 <option value="km/h">km/h</option>
                 <option value="kt">kt</option>
@@ -44,7 +44,7 @@
     </div>
     <div class="form-group" style="margin-top: 50px;">
         <label for="uaSize">UA Size</label>
-        <select id="uaSize" onchange="updatePopulationDensityOptions(); calculateContainment();">
+        <select id="uaSize">
             <option value="1m">&lt; 1 m UA (&lt; 25 m/s)</option>
             <option value="3mShelterApplicable">&lt; 3 m UA (&lt; 35 m/s) - Shelter applicable in the adjacent area</option>
             <option value="3mShelterNotApplicable">&lt; 3 m UA (&lt; 35 m/s) - Shelter not applicable in the adjacent area</option>
@@ -55,7 +55,7 @@
     </div>
     <div class="form-group">
         <label for="sail">SAIL</label>
-        <select id="sail" onchange="calculateContainment()">
+        <select id="sail">
             <option value="I">I</option>
             <option value="II" selected>II</option>
             <option value="III">III</option>
@@ -66,24 +66,26 @@
     </div>
     <div class="form-group">
         <label for="populationDensity">Average population density allowed in the adjacent area</label>
-        <select id="populationDensity" onchange="calculateContainment()">
-            <option value="50">&lt; 50 ppl/km<sup>2</sup></option>
-            <option value="500">&lt; 500 ppl/km<sup>2</sup></option>
-            <option value="5k">&lt; 5 000 ppl/km<sup>2</sup></option>
-            <option value="50k">&lt; 50 000 ppl/km<sup>2</sup></option>
-            <option value="NoLimit">No upper limit</option>
-        </select>
+        <select id="populationDensity">
+            </select>
     </div>
     <div class="form-group">
         <label for="outdoorAssemblies">Outdoor assemblies allowed within 1 km of the OPS volume</label>
-        <select id="outdoorAssemblies" onchange="calculateContainment()">
+        <select id="outdoorAssemblies">
             <option value="40k">&lt; 40 k</option>
             <option value="40kTo400k">40 k to 400 k</option>
             <option value="400k">&gt; 400 k</option>
         </select>
     </div>
     <div id="result" class="result"></div>
-</div>
+
+    <button type="button" id="resetContainmentForm" class="reset-button">
+        <svg class="reset-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+        </svg>
+        <span>Nullstill skjema</span>
+    </button>
+    </div>
 
 <script src="js/containment.js"></script>
 <script src="js/navbar.js"></script>

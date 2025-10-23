@@ -1,3 +1,54 @@
+// Globale variabler for konfigurasjon og elementer
+let frontalAreaPoints = []; // Vil bli lastet fra JSON
+const caInputElements = {}; // Cache elementene
+const caInputIds = ['isRotorcraft', 'dimension', 'cruiseSpeed', 'mtom', 'minAltitude'];
+
+// --- START: Lagringsfunksjoner ---
+const CRITICAL_AREA_KEY = 'critical_area_form_data';
+
+function saveCriticalAreaForm() {
+    const data = {};
+    caInputIds.forEach(id => {
+        const el = caInputElements[id];
+        if (el) {
+            data[id] = (el.type === 'checkbox') ? el.checked : el.value;
+        }
+    });
+    localStorage.setItem(CRITICAL_AREA_KEY, JSON.stringify(data));
+}
+
+function loadCriticalAreaForm() {
+    const data = JSON.parse(localStorage.getItem(CRITICAL_AREA_KEY));
+    if (!data) {
+        // Sett standard (blank) og lagre
+        caInputIds.forEach(id => {
+            const el = caInputElements[id];
+            if (el) {
+                 if (el.type === 'checkbox') el.checked = false;
+                 else el.value = '';
+            }
+        });
+        saveCriticalAreaForm();
+        return;
+    }
+
+    // Sett lagrede verdier
+    caInputIds.forEach(id => {
+         const el = caInputElements[id];
+         if (el && data[id] !== undefined) {
+             if (el.type === 'checkbox') el.checked = data[id];
+             else el.value = data[id];
+         }
+    });
+}
+
+function resetCriticalAreaForm() {
+    localStorage.removeItem(CRITICAL_AREA_KEY);
+    location.reload();
+}
+// --- SLUTT: Lagringsfunksjoner ---
+
+
 // Constants based on EASA guidelines and Annex F
 const R_PERSON = 0.3; // Radius of a person (m)
 const H_PERSON = 1.8; // Height of a person (m)
@@ -13,19 +64,17 @@ const OBSTACLE_REDUCTION_FACTOR = 0.6; // For JARUS Case 2 (1m < w <= 8m) - Korr
 
 /**
  * Linearly interpolates the frontal area based on characteristic dimension.
- * Uses Table 7 from EASA Guidelines doc[cite: 7045].
+ * Uses data loaded from critical_area_config.json.
  * @param {number} dimension Characteristic dimension (m).
- * @returns {number} Estimated frontal area (m^2).
+ *@returns {number} Estimated frontal area (m^2).
  */
 function interpolateFrontalArea(dimension) {
-    // Data points from EASA Table 7 [cite: 7046]
-    const points = [
-        { dim: 1, area: 0.1 },
-        { dim: 3, area: 0.5 },
-        { dim: 8, area: 2.5 },
-        { dim: 20, area: 12.5 },
-        { dim: 40, area: 25.0 }
-    ];
+    // Bruker nå den globalt lastede 'frontalAreaPoints'
+    const points = frontalAreaPoints; 
+    if (!points || points.length === 0) {
+        console.error("Frontal area data is not loaded!");
+        return 0.1; // Fallback
+    }
 
     if (dimension <= points[0].dim) return points[0].area;
     if (dimension >= points[points.length - 1].dim) return points[points.length - 1].area;
@@ -109,7 +158,7 @@ function calculateImpactAngle(initialHorizontalSpeed, altitude, frontalArea, mas
 
 /**
  * Calculates Critical Area using the JARUS model.
- * Based on EASA Guidelines Chapter 4 [cite: 3442-3487] and Annex F Sections 1.8 & B.3 [cite: 627-682, 3080-3089].
+ * Based on EASA Guidelines Chapter 4 and Annex F Sections 1.8 & B.3.
  * @param {number} dimension Characteristic dimension (w) (m).
  * @param {number} cruiseSpeed Max cruise speed (V) (m/s). Used as impact speed V in formula.
  * @param {number} mass MTOM (m) (kg).
@@ -121,26 +170,26 @@ function calculateJarusModel(dimension, cruiseSpeed, mass) {
     const m = mass;
     const thetaRad = JARUS_IMPACT_ANGLE_DEG * (Math.PI / 180);
 
-    const rD = R_PERSON + w / 2; // [cite: 3457, 7104]
-    const dGlide = H_PERSON / Math.tan(thetaRad); // [cite: 3460, 7104]
+    const rD = R_PERSON + w / 2; //
+    const dGlide = H_PERSON / Math.tan(thetaRad); //
 
     let dSlideReduced = 0;
     // Slide calculation only relevant for > 1m (Case 1 and 2)
     if (w > 1) {
         // Horizontal speed component at impact
-        const vHorizontalImpact = vImpact * Math.cos(thetaRad); // [cite: 3464, 7104]
+        const vHorizontalImpact = vImpact * Math.cos(thetaRad); //
 
-        // Calculate non-lethal speed based on energy threshold [cite: 3481, 7104]
+        // Calculate non-lethal speed based on energy threshold
         const vNonLethal = (m > 0) ? Math.sqrt((2 * K_NON_LETHAL) / m) : Infinity;
 
         // Horizontal speed immediately after impact (considering restitution)
         const vHorizontalAfterImpact = COEFF_RESTITUTION_JARUS * vHorizontalImpact;
 
         if (vHorizontalAfterImpact > vNonLethal) {
-             // Calculate time to reach non-lethal speed [cite: 3480, 7104] (Corrected formula)
+             // Calculate time to reach non-lethal speed (Corrected formula)
              const tSafe = (vHorizontalAfterImpact - vNonLethal) / (COEFF_FRICTION * G);
 
-             // Calculate reduced slide distance [cite: 3462, 7104]
+             // Calculate reduced slide distance
              dSlideReduced = vHorizontalAfterImpact * tSafe - 0.5 * COEFF_FRICTION * G * tSafe * tSafe;
              dSlideReduced = Math.max(0, dSlideReduced); // Ensure non-negative distance
         } else {
@@ -149,13 +198,13 @@ function calculateJarusModel(dimension, cruiseSpeed, mass) {
     }
 
     let Ac = 0;
-    if (w >= 8) { // Case 1 [cite: 3447-3449, 650]
-        Ac = 2 * rD * (dGlide + dSlideReduced) + Math.PI * rD * rD; // [cite: 3448]
-    } else if (w > 1 && w < 8) { // Case 2 [cite: 3450-3452, 664] - Corrected upper bound to <8
-        Ac = OBSTACLE_REDUCTION_FACTOR * (2 * rD * (dGlide + dSlideReduced) + Math.PI * rD * rD); // [cite: 3451]
+    if (w >= 8) { // Case 1
+        Ac = 2 * rD * (dGlide + dSlideReduced) + Math.PI * rD * rD; //
+    } else if (w > 1 && w < 8) { // Case 2 - Corrected upper bound to <8
+        Ac = OBSTACLE_REDUCTION_FACTOR * (2 * rD * (dGlide + dSlideReduced) + Math.PI * rD * rD); //
     } else { // Case 3 (w <= 1)
-        // Using EASA doc formula [cite: 3453-3454] which differs slightly from Annex F B.3 [cite: 3086-3089]
-        Ac = 2 * rD * dGlide + 0.5 * (Math.PI * rD * rD); // [cite: 3454]
+        // Using EASA doc formula which differs slightly from Annex F B.3
+        Ac = 2 * rD * dGlide + 0.5 * (Math.PI * rD * rD); //
     }
 
     return Ac;
@@ -163,7 +212,7 @@ function calculateJarusModel(dimension, cruiseSpeed, mass) {
 
 /**
  * Calculates Critical Area using the High Impact Angle model.
- * Based on EASA Guidelines Chapter 5 [cite: 3488-3549].
+ * Based on EASA Guidelines Chapter 5.
  * @param {number} dimension Characteristic dimension (w) (m).
  * @param {number} mass MTOM (m) (kg).
  * @param {number} frontalArea Estimated frontal area (A) (m^2).
@@ -174,14 +223,14 @@ function calculateHighImpactModel(dimension, mass, frontalArea) {
     const m = mass;
     const A = frontalArea;
 
-    // Calculate terminal velocity [cite: 7042]
+    // Calculate terminal velocity
     const vTerminal = (RHO * A * CD_BALLISTIC > 0) ? Math.sqrt((2 * m * G) / (RHO * A * CD_BALLISTIC)) : 0;
 
-    // Calculate kinetic energy at terminal velocity [cite: 7041]
+    // Calculate kinetic energy at terminal velocity
     const eKTerminal = 0.5 * m * vTerminal * vTerminal; // Joules
     const eKTerminalKJ = eKTerminal / 1000; // Convert to kJ for Fs calculation
 
-    // Determine Safety Factor (Fs) based on EASA Table 6 [cite: 7037]
+    // Determine Safety Factor (Fs) based on EASA Table 6
     let Fs = 0;
     if (eKTerminalKJ < 12) {
         Fs = 2.3;
@@ -193,10 +242,10 @@ function calculateHighImpactModel(dimension, mass, frontalArea) {
     }
      Fs = Math.max(2.3, Math.min(Fs, 7.0)); // Ensure Fs is within [2.3, 7.0] bounds
 
-    // Calculate rD [cite: 3457, 7019]
+    // Calculate rD
     const rD = R_PERSON + w / 2;
 
-    // Calculate Critical Area [cite: 7018]
+    // Calculate Critical Area
     const Ac = Fs * Math.PI * rD * rD;
 
     return Ac;
@@ -234,13 +283,11 @@ function highlightTableColumn(criticalArea) {
     // Remove highlight from all headers first
     thresholds.forEach(th => {
         document.getElementById(`col-${th.id}-head`)?.classList.remove('highlight-col');
-        // document.getElementById(`col-${th.id}-val`)?.classList.remove('highlight-col'); // Don't highlight value cell
     });
 
     // Add highlight to the correct header
     if (highlightedId) {
         document.getElementById(`col-${highlightedId}-head`)?.classList.add('highlight-col');
-        // document.getElementById(`col-${highlightedId}-val`)?.classList.add('highlight-col'); // Don't highlight value cell
     }
 }
 
@@ -248,39 +295,41 @@ function highlightTableColumn(criticalArea) {
  * Main calculation function triggered by input changes.
  */
 function calculateCriticalArea() {
-    // Get inputs
-    const isRotorcraft = document.getElementById('isRotorcraft').checked;
-    const dimensionInput = document.getElementById('dimension');
-    const cruiseSpeedInput = document.getElementById('cruiseSpeed');
-    const mtomInput = document.getElementById('mtom');
-    const minAltitudeInput = document.getElementById('minAltitude');
+    // Sjekk om data er lastet
+    if (frontalAreaPoints.length === 0) {
+        console.error("Critical area config data is not loaded yet.");
+        return;
+    }
 
-    const dimension = parseFloat(dimensionInput.value);
-    const cruiseSpeed = parseFloat(cruiseSpeedInput.value);
-    const mtom = parseFloat(mtomInput.value);
-    const minAltitude = parseFloat(minAltitudeInput.value);
+    // Get inputs
+    const isRotorcraft = caInputElements.isRotorcraft.checked;
+    const dimension = parseFloat(caInputElements.dimension.value);
+    const cruiseSpeed = parseFloat(caInputElements.cruiseSpeed.value);
+    const mtom = parseFloat(caInputElements.mtom.value);
+    const minAltitude = parseFloat(caInputElements.minAltitude.value);
 
     const resultValueEl = document.getElementById('criticalAreaValue');
     const modelUsedEl = document.getElementById('modelUsed');
     const impactAngleResultEl = document.getElementById('impactAngleResult');
 
      // Clear previous results if any input is empty or invalid
-    if (dimensionInput.value === '' || cruiseSpeedInput.value === '' || mtomInput.value === '' || minAltitudeInput.value === '' ||
-        isNaN(dimension) || isNaN(cruiseSpeed) || isNaN(mtom) || isNaN(minAltitude) ||
+    if (isNaN(dimension) || isNaN(cruiseSpeed) || isNaN(mtom) || isNaN(minAltitude) ||
         dimension <= 0 || cruiseSpeed < 0 || mtom <= 0 || minAltitude < 0) {
         resultValueEl.textContent = '-';
         modelUsedEl.textContent = 'Model Used: -';
         impactAngleResultEl.style.display = 'none';
         highlightTableColumn(-1); // Clear highlight
+        
+        // Lagre selv om det er tomt/ugyldig
+        saveCriticalAreaForm();
         return;
     }
-
 
     let criticalArea = 0;
     let modelUsed = "";
     let impactAngle = null;
 
-    // Model Selection Logic [cite: 3368-3371]
+    // Model Selection Logic
     if (isRotorcraft) {
         const frontalArea = interpolateFrontalArea(dimension);
         impactAngle = calculateImpactAngle(cruiseSpeed, minAltitude, frontalArea, mtom);
@@ -288,17 +337,17 @@ function calculateCriticalArea() {
         impactAngleResultEl.innerHTML = `Calculated Impact Angle: <span>${impactAngle.toFixed(1)}</span> °`;
 
 
-        if (impactAngle > HIGH_ANGLE_THRESHOLD_DEG) { // [cite: 3467]
+        if (impactAngle > HIGH_ANGLE_THRESHOLD_DEG) { //
             modelUsed = "High Impact Angle Model";
-            criticalArea = calculateHighImpactModel(dimension, mtom, frontalArea); // [cite: 3488-3549]
+            criticalArea = calculateHighImpactModel(dimension, mtom, frontalArea); //
         } else {
             modelUsed = "JARUS Model (Rotorcraft/Multirotor)";
-            criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom); // [cite: 3442-3487]
+            criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom); //
         }
     } else { // Fixed Wing or similar
         modelUsed = "JARUS Model (Fixed Wing)";
         impactAngleResultEl.style.display = 'none';
-        criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom); // [cite: 3442-3487]
+        criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom); //
     }
 
     // Display Results
@@ -307,15 +356,48 @@ function calculateCriticalArea() {
 
     // Highlight Table Column Header
     highlightTableColumn(criticalArea);
+
+    // Lagre de gyldige dataene
+    saveCriticalAreaForm();
 }
 
 
-// Initial setup on page load
-document.addEventListener('DOMContentLoaded', () => {
-    // Set default values to blank
-    document.getElementById('dimension').value = '';
-    document.getElementById('cruiseSpeed').value = '';
-    document.getElementById('mtom').value = '';
-    document.getElementById('minAltitude').value = '';
-    calculateCriticalArea(); // Run once to clear results initially
-});
+// --- START: Event Listeners ---
+async function initializeApp() {
+    try {
+        // 1. Last inn eksterne konfigurasjonsdata
+        const response = await fetch('data/critical_area_config.json');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch critical_area_config.json: ${response.statusText}`);
+        }
+        const configData = await response.json();
+        frontalAreaPoints = configData.frontalAreaPoints;
+
+        // 2. Cache alle input-elementer
+        caInputIds.forEach(id => {
+            caInputElements[id] = document.getElementById(id);
+        });
+
+        // 3. Last inn lagrede brukerdata
+        loadCriticalAreaForm();
+        
+        // 4. Kjør kalkulering basert på lastede data
+        calculateCriticalArea(); 
+
+        // 5. Legg til lyttere for alle inputs
+        caInputIds.forEach(id => {
+            caInputElements[id].addEventListener('input', calculateCriticalArea);
+            caInputElements[id].addEventListener('change', calculateCriticalArea); // For checkbox
+        });
+
+        // 6. Legg til lytter for nullstill-knappen
+        document.getElementById('resetCriticalAreaForm').addEventListener('click', resetCriticalAreaForm);
+
+    } catch (error) {
+        console.error("Failed to initialize critical area calculator:", error);
+        document.getElementById('modelUsed').innerHTML = `<span style="color: red;">Feil: Kunne ikke laste kalkulatordata.</span>`;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initializeApp);
+// --- SLUTT: Event Listeners ---

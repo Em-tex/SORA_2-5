@@ -1,26 +1,41 @@
+// Definerer nøkler for localStorage
+const GRC_KEY = 'sail_grc_selection';
+const MITIGATION_KEY = 'sail_mitigation_selections';
+const ARC_KEY = 'sail_arc_selection';
+
 function handleSelection(tableId) {
     const table = document.getElementById(tableId);
     table.querySelectorAll('td[data-clickable]').forEach(cell => {
         cell.addEventListener('click', function() {
-            // If it's the GRC table, only allow one cell to be selected
             if (tableId === 'grcTable') {
-                table.querySelectorAll('td[data-clickable]').forEach(cell => {
-                    cell.classList.remove('selected');
-                });
+                table.querySelectorAll('td[data-clickable]').forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
-            } else { // For mitigation table, allow one cell per row
+                // Lagre GRC-valg
+                localStorage.setItem(GRC_KEY, JSON.stringify({
+                    rowId: this.parentElement.id,
+                    cellIndex: this.cellIndex
+                }));
+            } else { // mitigationTable
                 const row = this.parentElement;
-                row.querySelectorAll('td[data-clickable]').forEach(cell => {
-                    cell.classList.remove('selected');
-                });
+                row.querySelectorAll('td[data-clickable]').forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
-
-                // Disable conflicting selections
                 handleMitigationSelection(this);
+                saveMitigationSelections(); // Lagre alle mitigeringsvalg
             }
-            calculateFinalGRC(); // Recalculate GRC whenever a selection is made
+            calculateFinalGRC();
         });
     });
+}
+
+function saveMitigationSelections() {
+    const selections = {};
+    document.querySelectorAll('#mitigationTable tbody tr').forEach(row => {
+        const selectedCell = row.querySelector('td.selected');
+        if (selectedCell) {
+            selections[row.id] = selectedCell.cellIndex;
+        }
+    });
+    localStorage.setItem(MITIGATION_KEY, JSON.stringify(selections));
 }
 
 function handleMitigationSelection(selectedCell) {
@@ -28,11 +43,8 @@ function handleMitigationSelection(selectedCell) {
     const rowIndex = selectedCell.parentElement.rowIndex;
     const cellIndex = selectedCell.cellIndex;
 
-    console.log(`Selected cell at row: ${rowIndex}, column: ${cellIndex}`);
-
-    // Reset only the M1(B) conflicting cells to be selectable again if a different M1(A) cell is selected
-    if (rowIndex === 2 && cellIndex !== 3) {
-        console.log('Re-enabling M1(B) cells');
+    // Reset M1(B) cells
+    if (rowIndex === 2 && cellIndex !== 3) { // M1(A) is NOT -2
         table.querySelectorAll('td.na').forEach(cell => {
             if (cell.parentElement.rowIndex === 3 && (cell.cellIndex === 3 || cell.cellIndex === 4)) {
                 cell.classList.remove('na');
@@ -41,7 +53,6 @@ function handleMitigationSelection(selectedCell) {
                 }
                 cell.setAttribute('data-clickable', 'true');
                 cell.style.backgroundColor = '#ffffff';
-                console.log(`Re-enabled cell at row: ${cell.parentElement.rowIndex}, column: ${cell.cellIndex}, content: ${cell.textContent}`);
             }
         });
     }
@@ -54,26 +65,30 @@ function handleMitigationSelection(selectedCell) {
 }
 
 function disableMitigationCell(cell) {
+    if (cell.classList.contains('selected')) {
+        // If the cell to be disabled is selected, move selection to 'None'
+        const row = cell.parentElement;
+        row.cells[2].classList.add('selected'); // 'None' is at cellIndex 2
+    }
     cell.classList.add('na');
     cell.setAttribute('data-original-text', cell.textContent);
     cell.textContent = 'N/A';
     cell.removeAttribute('data-clickable');
-    cell.classList.remove('selected'); // Remove selected class if the cell was selected
+    cell.classList.remove('selected');
     cell.style.backgroundColor = '#e0e0e0';
-    console.log(`Disabled cell at row: ${cell.parentElement.rowIndex}, column: ${cell.cellIndex}, content: ${cell.textContent}`);
 }
 
 function handleARCSelection() {
     document.querySelectorAll('.arc-button').forEach(button => {
         button.addEventListener('click', function() {
-            // Remove selected class from all buttons
             document.querySelectorAll('.arc-button').forEach(btn => {
                 btn.classList.remove('selected-arc-a', 'selected-arc-b', 'selected-arc-c', 'selected-arc-d');
             });
-
-            // Add selected class based on data-arc attribute
             const arcClass = this.getAttribute('data-arc');
             this.classList.add(`selected-${arcClass}`);
+            // Lagre ARC-valg
+            localStorage.setItem(ARC_KEY, arcClass);
+            calculateFinalGRC(); // Sørg for at kalkulering kjører
         });
     });
 }
@@ -88,7 +103,6 @@ function calculateFinalGRC() {
 
     if (selectedGRC) {
         finalGRC = parseInt(selectedGRC.textContent);
-        console.log(`Selected GRC: ${finalGRC}`);
     }
 
     selectedMitigations.forEach(selectedMitigation => {
@@ -102,37 +116,30 @@ function calculateFinalGRC() {
         }
     });
 
-    console.log(`M1 Mitigation Value: ${m1MitigationValue}`);
-    console.log(`M2 Mitigation Value: ${m2MitigationValue}`);
-
     const gRCColIndex = selectedGRC ? selectedGRC.cellIndex : -1;
     const m1Used = m1MitigationValue !== 0;
 
     if (m1Used && (gRCColIndex >= 5 && gRCColIndex <= 6)) {
         finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 3);
     } else if (finalGRC == 5 && (m1Used && gRCColIndex === 4)) {
-        finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 3); // GRC cannot be lower than 3 before M2
+        finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 3);
     } else if (finalGRC == 6 && (m1Used && gRCColIndex === 4)) {
-        finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 3); // GRC cannot be lower than 3 before M2
+        finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 3);
     } else if (finalGRC == 4 && (m1Used && gRCColIndex === 3)) {
-        finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 2); // GRC cannot be lower than 2 before M2
+        finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 2);
     } else if (finalGRC == 5 && (m1Used && gRCColIndex === 3)) {
-        finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 2); // GRC cannot be lower than 2 before M2
+        finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 2);
     } else if (finalGRC == 2 && (m1Used && gRCColIndex === 4)) {
-        finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 2); // GRC cannot be lower than 2 before M2
+        finalGRC = Math.max(finalGRC - Math.abs(m1MitigationValue), 2);
     } else {
-        finalGRC -= Math.abs(m1MitigationValue); // Apply M1 mitigation values to reduce GRC
+        finalGRC -= Math.abs(m1MitigationValue);
     }
 
-    finalGRC -= Math.abs(m2MitigationValue); // Apply M2 mitigation values to reduce GRC further
-
-    finalGRC = Math.max(finalGRC, 1); // Final GRC cannot be lower than 1
+    finalGRC -= Math.abs(m2MitigationValue);
+    finalGRC = Math.max(finalGRC, 1);
 
     document.getElementById('finalGRC').textContent = finalGRC;
-    console.log(`Final GRC: ${finalGRC}`);
-
-    // Highlight the SAIL in the table
-    highlightSAIL(finalGRC, selectedARC ? selectedARC.getAttribute('data-arc') : null);
+    highlightSAIL(finalGRC, selectedARC ? selectedARC.getAttribute('data-arc') : 'arc-a');
 }
 
 function highlightSAIL(finalGRC, selectedARC) {
@@ -141,19 +148,18 @@ function highlightSAIL(finalGRC, selectedARC) {
         cell.classList.remove('highlight');
     });
 
+    let grcRowText = finalGRC.toString();
     if (finalGRC <= 2) {
-        finalGRC = '≤2';
+        grcRowText = '≤2';
     } else if (finalGRC >= 8) {
         document.getElementById('sail').textContent = 'Certified category';
         const row = Array.from(sailTable.rows).find(row => row.cells[0].textContent.trim() == '>7');
-        if (row) {
-            row.cells[1].classList.add('highlight');
-        }
+        if (row) row.cells[1].classList.add('highlight');
         return;
     }
 
-    if (finalGRC && selectedARC) {
-        const row = Array.from(sailTable.rows).find(row => row.cells[0].textContent.trim() == finalGRC);
+    if (grcRowText && selectedARC) {
+        const row = Array.from(sailTable.rows).find(r => r.cells[0].textContent.trim() == grcRowText);
         const arcIndex = { 'arc-a': 1, 'arc-b': 2, 'arc-c': 3, 'arc-d': 4 }[selectedARC];
         if (row && arcIndex !== undefined) {
             row.cells[arcIndex].classList.add('highlight');
@@ -162,15 +168,69 @@ function highlightSAIL(finalGRC, selectedARC) {
     }
 }
 
-// Initialize selection handling for each table and ARC buttons
+function loadSailSelections() {
+    // 1. Last GRC
+    const grcData = JSON.parse(localStorage.getItem(GRC_KEY));
+    if (grcData) {
+        document.querySelectorAll('#grcTable td[data-clickable]').forEach(c => c.classList.remove('selected'));
+        const row = document.getElementById(grcData.rowId);
+        if (row && row.cells[grcData.cellIndex]) {
+            row.cells[grcData.cellIndex].classList.add('selected');
+        }
+    }
+
+    // 2. Last Mitigations
+    const mitData = JSON.parse(localStorage.getItem(MITIGATION_KEY));
+    if (mitData) {
+        document.querySelectorAll('#mitigationTable tbody tr').forEach(row => {
+            row.querySelectorAll('td[data-clickable]').forEach(c => c.classList.remove('selected'));
+            const selIndex = mitData[row.id];
+            if (selIndex !== undefined && row.cells[selIndex]) {
+                const cellToSelect = row.cells[selIndex];
+                cellToSelect.classList.add('selected');
+                // Kjør logikk for å deaktivere M1(B) om nødvendig
+                if (row.id === 'mit-row-0' && selIndex === 3) { // M1(A) er -2
+                    handleMitigationSelection(cellToSelect);
+                }
+            }
+        });
+    }
+
+    // 3. Last ARC
+    const arcData = localStorage.getItem(ARC_KEY);
+    if (arcData) {
+        document.querySelectorAll('.arc-button').forEach(btn => {
+            btn.classList.remove('selected-arc-a', 'selected-arc-b', 'selected-arc-c', 'selected-arc-d');
+            if (btn.getAttribute('data-arc') === arcData) {
+                btn.classList.add(`selected-${arcData}`);
+            }
+        });
+    }
+}
+
+function resetSailForm() {
+    // 1. Fjern fra localStorage
+    localStorage.removeItem(GRC_KEY);
+    localStorage.removeItem(MITIGATION_KEY);
+    localStorage.removeItem(ARC_KEY);
+
+    // 2. Sett standardvalg manuelt (eller location.reload())
+    // location.reload() er enklest
+    location.reload();
+}
+
+// --- Initialisering ---
+
+// Kjør selection handlers
 handleSelection('grcTable');
 handleSelection('mitigationTable');
 handleARCSelection();
 
-// Calculate final GRC and SAIL whenever a selection is made
-document.querySelectorAll('td[data-clickable], .arc-button').forEach(item => {
-    item.addEventListener('click', calculateFinalGRC);
+// Last inn lagrede valg når siden lastes
+document.addEventListener('DOMContentLoaded', () => {
+    loadSailSelections();
+    calculateFinalGRC(); // Kalkuler GRC/SAIL basert på lagrede data
 });
 
-// Calculate initial GRC and SAIL
-calculateFinalGRC();
+// Legg til lytter for nullstill-knappen
+document.getElementById('resetSailForm').addEventListener('click', resetSailForm);

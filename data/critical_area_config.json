@@ -1,0 +1,9 @@
+{
+    "frontalAreaPoints": [
+        { "dim": 1, "area": 0.1 },
+        { "dim": 3, "area": 0.5 },
+        { "dim": 8, "area": 2.5 },
+        { "dim": 20, "area": 12.5 },
+        { "dim": 40, "area": 25.0 }
+    ]
+}

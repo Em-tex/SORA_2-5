@@ -153,3 +153,61 @@ h2 {
         padding: 8px 16px;
     }
 }
+
+/* css/style.css (LEGG TIL PÅ SLUTTEN) */
+
+/* Ny knapp for å nullstille skjema */
+.reset-button {
+    display: inline-flex; /* For å justere ikon og tekst */
+    align-items: center;
+    justify-content: center;
+    margin: 20px auto 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #6c757d; /* Nøytral grå farge */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+.reset-button:hover {
+    background-color: #5a6268; /* Mørkere grå ved hover */
+}
+.reset-icon {
+    width: 1.1em;
+    height: 1.1em;
+    margin-right: 8px;
+    fill: white; /* Sørger for at SVG-ikonet er hvitt */
+}
+
+/* Felles mobil-justeringer (OPPDATERT) */
+@media (max-width: 600px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+    }
+    .nav-logo-link {
+        margin-bottom: 10px; /* Plass under logo på mobil */
+    }
+    .nav-logo {
+        height: 40px; /* Litt mindre på mobil */
+    }
+    .nav-button {
+        display: block;
+        width: calc(100% - 30px); /* Full bredde minus padding */
+        text-align: left;
+    }
+    .container {
+        padding: 10px;
+    }
+    .continue-button, .button-container a,
+    .reset-button { /* Lagt til .reset-button her */
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+}

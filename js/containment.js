@@ -1,142 +1,56 @@
-const containmentData = {
-    "1m": {
-        "NoLimit": {
-            "400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
-            "40kTo400k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"},
-            "40k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
-        },
-        "50k": {
-            "400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
-            "40kTo400k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"},
-            "40k": {"I": "Low", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+// Global variabel for å holde dataene som lastes inn
+let containmentData = {};
+
+// --- START: Lagringsfunksjoner ---
+const CONTAINMENT_KEY = 'containment_form_data';
+const inputIds = ['speedInput', 'speedUnit', 'uaSize', 'sail', 'populationDensity', 'outdoorAssemblies'];
+
+function saveContainmentForm() {
+    const data = {};
+    inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            data[id] = el.value;
         }
-    },
-    "3mShelterApplicable": {
-        "NoLimit": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
-            "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
-            "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
-        },
-        "50k": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
-            "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
-            "40k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
-        },
-        "5k": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
-            "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
-            "40k": {"I": "Low", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
-        }
-    },
-    "3mShelterNotApplicable": {
-        "NoLimit": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
-            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"}
-        },
-        "50k": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
-            "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
-            "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
-        },
-        "5k": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"},
-            "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
-            "40k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
-        },
-        "500": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
-            "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
-            "40k": {"I": "Low", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
-        }
-    },
-    "8m": {
-        "NoLimit": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
-            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"}
-        },
-        "50k": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"},
-            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"}
-        },
-        "5k": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"},
-            "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
-        },
-        "500": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
-            "40k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
-        },
-        "50": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
-            "40k": {"I": "Low", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
-        }
-    },
-    "20m": {
-        "NoLimit": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
-            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"}
-        },
-        "50k": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
-            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"}
-        },
-        "5k": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
-            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"}
-        },
-        "500": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
-            "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
-        },
-        "50": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
-            "40k": {"I": "Medium", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
-        }
-    },
-    "40m": {
-        "NoLimit": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
-            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"}
-        },
-        "50k": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
-            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"}
-        },
-        "5k": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
-            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"}
-        },
-        "500": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
-            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"}
-        },
-        "50": {
-            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
-            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
-            "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
-        }
+    });
+    localStorage.setItem(CONTAINMENT_KEY, JSON.stringify(data));
+}
+
+function loadContainmentForm() {
+    const data = JSON.parse(localStorage.getItem(CONTAINMENT_KEY));
+    if (!data) {
+        // Hvis ingen data, sett standard og lagre
+        document.getElementById('speedInput').value = "20";
+        document.getElementById('sail').value = "II";
+        saveContainmentForm();
+        return; // Gå ut, standardverdier er allerede satt i HTML
     }
-};
+
+    // Sett lagrede verdier
+    if (data.speedInput) document.getElementById('speedInput').value = data.speedInput;
+    if (data.speedUnit) document.getElementById('speedUnit').value = data.speedUnit;
+    if (data.uaSize) document.getElementById('uaSize').value = data.uaSize;
+    if (data.sail) document.getElementById('sail').value = data.sail;
+    
+    // VIKTIG: Oppdater populasjonsvalg FØR vi setter verdien
+    updatePopulationDensityOptions();
+    
+    if (data.populationDensity) document.getElementById('populationDensity').value = data.populationDensity;
+    if (data.outdoorAssemblies) document.getElementById('outdoorAssemblies').value = data.outdoorAssemblies;
+}
+
+function resetContainmentForm() {
+    localStorage.removeItem(CONTAINMENT_KEY);
+    location.reload();
+}
+// --- SLUTT: Lagringsfunksjoner ---
+
 
 function updatePopulationDensityOptions() {
     const uaSize = document.getElementById('uaSize').value;
     const populationDensity = document.getElementById('populationDensity');
-    populationDensity.innerHTML = '';
+    const currentValue = populationDensity.value; // Ta vare på nåværende valgte verdi
+    populationDensity.innerHTML = ''; // Tøm listen
 
     if (uaSize === '1m') {
         populationDensity.innerHTML += '<option value="50k">&lt; 50 000 ppl/km<sup>2</sup></option>';
@@ -157,42 +71,29 @@ function updatePopulationDensityOptions() {
         populationDensity.innerHTML += '<option value="50k">&lt; 50 000 ppl/km<sup>2</sup></option>';
         populationDensity.innerHTML += '<option value="NoLimit">No upper limit</option>';
     }
+    
+    // Prøv å sette tilbake forrige verdi hvis den fortsatt finnes
+    if (Array.from(populationDensity.options).some(opt => opt.value === currentValue)) {
+        populationDensity.value = currentValue;
+    }
 }
 
 function getContainment(uaSize, sail, populationDensity, outdoorAssemblies) {
-    console.clear();
-    console.log(`UA Size: ${uaSize}`);
-    console.log(`SAIL: ${sail}`);
-    console.log(`Population Density: ${populationDensity}`);
-    console.log(`Outdoor Assemblies: ${outdoorAssemblies}`);
-
     let selectedColumn = populationDensity;
     if (outdoorAssemblies !== '40k' && (outdoorAssemblies === '400k' || populationDensity === 'NoLimit')) {
         selectedColumn = outdoorAssemblies === '400k' ? '400k' : '40kTo400k';
     }
 
-    console.log(`Selected Column: ${selectedColumn}`);
-
-    const values = containmentData[uaSize][selectedColumn] && containmentData[uaSize][selectedColumn][outdoorAssemblies]
+    const values = containmentData[uaSize] && containmentData[uaSize][selectedColumn] && containmentData[uaSize][selectedColumn][outdoorAssemblies]
         ? containmentData[uaSize][selectedColumn][outdoorAssemblies]
-        : containmentData[uaSize][populationDensity] && containmentData[uaSize][populationDensity][outdoorAssemblies];
-
-    console.log(`Values from table: ${JSON.stringify(values)}`);
+        : containmentData[uaSize] && containmentData[uaSize][populationDensity] && containmentData[uaSize][populationDensity][outdoorAssemblies];
 
     if (!values) {
         console.error('No values found for the given selection');
         return 'Error';
     }
 
-    let containment = values[sail];
-
-    if (containment === "Out of scope") {
-        console.log(`Containment Level: ${containment}`);
-        return containment;
-    }
-
-    console.log(`Containment Level: ${containment}`);
-    return containment;
+    return values[sail] || 'Error';
 }
 
 function calculateAdjacentArea() {
@@ -225,6 +126,12 @@ function calculateAdjacentArea() {
 }
 
 function calculateContainment() {
+    // Sjekk om data er lastet. Hvis ikke, ikke gjør noe.
+    if (Object.keys(containmentData).length === 0) {
+        console.error("Containment data is not loaded yet.");
+        return;
+    }
+
     const uaSize = document.getElementById('uaSize').value;
     const sail = document.getElementById('sail').value;
     const populationDensity = document.getElementById('populationDensity').value;
@@ -246,15 +153,48 @@ function calculateContainment() {
     }
 }
 
-document.getElementById('uaSize').addEventListener('change', updatePopulationDensityOptions);
-document.getElementById('uaSize').addEventListener('change', calculateContainment);
-document.getElementById('sail').addEventListener('change', calculateContainment);
-document.getElementById('populationDensity').addEventListener('change', calculateContainment);
-document.getElementById('outdoorAssemblies').addEventListener('change', calculateContainment);
-document.getElementById('speedInput').addEventListener('input', calculateAdjacentArea);
-document.getElementById('speedUnit').addEventListener('change', calculateAdjacentArea);
+// Funksjon for å kjøre kalkuleringer OG lagre
+function runCalculationsAndSave() {
+    calculateContainment();
+    calculateAdjacentArea();
+    saveContainmentForm();
+}
 
-// Initialize population density options based on default UA Size selection
-updatePopulationDensityOptions();
-calculateContainment();
-calculateAdjacentArea(); // Calculate adjacent area on page load
+// Initialiserer hele applikasjonen
+async function initializeApp() {
+    try {
+        // 1. Last inn eksterne data
+        const response = await fetch('data/containment_data.json');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch containment_data.json: ${response.statusText}`);
+        }
+        containmentData = await response.json();
+
+        // 2. Last inn lagrede brukerdata fra localStorage
+        loadContainmentForm();
+
+        // 3. Sett opp lyttere
+        document.getElementById('uaSize').addEventListener('change', () => {
+            updatePopulationDensityOptions();
+            runCalculationsAndSave();
+        });
+        document.getElementById('sail').addEventListener('change', runCalculationsAndSave);
+        document.getElementById('populationDensity').addEventListener('change', runCalculationsAndSave);
+        document.getElementById('outdoorAssemblies').addEventListener('change', runCalculationsAndSave);
+        document.getElementById('speedInput').addEventListener('input', runCalculationsAndSave);
+        document.getElementById('speedUnit').addEventListener('change', runCalculationsAndSave);
+        document.getElementById('resetContainmentForm').addEventListener('click', resetContainmentForm);
+
+        // 4. Kjør kalkuleringer for første gang
+        // updatePopulationDensityOptions() kalles allerede i loadContainmentForm
+        calculateContainment();
+        calculateAdjacentArea();
+
+    } catch (error) {
+        console.error("Failed to initialize containment calculator:", error);
+        document.getElementById('result').innerHTML = `<div style="color: red;">Feil: Kunne ikke laste kalkulatordata.</div>`;
+    }
+}
+
+// Vent til DOM er lastet, og kjør initialiseringen
+document.addEventListener('DOMContentLoaded', initializeApp);

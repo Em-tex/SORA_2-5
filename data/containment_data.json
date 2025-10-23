@@ -1,0 +1,134 @@
+{
+    "1m": {
+        "NoLimit": {
+            "400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+            "40kTo400k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"},
+            "40k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+        },
+        "50k": {
+            "400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+            "40kTo400k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"},
+            "40k": {"I": "Low", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+        }
+    },
+    "3mShelterApplicable": {
+        "NoLimit": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+            "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+            "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
+        },
+        "50k": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+            "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+            "40k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+        },
+        "5k": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+            "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+            "40k": {"I": "Low", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+        }
+    },
+    "3mShelterNotApplicable": {
+        "NoLimit": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"}
+        },
+        "50k": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+            "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+            "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
+        },
+        "5k": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"},
+            "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+            "40k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+        },
+        "500": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Medium", "VI": "Low"},
+            "40kTo400k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"},
+            "40k": {"I": "Low", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+        }
+    },
+    "8m": {
+        "NoLimit": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"}
+        },
+        "50k": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"},
+            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"}
+        },
+        "5k": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"},
+            "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
+        },
+        "500": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+            "40k": {"I": "Medium", "II": "Medium", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+        },
+        "50": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+            "40k": {"I": "Low", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+        }
+    },
+    "20m": {
+        "NoLimit": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"}
+        },
+        "50k": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"}
+        },
+        "5k": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"}
+        },
+        "500": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+            "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
+        },
+        "50": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"},
+            "40k": {"I": "Medium", "II": "Low", "III": "Low", "IV": "Low", "V": "Low", "VI": "Low"}
+        }
+    },
+    "40m": {
+        "NoLimit": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
+            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"}
+        },
+        "50k": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"}
+        },
+        "5k": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Medium", "VI": "Low"}
+        },
+        "500": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+            "40k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Medium", "V": "Low", "VI": "Low"}
+        },
+        "50": {
+            "400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Out of scope"},
+            "40kTo400k": {"I": "Out of scope", "II": "Out of scope", "III": "Out of scope", "IV": "Out of scope", "V": "Out of scope", "VI": "Medium"},
+            "40k": {"I": "High", "II": "High", "III": "Medium", "IV": "Low", "V": "Low", "VI": "Low"}
+        }
+    }
+}
