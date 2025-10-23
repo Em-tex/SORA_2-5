@@ -210,3 +210,8 @@ td.white-background {
         min-width: 100px;
     }
 }
+
+/* ENDRET: Sentrerer resultatboksene på SAIL-siden */
+.container .result {
+    text-align: center;
+}

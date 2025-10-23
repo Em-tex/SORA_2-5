@@ -18,11 +18,7 @@
 <div id="navbar-placeholder"></div>
 
 <div class="container containment-container">
-    <div class="logo-container">
-        <a href="https://luftfartstilsynet.no/en/drones/" target="_blank">
-            <img src="assets/CAAnor.png" alt="Logo" class="logo">
-        </a>
-    </div>
+    
     <h1 class="header">Containment Calculation</h1>
 
     <div class="form-group">
@@ -42,40 +38,45 @@
             The lateral outer limit of the adjacent area is calculated from the operational volume as the distance flown in 3 minutes at maximum speed of the UA. It is never less than 5 km or more than 35 km. See SORA 2.5 Main Body for details.
         </div>
     </div>
-    <div class="form-group" style="margin-top: 50px;">
-        <label for="uaSize">UA Size</label>
-        <select id="uaSize">
-            <option value="1m">&lt; 1 m UA (&lt; 25 m/s)</option>
-            <option value="3mShelterApplicable">&lt; 3 m UA (&lt; 35 m/s) - Shelter applicable in the adjacent area</option>
-            <option value="3mShelterNotApplicable">&lt; 3 m UA (&lt; 35 m/s) - Shelter not applicable in the adjacent area</option>
-            <option value="8m">&lt; 8 m UA (&lt; 75 m/s)</option>
-            <option value="20m">&lt; 20 m UA (&lt; 125 m/s)</option>
-            <option value="40m">&lt; 40 m UA (&lt; 200 m/s)</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="sail">SAIL</label>
-        <select id="sail">
-            <option value="I">I</option>
-            <option value="II" selected>II</option>
-            <option value="III">III</option>
-            <option value="IV">IV</option>
-            <option value="V">V</option>
-            <option value="VI">VI</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="populationDensity">Average population density allowed in the adjacent area</label>
-        <select id="populationDensity">
+
+    <div class="form-row">
+        <div class="form-group half-width">
+            <label for="uaSize">UA Size</label>
+            <select id="uaSize">
+                <option value="1m">&lt; 1 m UA (&lt; 25 m/s)</option>
+                <option value="3mShelterApplicable">&lt; 3 m UA (&lt; 35 m/s) - Shelter applicable in the adjacent area</option>
+                <option value="3mShelterNotApplicable">&lt; 3 m UA (&lt; 35 m/s) - Shelter not applicable in the adjacent area</option>
+                <option value="8m">&lt; 8 m UA (&lt; 75 m/s)</option>
+                <option value="20m">&lt; 20 m UA (&lt; 125 m/s)</option>
+                <option value="40m">&lt; 40 m UA (&lt; 200 m/s)</option>
             </select>
+        </div>
+        <div class="form-group half-width">
+            <label for="sail">SAIL</label>
+            <select id="sail">
+                <option value="I">I</option>
+                <option value="II" selected>II</option>
+                <option value="III">III</option>
+                <option value="IV">IV</option>
+                <option value="V">V</option>
+                <option value="VI">VI</option>
+            </select>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="outdoorAssemblies">Outdoor assemblies allowed within 1 km of the OPS volume</label>
-        <select id="outdoorAssemblies">
-            <option value="40k">&lt; 40 k</option>
-            <option value="40kTo400k">40 k to 400 k</option>
-            <option value="400k">&gt; 400 k</option>
-        </select>
+    <div class="form-row">
+        <div class="form-group half-width">
+            <label for="populationDensity">Average population density allowed in the adjacent area</label>
+            <select id="populationDensity">
+            </select>
+        </div>
+        <div class="form-group half-width">
+            <label for="outdoorAssemblies">Outdoor assemblies allowed within 1 km of the OPS volume</label>
+            <select id="outdoorAssemblies">
+                <option value="40k">&lt; 40 k</option>
+                <option value="40kTo400k">40 k to 400 k</option>
+                <option value="400k">&gt; 400 k</option>
+            </select>
+        </div>
     </div>
     <div id="result" class="result"></div>
 

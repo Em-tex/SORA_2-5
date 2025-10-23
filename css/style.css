@@ -25,7 +25,7 @@
 }
 
 .nav-logo {
-    height: 50px; /* ØKT: Fra 30px til 50px */
+    height: 60px; /* ENDRET: Økt til 60px */
     width: auto;
 }
 
@@ -45,7 +45,7 @@
     background-color: #F06C00; /* Oransje (Hover) */
 }
 .nav-button.active {
-    background-color: #6A8E7F; /* Dempet Grønn (Aktiv) */
+    background-color: #012b4e; /* ENDRET: Oransje (Aktiv) */
     cursor: default;
 }
 
@@ -147,8 +147,8 @@ h2 {
     margin: 10px;
     padding: 10px 20px;
     font-size: 16px;
-    /* ENDRET: Farge er nå oransje */
-    background-color: #F06C00;
+    /* ENDRET: Farge er nå Dempet Grønn */
+    background-color: #6A8E7F;
     color: white;
     border: none;
     border-radius: 5px;
@@ -159,8 +159,8 @@ h2 {
     transition: background-color 0.3s;
 }
 .reset-button:hover {
-     /* ENDRET: Hover er nå mørkeblå */
-    background-color: #03477F;
+     /* ENDRET: Hover er nå Oransje */
+    background-color: #F06C00;
 }
 .reset-icon {
     width: 1.1em;

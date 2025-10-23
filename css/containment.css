@@ -21,6 +21,12 @@
     border-radius: 4px;
 }
 
+/* NYTT: Legger til ekstra mellomrom etter adjacent-boksen */
+.adjacent-area-box {
+    margin-bottom: 30px;
+}
+
+
 label {
     display: block;
     margin-bottom: 5px;
@@ -80,3 +86,39 @@ select, input[type="number"] {
 .button-container a {
     margin-top: 20px; /* Mindre margin enn på index */
 }
+
+
+/* --- START: Tokolonne-oppsett (NY) --- */
+/* Gjenbruker stiler fra critical_area.css for konsistens */
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 20px;
+}
+
+.form-group.half-width {
+    flex: 1 1 calc(50% - 10px);
+    min-width: 200px;
+}
+
+/* Fjerner bunnmarging fra grupper som er INNE I en rad */
+.form-row .form-group {
+    margin-bottom: 0;
+}
+
+/* Responsiv justering for smale skjermer */
+@media (max-width: 650px) {
+    .form-row {
+        flex-direction: column; /* Stabler kolonner */
+        gap: 0; /* Fjerner gap, styres av form-group */
+        margin-bottom: 0;
+    }
+    .form-group.half-width {
+        flex-basis: auto; /* Tilbakestiller basis */
+        min-width: unset; /* Tilbakestiller min-width */
+        margin-bottom: 15px; /* Legger til bunnmarging igjen */
+    }
+}
+/* --- SLUTT: Tokolonne-oppsett (NY) --- */
