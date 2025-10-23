@@ -1,0 +1,106 @@
+/* Stiler spesifikt for contingency_volume.html */
+
+.critical-area-container {
+    max-width: 800px;
+    text-align: left;
+}
+
+.intro-text {
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+.intro-text:last-of-type {
+    margin-bottom: 30px;
+}
+
+#contingencyForm {
+    margin-bottom: 30px;
+}
+
+/* Sørger for lik høyde på input og select (arves fra critical_area.css) */
+.form-group select,
+.form-group input[type="number"] {
+    min-height: 40px;
+    height: 40px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1em;
+    width: 100%;
+    background-color: white;
+}
+
+.form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 30px;
+}
+
+/* --- CSS Fix for Angle Inputs --- */
+/* Tvinger containeren til å stable elementene vertikalt */
+.form-group.angle-input-group {
+    display: flex; /* Bruker flexbox */
+    flex-direction: column; /* Stabler vertikalt */
+    align-items: flex-start; /* Justerer til venstre */
+    padding-top: 0;
+}
+
+/* Sørger for at elementene inni tar full bredde og har bunnmargin */
+.angle-input-group > label,
+.angle-input-group > input,
+.angle-input-group > small {
+    display: block; /* Nødvendig for at width: 100% skal fungere korrekt */
+    width: 100%;
+    margin-bottom: 5px;
+    box-sizing: border-box;
+}
+
+/* Fjerner unødvendig margin øverst/nederst */
+.angle-input-group > input {
+    margin-top: 0;
+}
+.angle-input-group > small {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+/* --- End CSS Fix --- */
+
+
+/* Resultat-styling */
+#resultHorizontal, #resultVertical {
+    margin-bottom: 10px;
+    text-align: center;
+}
+#calculationDetailsHorizontal, #calculationDetailsVertical {
+    font-size: 0.9em;
+    text-align: left;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+#calculationDetailsHorizontal ul, #calculationDetailsVertical ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 5px;
+}
+#calculationDetailsHorizontal p, #calculationDetailsVertical p {
+    margin-bottom: 5px;
+}
+
+/* Responsiv */
+@media (max-width: 650px) {
+    .form-group select,
+    .form-group input[type="number"] {
+        padding: 8px;
+        min-height: 36px;
+        height: 36px;
+    }
+    /* Sørger for at vinkel-inputene også stables riktig på mobil,
+       selv om form-row allerede gjør det */
+    .form-group.angle-input-group {
+        margin-bottom: 15px; /* Legger til margin under på mobil */
+    }
+}

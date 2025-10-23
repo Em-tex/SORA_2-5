@@ -11,21 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/critical_area.css">
-    <style>
-        /* Sørger for at select og input har lik høyde */
-        .form-group select,
-        .form-group input[type="number"] {
-            min-height: 40px; /* Eller annen passende høyde */
-            height: 40px;     /* Fast høyde for likhet */
-            box-sizing: border-box;
-        }
-        /* Justerer flex-basis for å sikre lik bredde */
-        .form-group.half-width {
-            flex-basis: calc(50% - 15px); /* Juster gap om nødvendig */
-        }
-    </style>
-</head>
+    <link rel="stylesheet" href="css/critical_area.css"> <link rel="stylesheet" href="css/contingency_volume.css"> </head>
 <body>
 
 <div id="navbar-placeholder"></div>
@@ -91,15 +77,17 @@
                 <label for="sK">Map error (m):</label>
                 <input type="number" id="sK" min="0" step="0.1" value="1" required>
             </div>
-            <div class="form-group half-width" id="pitchAngleRow" style="display: none;">
+            <div class="form-group half-width angle-input-group" id="pitchAngleRow" style="display: none;">
                  <label for="thetaMax">Max pitch angle (°):</label>
                  <input type="number" id="thetaMax" min="0" max="90" step="1" value="45">
                  <small class="form-text">Used for multirotor stop maneuver.</small>
             </div>
-            <div class="form-group half-width" id="rollAngleRow" style="display: none;">
-                 <label for="phiMax">Max roll angle (°):</label> <input type="number" id="phiMax" min="0" max="90" step="1" value="30">
-                 <small class="form-text">Used for fixed-wing turn maneuver.</small> </div>
-            <div class="form-group half-width" id="anglePlaceholder" style="display: flex;"></div>
+             <div class="form-group half-width angle-input-group" id="rollAngleRow" style="display: none;">
+                 <label for="phiMax">Max roll angle (°):</label>
+                 <input type="number" id="phiMax" min="0" max="90" step="1" value="30">
+                 <small class="form-text">Used for fixed-wing turn maneuver.</small>
+            </div>
+             <div class="form-group half-width" id="anglePlaceholder" style="display: flex;"></div>
         </div>
         <div class="form-row">
             <div class="form-group half-width">
@@ -119,13 +107,14 @@
     </form> <hr style="margin: 30px 0;">
 
     <h2>Calculation Results</h2>
-    <div class="form-row"> <div class="form-group half-width">
+    <div class="form-row">
+        <div class="form-group half-width">
             <div id="resultHorizontal" class="result" style="margin-bottom: 10px;">
                 Horizontal CV Width: <span id="sCvValue" style="font-weight: bold;">-</span> m
             </div>
-            <div id="calculationDetailsHorizontal" class="result-detail" style="font-size: 0.9em; text-align: left; background-color: #f8f9fa;">
+            <div id="calculationDetailsHorizontal" class="result-detail">
                 <p><strong>Details (Horizontal):</strong></p>
-                <ul style="list-style-type: none; padding-left: 0;">
+                <ul>
                     <li>GNSS Accuracy: <span id="det_sGnss">-</span> m</li>
                     <li>Position Error: <span id="det_sPos">-</span> m</li>
                     <li>Map Error: <span id="det_sK">-</span> m</li>
@@ -139,9 +128,9 @@
              <div id="resultVertical" class="result" style="margin-bottom: 10px;">
                 Total Vertical Height: <span id="hCvValue" style="font-weight: bold;">-</span> m AGL
             </div>
-            <div id="calculationDetailsVertical" class="result-detail" style="font-size: 0.9em; text-align: left; background-color: #f8f9fa;">
+            <div id="calculationDetailsVertical" class="result-detail">
                 <p><strong>Details (Vertical):</strong></p>
-                <ul style="list-style-type: none; padding-left: 0;">
+                <ul>
                     <li>Flight Geography Height: <span id="det_hfg">-</span> m</li>
                     <li>Measurement Error: <span id="det_hAM">-</span> m</li>
                     <li>Reaction Height: <span id="det_hR">-</span> m</li>

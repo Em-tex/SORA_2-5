@@ -38,6 +38,7 @@ const elements = {
     det_hCvTotal: document.getElementById('det_hCvTotal'),
 };
 
+// ***** GJENNINNFFØRT DENNE LINJEN *****
 // IDs of all input elements used for saving/loading
 const inputIds = ['v0', 'tr', 'aircraftType', 'contingencyMethod', 'tp', 'sGnss', 'sPos', 'sK', 'thetaMax', 'phiMax', 'hfg', 'altitudeMeasurement'];
 
@@ -46,7 +47,7 @@ const CONTINGENCY_KEY = 'contingency_form_data';
 
 function saveContingencyForm() {
     const data = {};
-    inputIds.forEach(id => {
+    inputIds.forEach(id => { // Denne trenger inputIds
         const el = document.getElementById(id);
         if (el) {
             data[id] = el.value;
@@ -58,7 +59,7 @@ function saveContingencyForm() {
 function loadContingencyForm() {
     const data = JSON.parse(localStorage.getItem(CONTINGENCY_KEY));
     if (data) {
-        inputIds.forEach(id => {
+        inputIds.forEach(id => { // Denne trenger inputIds
             const el = document.getElementById(id);
             if (el && data[id] !== undefined) {
                 el.value = data[id];
@@ -124,13 +125,14 @@ function calculateHorizontalCV() {
 
     const sCV = sGnss + sPos + sK + sR + sCM;
 
-    // Update details display (without abbreviations)
-    elements.det_sGnss.textContent = sGnss.toFixed(1) + ' m';
-    elements.det_sPos.textContent = sPos.toFixed(1) + ' m';
-    elements.det_sK.textContent = sK.toFixed(1) + ' m';
-    elements.det_sR.textContent = sR.toFixed(1) + ' m';
-    elements.det_sCM.textContent = isFinite(sCM) ? sCM.toFixed(1) + ' m' : 'Infinite (check angle)';
-    elements.det_sCvTotal.textContent = isFinite(sCV) ? sCV.toFixed(1) + ' m' : 'Infinite';
+    elements.det_sGnss.textContent = sGnss.toFixed(1);
+    elements.det_sPos.textContent = sPos.toFixed(1);
+    elements.det_sK.textContent = sK.toFixed(1);
+    elements.det_sR.textContent = sR.toFixed(1);
+    elements.det_sCM.textContent = isFinite(sCM) ? sCM.toFixed(1) : 'Infinite (check angle)';
+    elements.det_sCvTotal.textContent = isFinite(sCV) ? sCV.toFixed(1) : 'Infinite';
+
+    elements.sCvValue.textContent = isFinite(sCV) ? sCV.toFixed(1) : '-';
 
     return sCV;
 }
@@ -145,40 +147,38 @@ function calculateVerticalCV() {
     const tp = parseFloat(elements.tp.value) || 0;
 
     const hAM = altMeasure === 'barometric' ? 1.0 : 4.0;
-    const hR = v0 * 0.7 * tr; // Approximation
+    const hR = v0 * 0.7 * tr;
     let hCM = 0;
 
     if (method === 'maneuver') {
         if (aircraft === 'multirotor') {
-            hCM = 0.5 * Math.pow(v0, 2) / G; // Kinetic to Potential
+            hCM = 0.5 * Math.pow(v0, 2) / G;
         } else if (aircraft === 'fixedwing') {
-            hCM = (Math.pow(v0, 2) / G) * 0.3; // Climb Turn approx.
+            hCM = (Math.pow(v0, 2) / G) * 0.3;
         }
     } else if (method === 'parachute') {
-        hCM = v0 * tp * 0.7; // Approx. climb during deployment
+        hCM = v0 * tp * 0.7;
     }
 
     const hCV = hfg + hAM + hR + hCM;
 
-    // Update details display (without abbreviations)
-    elements.det_hfg.textContent = hfg.toFixed(1) + ' m';
-    elements.det_hAM.textContent = hAM.toFixed(1) + ' m';
-    elements.det_hR.textContent = hR.toFixed(1) + ' m';
-    elements.det_hCM.textContent = hCM.toFixed(1) + ' m';
-    elements.det_hCvTotal.textContent = hCV.toFixed(1) + ' m';
+    elements.det_hfg.textContent = hfg.toFixed(1);
+    elements.det_hAM.textContent = hAM.toFixed(1);
+    elements.det_hR.textContent = hR.toFixed(1);
+    elements.det_hCM.textContent = hCM.toFixed(1);
+    elements.det_hCvTotal.textContent = hCV.toFixed(1);
+
+    elements.hCvValue.textContent = isFinite(hCV) ? hCV.toFixed(1) : '-';
 
     return hCV;
 }
 
-// Update visibility and text of specific input fields based on selections
 function updateUIBasedOnSelections() {
     const method = elements.contingencyMethod.value;
     const aircraft = elements.aircraftType.value;
 
-    // Show/hide parachute time input
     elements.parachuteTimeRow.style.display = method === 'parachute' ? 'flex' : 'none';
 
-    // Show/hide angle inputs ONLY if "Standard Maneuver" is selected
     const showPitch = (method === 'maneuver' && aircraft === 'multirotor');
     const showRoll = (method === 'maneuver' && aircraft === 'fixedwing');
 
@@ -186,7 +186,6 @@ function updateUIBasedOnSelections() {
     elements.rollAngleRow.style.display = showRoll ? 'flex' : 'none';
     elements.anglePlaceholder.style.display = (!showPitch && !showRoll) ? 'flex' : 'none';
 
-    // Update speed help text based on aircraft type
     if (aircraft === 'multirotor') {
         elements.speedHelpText.textContent = 'Must be ≥ 3 m/s for multirotor.';
         elements.speedHelpText.style.display = 'block';
@@ -194,30 +193,28 @@ function updateUIBasedOnSelections() {
         elements.speedHelpText.textContent = 'Must be ≥ 1.25 Vstall,clean for fixed-wing.';
         elements.speedHelpText.style.display = 'block';
     } else {
-        elements.speedHelpText.style.display = 'none'; // Hide if no type selected somehow
+        elements.speedHelpText.style.display = 'none';
     }
 }
 
-// Main function to trigger calculations and update the display
 function calculateAndDisplay() {
-    updateUIBasedOnSelections(); // Update UI first
+    updateUIBasedOnSelections();
 
     const sCV = calculateHorizontalCV();
     const hCV = calculateVerticalCV();
 
+    // Viser kun tallet (uten enhet)
     elements.sCvValue.textContent = isFinite(sCV) ? sCV.toFixed(1) : '-';
     elements.hCvValue.textContent = isFinite(hCV) ? hCV.toFixed(1) : '-';
 
-    saveContingencyForm(); // Save state
+    saveContingencyForm();
 }
 
-// Initialize the application
 function initializeApp() {
-    loadContingencyForm(); // Load or apply defaults
-    calculateAndDisplay(); // Initial calculation
+    loadContingencyForm();
+    calculateAndDisplay();
 
-    // Add event listeners
-    inputIds.forEach(id => {
+    inputIds.forEach(id => { // Denne trenger inputIds
         const el = document.getElementById(id);
         if (el) {
             const eventType = (el.tagName === 'SELECT') ? 'change' : 'input';
@@ -228,5 +225,4 @@ function initializeApp() {
     elements.resetButton.addEventListener('click', resetContingencyForm);
 }
 
-// Wait for the DOM to be fully loaded before initializing
 document.addEventListener('DOMContentLoaded', initializeApp);
