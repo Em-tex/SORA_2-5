@@ -22,8 +22,16 @@ function loadContainmentForm() {
         // Hvis ingen data, sett standard og lagre
         document.getElementById('speedInput').value = "20";
         document.getElementById('sail').value = "II";
+        
+        // ---- START PÅ FIX ----
+        // Må kalle denne funksjonen for å fylle listen
+        // før saveContainmentForm() kalles, slik at en
+        // standardverdi for populationDensity blir lagret.
+        updatePopulationDensityOptions();
+        // ---- SLUTT PÅ FIX ----
+
         saveContainmentForm();
-        return; // Gå ut, standardverdier er allerede satt i HTML
+        return; // Gå ut
     }
 
     // Sett lagrede verdier
