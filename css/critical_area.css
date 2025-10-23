@@ -154,3 +154,94 @@
         padding-top: 0; /* Fjerner ekstra padding */
     }
 }
+
+/* Stiler spesifikt for critical_area.html (og gjenbrukes av contingency_volume.html) */
+
+/* ... (eksisterende stiler) ... */
+
+.form-group input[type="number"],
+.form-group input[type="text"],
+.form-group select { /* Apply similar styles to select */
+    width: 100%;
+    padding: 10px; /* Consistent padding */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1em; /* Consistent font size */
+    background-color: white; /* Ensure white background for select */
+    height: auto; /* Allow height to adjust naturally */
+    min-height: 40px; /* Minimum height similar to inputs */
+    appearance: none; /* Remove default browser styling for select if needed */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    /* Add custom arrow or background image if appearance is none */
+    /* background-image: url('path/to/arrow.svg'); */
+    /* background-repeat: no-repeat; */
+    /* background-position: right 10px center; */
+    /* background-size: 12px; */
+}
+
+
+/* Juster bredden litt om nødvendig for å gi mer plass */
+.form-group.half-width {
+    flex: 1 1 calc(50% - 15px); /* Litt mer gap */
+    /* min-width: 180px; */ /* Juster min-width ved behov */
+}
+
+/* ... (resten av eksisterende stiler) ... */
+
+/* Responsiv justering for smale skjermer */
+@media (max-width: 650px) {
+    /* ... (eksisterende responsive stiler) ... */
+    .form-group input[type="number"],
+    .form-group input[type="text"],
+    .form-group select {
+        padding: 8px; /* Litt mindre padding på mobil */
+        min-height: 36px;
+    }
+}
+
+/* --- CSS Fix for Contingency Volume Angle Inputs --- */
+
+/* Tvinger label, input og small til å oppføre seg som blokker (stable vertikalt)
+   innenfor sine respektive containere (#pitchAngleRow og #rollAngleRow) */
+   #pitchAngleRow label,
+   #pitchAngleRow input,
+   #pitchAngleRow small,
+   #rollAngleRow label,
+   #rollAngleRow input,
+   #rollAngleRow small {
+       display: block;  /* Viktig: Stabler elementene */
+       width: 100%;     /* Lar dem ta full bredde av containeren */
+       margin-bottom: 5px; /* Litt luft mellom elementene */
+       box-sizing: border-box; /* Inkluder padding/border i bredden */
+   }
+   
+   /* Justerer margin spesifikt for input og small for bedre utseende */
+   #pitchAngleRow input,
+   #rollAngleRow input {
+       margin-bottom: 5px; /* Standard margin under input */
+   }
+   
+   #pitchAngleRow small,
+   #rollAngleRow small {
+       margin-top: 0; /* Fjerner eventuell ekstra topp-margin på small */
+       margin-bottom: 0; /* Ingen ekstra margin under small */
+   }
+   
+   /* Kan hende label trenger justert bunn-margin for konsistens */
+   .form-group label {
+       margin-bottom: 5px; /* Juster fra evt. 8px for å matche resten */
+   }
+   
+   /* Valgfritt: Hvis .form-group selv er display: flex, kan dette hjelpe */
+   /* Fjern kommentartegn hvis nødvendig */
+   /*
+   .form-group#pitchAngleRow,
+   .form-group#rollAngleRow {
+       display: flex;
+       flex-direction: column;
+       align-items: flex-start;
+   }
+   */
+   /* --- End CSS Fix --- */

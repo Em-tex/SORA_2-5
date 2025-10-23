@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contingency Volume Calculation</title>
+    <link rel="icon" href="assets/smallLogo.png" type="image/png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/critical_area.css">
+    <style>
+        /* Sørger for at select og input har lik høyde */
+        .form-group select,
+        .form-group input[type="number"] {
+            min-height: 40px; /* Eller annen passende høyde */
+            height: 40px;     /* Fast høyde for likhet */
+            box-sizing: border-box;
+        }
+        /* Justerer flex-basis for å sikre lik bredde */
+        .form-group.half-width {
+            flex-basis: calc(50% - 15px); /* Juster gap om nødvendig */
+        }
+    </style>
+</head>
+<body>
+
+<div id="navbar-placeholder"></div>
+
+<div class="container critical-area-container">
+    <h1>Contingency Volume Calculation</h1>
+    <p class="intro-text">
+        This calculator computes as guidance the horizontal (Width) and vertical (Height) extent of the
+        Contingency Volume based on the formulas in SORA 2.5 Annex A, section A.5.2.3. Input parameters below.
+    </p>
+
+    <form id="contingencyForm">
+
+        <h2>Input Parameters</h2>
+        <div class="form-row">
+            <div class="form-group half-width">
+                <label for="aircraftType">Aircraft Type:</label>
+                <select id="aircraftType">
+                    <option value="multirotor" selected>🚁 Multirotor</option>
+                    <option value="fixedwing">✈️ Fixed-wing</option>
+                </select>
+            </div>
+            <div class="form-group half-width">
+                 <label for="v0">Max operational speed (m/s):</label>
+                 <input type="number" id="v0" min="0" step="0.1" value="10" required>
+                 <small class="form-text" id="speedHelpText">Must be ≥ 3 m/s for multirotor.</small>
+             </div>
+        </div>
+        <div class="form-row">
+             <div class="form-group half-width">
+                <label for="tr">Reaction time (s):</label>
+                <input type="number" id="tr" min="0" step="0.1" value="1" required>
+                <small class="form-text">Default: 1 s for manual intervention.</small>
+            </div>
+            <div class="form-group half-width">
+                <label for="contingencyMethod">Contingency Method:</label>
+                <select id="contingencyMethod">
+                    <option value="maneuver" selected>Standard Maneuver</option>
+                    <option value="parachute">Parachute</option>
+                </select>
+                <small class="form-text">Selects calculation method upon entering CV.</small>
+            </div>
+        </div>
+        <div class="form-row" id="parachuteTimeRow" style="display: none;">
+            <div class="form-group half-width">
+                <label for="tp">Parachute deployment time (s):</label>
+                <input type="number" id="tp" min="0" step="0.1" value="2">
+                <small class="form-text">Time from activation to full deployment.</small>
+            </div>
+             <div class="form-group half-width"></div> </div>
+        <div class="form-row">
+            <div class="form-group half-width">
+                <label for="sGnss">GNSS accuracy (m):</label>
+                <input type="number" id="sGnss" min="0" step="0.1" value="3" required>
+            </div>
+             <div class="form-group half-width">
+                <label for="sPos">Position holding error (m):</label>
+                <input type="number" id="sPos" min="0" step="0.1" value="3" required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group half-width">
+                <label for="sK">Map error (m):</label>
+                <input type="number" id="sK" min="0" step="0.1" value="1" required>
+            </div>
+            <div class="form-group half-width" id="pitchAngleRow" style="display: none;">
+                 <label for="thetaMax">Max pitch angle (°):</label>
+                 <input type="number" id="thetaMax" min="0" max="90" step="1" value="45">
+                 <small class="form-text">Used for multirotor stop maneuver.</small>
+            </div>
+            <div class="form-group half-width" id="rollAngleRow" style="display: none;">
+                 <label for="phiMax">Max roll angle (°):</label> <input type="number" id="phiMax" min="0" max="90" step="1" value="30">
+                 <small class="form-text">Used for fixed-wing turn maneuver.</small> </div>
+            <div class="form-group half-width" id="anglePlaceholder" style="display: flex;"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group half-width">
+                 <label for="hfg">Height of Flight Geography (m):</label>
+                 <input type="number" id="hfg" min="0" step="1" value="100" required>
+                 <small class="form-text">Min height ≥ 3 * Characteristic Dimension.</small>
+            </div>
+            <div class="form-group half-width">
+                <label for="altitudeMeasurement">Altitude Measurement Type:</label>
+                <select id="altitudeMeasurement">
+                    <option value="barometric" selected>Barometric error = 1 m</option>
+                    <option value="gnss">GNSS error = 4 m</option>
+                 </select>
+                 <small class="form-text">Affects vertical error margin.</small>
+            </div>
+        </div>
+    </form> <hr style="margin: 30px 0;">
+
+    <h2>Calculation Results</h2>
+    <div class="form-row"> <div class="form-group half-width">
+            <div id="resultHorizontal" class="result" style="margin-bottom: 10px;">
+                Horizontal CV Width: <span id="sCvValue" style="font-weight: bold;">-</span> m
+            </div>
+            <div id="calculationDetailsHorizontal" class="result-detail" style="font-size: 0.9em; text-align: left; background-color: #f8f9fa;">
+                <p><strong>Details (Horizontal):</strong></p>
+                <ul style="list-style-type: none; padding-left: 0;">
+                    <li>GNSS Accuracy: <span id="det_sGnss">-</span> m</li>
+                    <li>Position Error: <span id="det_sPos">-</span> m</li>
+                    <li>Map Error: <span id="det_sK">-</span> m</li>
+                    <li>Reaction Distance: <span id="det_sR">-</span> m</li>
+                    <li>Maneuver Distance: <span id="det_sCM">-</span> m</li>
+                    <li><strong>Total Width</strong>: <span id="det_sCvTotal">-</span> m</li>
+                </ul>
+            </div>
+        </div>
+        <div class="form-group half-width">
+             <div id="resultVertical" class="result" style="margin-bottom: 10px;">
+                Total Vertical Height: <span id="hCvValue" style="font-weight: bold;">-</span> m AGL
+            </div>
+            <div id="calculationDetailsVertical" class="result-detail" style="font-size: 0.9em; text-align: left; background-color: #f8f9fa;">
+                <p><strong>Details (Vertical):</strong></p>
+                <ul style="list-style-type: none; padding-left: 0;">
+                    <li>Flight Geography Height: <span id="det_hfg">-</span> m</li>
+                    <li>Measurement Error: <span id="det_hAM">-</span> m</li>
+                    <li>Reaction Height: <span id="det_hR">-</span> m</li>
+                    <li>Maneuver Height: <span id="det_hCM">-</span> m</li>
+                    <li><strong>Total Height</strong>: <span id="det_hCvTotal">-</span> m</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="button-bar">
+        <button type="button" id="resetContingencyForm" class="reset-button">
+            <svg class="reset-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
+            </svg>
+            <span>Reset Form</span>
+        </button>
+    </div>
+
+</div>
+
+<script src="js/contingency_volume.js"></script>
+<script src="js/navbar.js"></script>
+
+</body>
+</html>
