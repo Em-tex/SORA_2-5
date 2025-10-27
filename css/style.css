@@ -7,16 +7,33 @@
 .navbar {
     width: 100%;
     background-color: #03477F; /* Mørk Blå */
-    padding: 15px 20px; /* Økt padding for større logo */
+    padding: 15px 0; /* ENDRET: Fjernet horisontal padding (20px) */
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    display: flex;
-    justify-content: flex-start;
-    align-items: center; /* Dette "midtjusterer" (vertikalt) */
+    /* display: flex;      <-- FLYTTET */
+    /* justify-content: flex-start; <-- FLYTTET */
+    /* align-items: center; <-- FLYTTET */
     
     position: sticky;
     top: 0;
     z-index: 1000;
 }
+
+/* NYTT STILELEMENT for wrapperen */
+.navbar-wrapper {
+    max-width: 1000px; /* Matcher .container max-width */
+    margin: 0 auto;    /* Sentrerer wrapperen */
+    
+    /* Egenskaper flyttet fra .navbar */
+    display: flex;
+    justify-content: flex-start; /* Venstrejusterer innholdet (logoen) */
+    align-items: center; 
+
+    /* Matcher .container padding for perfekt alignment */
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box; /* Sikrer at padding er inkludert i bredden */
+}
+
 
 /* Stil for selve lenken rundt logoen */
 .nav-logo-link {
@@ -175,7 +192,15 @@ h2 {
     .navbar {
         flex-direction: column;
         align-items: flex-start;
-        padding: 10px;
+        padding: 10px 0; /* Justert padding for mobil */
+    }
+    /* NY: Sørger for at wrapperen tar hensyn til padding på mobil */
+    .navbar-wrapper {
+        padding-left: 10px;
+        padding-right: 10px;
+        width: 100%; /* Full bredde innenfor .navbar */
+        flex-direction: column;
+        align-items: flex-start;
     }
     .nav-logo-link {
         margin-bottom: 10px; /* Plass under logo på mobil */

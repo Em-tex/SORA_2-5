@@ -5,32 +5,31 @@ document.addEventListener("DOMContentLoaded", function() {
     // 1. Definer HTML-koden for navigasjonsbåndet (Oppdatert rekkefølge og SAIL-ikon)
     const navbarHTML = `
     <nav class="navbar">
-        <a href="https://www.luftfartstilsynet.no/droner/" target="_blank" rel="noopener noreferrer" class="nav-logo-link">
-             <img src="assets/CAA_Norway_liggende_hvit.png" alt="CAA Norway Logo" class="nav-logo">
-        </a>
+        <div class="navbar-wrapper"> 
+            <a href="https://www.luftfartstilsynet.no/droner/" target="_blank" rel="noopener noreferrer" class="nav-logo-link">
+                 <img src="assets/CAA_Norway_liggende_hvit.png" alt="CAA Norway Logo" class="nav-logo">
+            </a>
 
-        <a href="index.html" class="nav-button" id="nav-sail">
-            <i class="fas fa-home nav-icon"></i>
-            <span>SAIL</span>
-        </a>
+            <a href="index.html" class="nav-button" id="nav-sail">
+                <i class="fas fa-home nav-icon"></i>
+                <span>SAIL</span>
+            </a>
 
-         <a href="containment.html" class="nav-button" id="nav-containment">
-            <i class="fas fa-draw-polygon nav-icon"></i>
-            <span>Containment</span>
-        </a>
+             <a href="containment.html" class="nav-button" id="nav-containment">
+                <i class="fas fa-draw-polygon nav-icon"></i>
+                <span>Containment</span>
+            </a>
 
-        <a href="critical_area.html" class="nav-button" id="nav-critical-area">
-             <i class="fas fa-bullseye nav-icon"></i>
-            <span>Critical Area</span>
-        </a>
+            <a href="critical_area.html" class="nav-button" id="nav-critical-area">
+                 <i class="fas fa-bullseye nav-icon"></i>
+                <span>Critical Area</span>
+            </a>
 
-        <a href="contingency_volume.html" class="nav-button" id="nav-contingency-volume">
-            <i class="fas fa-exclamation-triangle nav-icon"></i>
-            <span>Contingency Volume</span>
-        </a>
-
-
-        </nav>
+            <a href="contingency_volume.html" class="nav-button" id="nav-contingency-volume">
+                <i class="fas fa-exclamation-triangle nav-icon"></i>
+                <span>Contingency Volume</span>
+            </a>
+        </div> </nav>
     `;
 
     // 2. Sett inn HTML-koden i placeholder-elementet
