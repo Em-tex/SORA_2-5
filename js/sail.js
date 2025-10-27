@@ -68,7 +68,7 @@ function disableMitigationCell(cell) {
     if (cell.classList.contains('selected')) {
         // If the cell to be disabled is selected, move selection to 'None'
         const row = cell.parentElement;
-        row.cells[2].classList.add('selected'); // 'None' is at cellIndex 2
+        row.cells[1].classList.add('selected'); // 'None' is at cellIndex 1
     }
     cell.classList.add('na');
     cell.setAttribute('data-original-text', cell.textContent);
