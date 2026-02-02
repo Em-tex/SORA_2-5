@@ -1,6 +1,6 @@
 /* Container Override */
 .vlos-container {
-    max-width: 700px;
+    max-width: 750px;
     margin: 40px auto;
 }
 
@@ -13,23 +13,37 @@
     margin-bottom: 40px;
 }
 
-/* Settings Bar */
+/* Settings Bar - Auto høyde for å gi plass til to linjer */
 .settings-bar {
     display: flex;
-    justify-content: flex-end; /* Align to right */
+    justify-content: flex-start;
     align-items: center;
     gap: 15px;
     margin-bottom: 15px;
+    height: auto; /* Viktig: Lar containeren vokse i høyden */
 }
 
 .settings-label {
     font-size: 0.9em;
     color: #888;
+    font-weight: bold;
 }
 
+/* Toggle-knapper med to linjer */
 .small-toggle .toggle-btn {
-    padding: 6px 12px;
-    font-size: 0.85em;
+    padding: 5px 15px;      /* Litt mindre padding oppe/nede */
+    font-size: 0.9em;       /* Størrelse på "Metric"/"Imperial" */
+    line-height: 1.3;       /* Luft mellom linjene */
+    height: auto;           /* Lar knappen tilpasse seg innholdet */
+    display: block;         /* Sikrer at br fungerer bra */
+    min-width: 100px;       /* Sikrer lik bredde */
+}
+
+/* Stil for enhetene på linje 2 */
+.unit-small {
+    font-size: 0.85em;      /* Litt mindre tekst */
+    font-weight: normal;    /* Ikke fet skrift */
+    opacity: 0.8;           /* Litt dusere farge */
 }
 
 .divider {
@@ -38,7 +52,7 @@
     margin-bottom: 25px;
 }
 
-/* Input Styles */
+/* Input Common Styles */
 .input-group {
     margin-bottom: 30px;
 }
@@ -47,11 +61,142 @@
     display: block;
     font-weight: 700;
     color: #03477F;
-    margin-bottom: 10px;
-    font-size: 1.05em;
+    font-size: 1.1em;
 }
 
-/* Slider Styles */
+.label-with-help {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.helper-text {
+    font-size: 0.85em;
+    color: #888;
+    margin-top: 6px;
+    font-style: italic;
+}
+
+/* CD Section Specifics */
+.cd-section-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.cd-input-area {
+    flex: 1;
+}
+
+.cd-image-area {
+    width: 140px;
+    flex-shrink: 0;
+}
+
+.cd-illustration {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Stepper Input Styles (Big Buttons) */
+.stepper-wrapper {
+    display: flex;
+    align-items: stretch;
+    gap: 0; 
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    overflow: hidden; 
+}
+
+.stepper-btn {
+    background: #f0f0f0;
+    border: none;
+    width: 60px; /* Enda litt bredere knapper for enklere klikk */
+    cursor: pointer;
+    font-size: 1.2em;
+    color: #03477F;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stepper-btn:hover {
+    background: #e0e0e0;
+}
+
+.stepper-btn:active {
+    background: #d0d0d0;
+}
+
+.large-input-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+}
+
+.large-input-wrapper input {
+    width: 100%;
+    padding: 15px 10px;
+    font-size: 1.3em;
+    font-weight: bold;
+    border: none;
+    text-align: center;
+    font-family: 'Overpass', sans-serif;
+    outline: none;
+    -moz-appearance: textfield; 
+}
+
+.large-input-wrapper input::-webkit-outer-spin-button,
+.large-input-wrapper input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.unit-display {
+    font-weight: bold;
+    color: #888;
+    padding-right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 0.9em;
+}
+
+/* Aircraft Type Toggle */
+.toggle-container {
+    display: flex;
+    gap: 15px;
+}
+
+.toggle-container input {
+    display: none;
+}
+
+.toggle-btn {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #666;
+}
+
+.toggle-container input:checked + .toggle-btn {
+    border-color: #03477F;
+    background-color: #03477F;
+    color: #fff;
+}
+
+/* Slider */
 .slider-wrapper {
     display: flex;
     align-items: center;
@@ -69,17 +214,10 @@
     background: #d3d3d3;
     outline: none;
     border-radius: 4px;
-    opacity: 0.9;
-    transition: opacity .2s;
-}
-
-.slider:hover {
-    opacity: 1;
 }
 
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    appearance: none;
     width: 24px;
     height: 24px;
     background: #03477F;
@@ -99,25 +237,20 @@
     color: #333;
 }
 
-.helper-text {
-    font-size: 0.85em;
-    color: #888;
-    margin-top: 8px;
-    font-style: italic;
-}
-
-/* Results Logic */
+/* Results Area */
 .results-section {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    margin-top: 20px;
+    margin-top: 30px;
+    gap: 10px;
 }
 
 .logic-operator {
     font-weight: bold;
     color: #ccc;
     font-size: 1.2em;
+    padding-top: 40px;
 }
 
 .result-box {
@@ -129,21 +262,113 @@
     border: 1px solid #e1e1e1;
 }
 
-.result-box .value {
-    display: block;
-    font-size: 1.4em;
-    font-weight: bold;
-    color: #333;
-    margin: 5px 0;
+.box-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
 }
 
-/* Final Result Area */
+.result-box .label {
+    font-size: 0.9em;
+    color: #555;
+    font-weight: bold;
+}
+
+/* Icons */
+.question-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background-color: #03477F;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: help;
+}
+
+.question-icon.small-icon {
+    background-color: #999;
+}
+.question-icon.small-icon:hover {
+    background-color: #555;
+}
+
+/* Tooltip */
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    width: 220px;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 100;
+    bottom: 140%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.85em;
+    font-weight: normal;
+    pointer-events: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.tooltip-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.result-box .value {
+    display: block;
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.result-box .subtext {
+    font-size: 0.75em;
+    color: #888;
+    text-transform: uppercase;
+}
+
+/* Final Result */
 .final-result {
     text-align: center;
     margin-top: 30px;
     background-color: #fff;
     border-top: 2px dashed #eee;
     padding-top: 20px;
+}
+
+.final-result h3 {
+    margin: 0;
+    color: #03477F;
+    font-size: 1.1em;
+    text-transform: uppercase;
 }
 
 .highlight-value {
@@ -154,7 +379,7 @@
     line-height: 1;
 }
 
-/* Limiting Factor Box */
+/* Limiting Box */
 .limiting-box {
     display: inline-block;
     padding: 8px 16px;
@@ -164,46 +389,133 @@
     color: #777;
     margin-top: 10px;
 }
-
 .limiting-box.is-alos {
-    background-color: #fff4e5;
-    color: #d65a00;
-    border: 1px solid #ffdcb0;
+    background-color: #f3e5f5;
+    color: #8E44AD;
+    border: 1px solid #e1bee7;
 }
-
 .limiting-box.is-dlos {
     background-color: #e5f1ff;
     color: #0056b3;
     border: 1px solid #bddeff;
 }
 
-/* Chart */
-.visual-chart {
-    margin-top: 30px;
+/* --- LANDSCAPE CHART --- */
+.visual-container {
+    margin-top: 40px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden; 
+    background: #fff;
 }
 
-.chart-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
+.visual-title {
+    margin: 0;
+    padding: 10px 15px;
+    background: #f4f4f4;
+    font-size: 0.9em;
+    color: #666;
+    border-bottom: 1px solid #eee;
 }
 
-.chart-label {
-    width: 50px;
-    font-size: 0.8em;
+.landscape-chart {
+    position: relative;
+    height: 120px;
+    width: 100%;
+    background: linear-gradient(to bottom, #dbefff 60%, #e0f2d5 60%); 
+}
+
+/* Pilot Icon */
+.pilot-marker {
+    position: absolute;
+    bottom: 40px; 
+    left: 10px;
+    color: #333;
+    text-align: center;
+    z-index: 5;
+}
+
+.pilot-marker i {
+    font-size: 24px;
+}
+
+.marker-label {
+    display: block;
+    font-size: 10px;
     font-weight: bold;
-    color: #888;
 }
 
-.bar-track {
-    flex-grow: 1;
-    background: #f0f0f0;
-    height: 10px;
-    border-radius: 5px;
-    overflow: hidden;
+/* Moving Markers */
+.distance-marker {
+    position: absolute;
+    bottom: 0;
+    height: 100%; 
+    width: 2px;
+    transition: left 0.5s ease;
+    z-index: 4;
 }
 
-.bar {
+.distance-marker .line {
+    width: 2px;
     height: 100%;
-    transition: width 0.5s ease, background-color 0.3s;
+    border-left: 2px dashed; 
+    opacity: 0.6;
+}
+
+.distance-marker .flag {
+    position: absolute;
+    top: 10px;
+    left: 2px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 3px;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.marker-alos .line { border-color: #8E44AD; }
+.marker-alos .flag { background-color: #8E44AD; }
+
+.marker-dlos .line { border-color: #03477F; }
+.marker-dlos .flag { background-color: #03477F; }
+
+/* Ruler */
+.ruler {
+    position: absolute;
+    bottom: 0;
+    left: 10px;      
+    right: 10px;
+    height: 20px;
+    border-top: 1px solid #999;
+}
+
+.ruler .tick {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: #555;
+    padding-top: 2px;
+}
+
+.ruler .tick::before {
+    content: "";
+    display: block;
+    width: 1px;
+    height: 4px;
+    background: #999;
+    margin: 0 auto 2px auto;
+}
+
+@media (max-width: 600px) {
+    .cd-section-wrapper {
+        flex-direction: column-reverse;
+    }
+    .cd-image-area {
+        width: 100%;
+        max-width: 200px;
+        margin: 0 auto;
+    }
 }

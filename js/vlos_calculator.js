@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const aircraftRadios = document.getElementsByName('aircraftType');
     const unitRadios = document.getElementsByName('unitSystem');
 
+    // Stepper Buttons
+    const btnCdPlus = document.getElementById('btnCdPlus');
+    const btnCdMinus = document.getElementById('btnCdMinus');
+
     // Display Elements
     const cdUnitLabel = document.getElementById('cdUnitLabel');
     const gvDisplayValue = document.getElementById('gvDisplayValue');
@@ -18,13 +22,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const limitingBox = document.getElementById('limitingFactorBox');
     const limitingText = document.getElementById('limitingFactorText');
 
-    // Bars
-    const alosBar = document.getElementById('alosBar');
-    const dlosBar = document.getElementById('dlosBar');
+    // Landscape Markers
+    const markerALOS = document.getElementById('markerALOS');
+    const markerDLOS = document.getElementById('markerDLOS');
 
     // Constants
     const M_TO_FT = 3.28084;
     const KM_TO_MI = 0.621371;
+    
+    // Max scale for the landscape chart (in meters)
+    const MAX_VISUAL_DISTANCE_M = 2000; 
 
     function getUnitSystem() {
         return document.querySelector('input[name="unitSystem"]:checked').value;
@@ -34,14 +41,29 @@ document.addEventListener('DOMContentLoaded', function() {
         return Math.round(num).toLocaleString();
     }
 
+    // --- STEPPER LOGIC ---
+    function adjustCD(delta) {
+        let currentVal = parseFloat(cdInput.value) || 0;
+        let newVal = currentVal + delta;
+        if (newVal < 0) newVal = 0;
+        
+        // Round to avoid float errors (e.g. 0.30000004)
+        cdInput.value = Math.round(newVal * 10) / 10;
+        calculate();
+    }
+
+    btnCdPlus.addEventListener('click', () => adjustCD(0.1));
+    btnCdMinus.addEventListener('click', () => adjustCD(-0.1));
+
+
+    // --- CALCULATION LOGIC ---
     function calculate() {
         const unitSystem = getUnitSystem();
         let cdRaw = parseFloat(cdInput.value);
-        let gvRawMeters = parseFloat(gvSlider.value); // Slider is always 0-5000 (meters representation)
+        let gvRawMeters = parseFloat(gvSlider.value); // Slider is always 0-5000 m
 
-        // Update GV Slider Display Text
+        // Update Text Displays
         if (unitSystem === 'metric') {
-            // Display as km if > 1000, else m
             if (gvRawMeters >= 1000) {
                 gvDisplayValue.textContent = (gvRawMeters / 1000).toFixed(1);
                 gvDisplayUnit.textContent = "km";
@@ -49,13 +71,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 gvDisplayValue.textContent = gvRawMeters;
                 gvDisplayUnit.textContent = "m";
             }
-            cdUnitLabel.textContent = "meters";
+            cdUnitLabel.textContent = "m";
         } else {
-            // Imperial: Convert GV slider (m) to Miles/Feet for display
+            // Imperial
             const miles = (gvRawMeters / 1000) * KM_TO_MI;
             gvDisplayValue.textContent = miles.toFixed(2);
-            gvDisplayUnit.textContent = "miles";
-            cdUnitLabel.textContent = "feet";
+            gvDisplayUnit.textContent = "mi";
+            cdUnitLabel.textContent = "ft";
         }
 
         // Validation
@@ -64,18 +86,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // --- CORE CALCULATION (Always in Meters) ---
-        
         // 1. Prepare CD in meters
         let cdMeters = cdRaw;
         if (unitSystem === 'imperial') {
-            cdMeters = cdRaw / M_TO_FT; // Convert input feet to meters for formula
+            cdMeters = cdRaw / M_TO_FT; 
         }
 
-        // 2. Prepare GV in meters (max 5000m logic is handled by slider max, but safe to clamp)
+        // 2. Prepare GV in meters
         const effectiveGVMeters = Math.min(gvRawMeters, 5000);
 
-        // 3. Calculate ALOS (Attitude Line of Sight)
+        // 3. Calculate ALOS
         let alosMeters = 0;
         const isRotorcraft = document.getElementById('rotorcraft').checked;
         
@@ -85,14 +105,13 @@ document.addEventListener('DOMContentLoaded', function() {
             alosMeters = (490 * cdMeters) + 30;
         }
 
-        // 4. Calculate DLOS (Detection Line of Sight) -> 30% of GV
+        // 4. Calculate DLOS
         const dlosMeters = 0.3 * effectiveGVMeters;
 
         // 5. Final VLOS
         const vlosMeters = Math.min(alosMeters, dlosMeters);
 
-        // --- DISPLAY RESULTS (Convert back if needed) ---
-        
+        // --- DISPLAY RESULTS ---
         let alosDisplayVal = alosMeters;
         let dlosDisplayVal = dlosMeters;
         let vlosDisplayVal = vlosMeters;
@@ -109,32 +128,45 @@ document.addEventListener('DOMContentLoaded', function() {
         dlosDisplay.textContent = formatNumber(dlosDisplayVal) + suffix;
         finalDisplay.textContent = formatNumber(vlosDisplayVal) + suffix;
 
-        // Determine Limiting Factor styling
+        // Determine Limiting Factor
+        let limiter = '';
         if (alosMeters < dlosMeters) {
             limitingText.innerHTML = "Limited by <strong>Aircraft Size (ALOS)</strong>";
             limitingBox.className = "limiting-box is-alos";
-            updateBars(alosMeters, dlosMeters, 'alos');
+            limiter = 'alos';
         } else {
             limitingText.innerHTML = "Limited by <strong>Visibility (DLOS)</strong>";
             limitingBox.className = "limiting-box is-dlos";
-            updateBars(alosMeters, dlosMeters, 'dlos');
+            limiter = 'dlos';
         }
+
+        updateLandscape(alosMeters, dlosMeters);
     }
 
-    function updateBars(alos, dlos, limiter) {
-        // Max scale for bar chart (use slightly more than the max value)
-        const maxVal = Math.max(alos, dlos) * 1.2; 
-        if (maxVal === 0) return;
+    function updateLandscape(alos, dlos) {
+        // Calculate percentages based on fixed scale (e.g., 2000m)
+        // Clamp at 100% if it exceeds scale
+        let alosPct = (alos / MAX_VISUAL_DISTANCE_M) * 100;
+        let dlosPct = (dlos / MAX_VISUAL_DISTANCE_M) * 100;
 
-        const alosPct = (alos / maxVal) * 100;
-        const dlosPct = (dlos / maxVal) * 100;
+        if (alosPct > 100) alosPct = 100;
+        if (dlosPct > 100) dlosPct = 100;
 
-        alosBar.style.width = alosPct + "%";
-        dlosBar.style.width = dlosPct + "%";
+        markerALOS.style.left = alosPct + "%";
+        markerDLOS.style.left = dlosPct + "%";
 
-        // Colors
-        alosBar.style.backgroundColor = (limiter === 'alos') ? "#F06C00" : "#ccc"; // Orange if limiting
-        dlosBar.style.backgroundColor = (limiter === 'dlos') ? "#03477F" : "#ccc"; // Blue if limiting
+        // Bring the "limiting" marker to front so it's clearly visible
+        if (alos < dlos) {
+            markerALOS.style.zIndex = 10;
+            markerDLOS.style.zIndex = 5;
+            markerALOS.style.opacity = 1;
+            markerDLOS.style.opacity = 0.5; // Fade the non-limiting one slightly?
+        } else {
+            markerDLOS.style.zIndex = 10;
+            markerALOS.style.zIndex = 5;
+            markerDLOS.style.opacity = 1;
+            markerALOS.style.opacity = 0.5;
+        }
     }
 
     function resetResults() {
@@ -143,8 +175,8 @@ document.addEventListener('DOMContentLoaded', function() {
         finalDisplay.textContent = "-";
         limitingText.textContent = "Enter values above";
         limitingBox.className = "limiting-box";
-        alosBar.style.width = "0%";
-        dlosBar.style.width = "0%";
+        markerALOS.style.left = "0%";
+        markerDLOS.style.left = "0%";
     }
 
     // Event Listeners

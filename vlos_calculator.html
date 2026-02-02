@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Max VLOS Distance Calculator</title>
+    <link rel="icon" href="assets/smallLogo.png" type="image/png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     
@@ -19,7 +21,6 @@
         <h1 class="header">Maximum VLOS Distance Calculator</h1>
         <p class="intro-text">
             Calculate the maximum Visual Line of Sight (VLOS) distance based on SORA 2.5 (Annex A, A.5.2.5). 
-            The limit is the lesser of ALOS (Aircraft Size) and DLOS (Visibility).
         </p>
 
         <div class="calculator-card">
@@ -28,10 +29,14 @@
                 <span class="settings-label">Measurement Units:</span>
                 <div class="toggle-container small-toggle">
                     <input type="radio" id="unitMetric" name="unitSystem" value="metric" checked>
-                    <label for="unitMetric" class="toggle-btn">Metric (m/km)</label>
+                    <label for="unitMetric" class="toggle-btn">
+                        Metric<br><span class="unit-small">(m/km)</span>
+                    </label>
                     
                     <input type="radio" id="unitImperial" name="unitSystem" value="imperial">
-                    <label for="unitImperial" class="toggle-btn">Imperial (ft/mi)</label>
+                    <label for="unitImperial" class="toggle-btn">
+                        Imperial<br><span class="unit-small">(ft/mi)</span>
+                    </label>
                 </div>
             </div>
 
@@ -49,20 +54,41 @@
             </div>
 
             <div class="input-group">
-                <label for="cdInput" class="input-label">
-                    2. Characteristic Dimension (CD)
-                    <span class="info-icon" data-tooltip="Max dimension of the UA (e.g. wingspan or tip-to-tip props)."><i class="fas fa-info-circle"></i></span>
-                </label>
-                <div class="input-wrapper">
-                    <input type="number" id="cdInput" step="0.1" min="0" placeholder="e.g. 0.5">
-                    <span class="unit-display" id="cdUnitLabel">meters</span>
+                <div class="label-with-help">
+                    <label for="cdInput" class="input-label">2. Characteristic Dimension (CD)</label>
+                    <div class="tooltip-container">
+                        <span class="question-icon small-icon">?</span>
+                        <span class="tooltip-text">
+                            <strong>How to measure:</strong><br>
+                            • <strong>Multirotor:</strong> Max distance between propeller tips.<br>
+                            • <strong>Fixed Wing:</strong> Wingspan.<br>
+                            Use the largest dimension.
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="cd-section-wrapper">
+                    <div class="cd-input-area">
+                        <div class="stepper-wrapper">
+                            <button type="button" class="stepper-btn" id="btnCdMinus"><i class="fas fa-minus"></i></button>
+                            <div class="input-wrapper large-input-wrapper">
+                                <input type="number" id="cdInput" step="0.1" min="0" placeholder="0"> 
+                                <span class="unit-display" id="cdUnitLabel">m</span>
+                            </div>
+                            <button type="button" class="stepper-btn" id="btnCdPlus"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <p class="helper-text">Enter the maximum dimension (e.g. wingspan).</p>
+                    </div>
+
+                    <div class="cd-image-area">
+                        <img src="assets/CD.jpg" alt="Characteristic Dimension Illustration" class="cd-illustration">
+                    </div>
                 </div>
             </div>
 
             <div class="input-group">
                 <label for="gvSlider" class="input-label">
                     3. Ground Visibility (GV)
-                    <span class="info-icon" data-tooltip="Meteorological visibility. Capped at 5 km for calculation purposes."><i class="fas fa-info-circle"></i></span>
                 </label>
                 
                 <div class="slider-wrapper">
@@ -72,22 +98,40 @@
                         <span id="gvDisplayUnit">km</span>
                     </div>
                 </div>
-                <p class="helper-text">Drag slider to adjust visibility conditions.</p>
+                <p class="helper-text">Meteorological visibility (capped at 5 km).</p>
             </div>
 
             <div class="results-section">
                 <div class="result-box alos-box">
-                    <span class="label">ALOS Limit</span>
+                    <div class="box-header">
+                        <span class="label">ALOS Limit</span>
+                        <div class="tooltip-container">
+                            <span class="question-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Attitude Line of Sight:</strong><br>
+                                Calculated based on aircraft size (CD). Distance where orientation is lost.
+                            </span>
+                        </div>
+                    </div>
                     <span class="value" id="alosResult">-</span>
-                    <span class="subtext">Based on Aircraft Size</span>
+                    <span class="subtext">Aircraft Size Limit</span>
                 </div>
                 
                 <div class="logic-operator">vs</div>
 
                 <div class="result-box dlos-box">
-                    <span class="label">DLOS Limit</span>
+                    <div class="box-header">
+                        <span class="label">DLOS Limit</span>
+                        <div class="tooltip-container">
+                            <span class="question-icon">?</span>
+                            <span class="tooltip-text">
+                                <strong>Detection Line of Sight:</strong><br>
+                                30% of Ground Visibility. Distance where the drone becomes invisible against the background.
+                            </span>
+                        </div>
+                    </div>
                     <span class="value" id="dlosResult">-</span>
-                    <span class="subtext">Based on Visibility (30%)</span>
+                    <span class="subtext">Visibility Limit (30% GV)</span>
                 </div>
             </div>
 
@@ -95,18 +139,38 @@
                 <h3>Maximum VLOS Distance</h3>
                 <div class="highlight-value" id="finalResult">-</div>
                 <div id="limitingFactorBox" class="limiting-box">
-                    <i class="fas fa-exclamation-triangle"></i> <span id="limitingFactorText">Enter values above</span>
+                    <span id="limitingFactorText">Enter values above</span>
                 </div>
             </div>
             
-            <div class="visual-chart">
-                <div class="chart-row">
-                    <span class="chart-label">ALOS</span>
-                    <div class="bar-track"><div class="bar alos-bar" id="alosBar" style="width: 0%;"></div></div>
-                </div>
-                <div class="chart-row">
-                    <span class="chart-label">DLOS</span>
-                    <div class="bar-track"><div class="bar dlos-bar" id="dlosBar" style="width: 0%;"></div></div>
+            <div class="visual-container">
+                <h4 class="visual-title">Visual Range Representation</h4>
+                <div class="landscape-chart">
+                    <div class="sky"></div>
+                    <div class="ground"></div>
+                    
+                    <div class="pilot-marker">
+                        <i class="fas fa-user-astronaut"></i>
+                        <span class="marker-label">Pilot</span>
+                    </div>
+
+                    <div id="markerALOS" class="distance-marker marker-alos" style="left: 0%;">
+                        <div class="flag">ALOS</div>
+                        <div class="line"></div>
+                    </div>
+
+                    <div id="markerDLOS" class="distance-marker marker-dlos" style="left: 0%;">
+                        <div class="flag">DLOS</div>
+                        <div class="line"></div>
+                    </div>
+
+                    <div class="ruler">
+                        <span class="tick" style="left: 0%">0m</span>
+                        <span class="tick" style="left: 25%">500m</span>
+                        <span class="tick" style="left: 50%">1000m</span>
+                        <span class="tick" style="left: 75%">1500m</span>
+                        <span class="tick" style="left: 100%">2000m+</span>
+                    </div>
                 </div>
             </div>
 

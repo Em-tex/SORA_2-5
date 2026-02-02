@@ -2,7 +2,7 @@
 
 document.addEventListener("DOMContentLoaded", function() {
 
-    // 1. Definer HTML-koden for navigasjonsbåndet (Oppdatert rekkefølge og SAIL-ikon)
+    // 1. Definer HTML-koden for navigasjonsbåndet
     const navbarHTML = `
     <nav class="navbar">
         <div class="navbar-wrapper"> 
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <span>SAIL</span>
             </a>
 
-             <a href="containment.html" class="nav-button" id="nav-containment">
+            <a href="containment.html" class="nav-button" id="nav-containment">
                 <i class="fas fa-draw-polygon nav-icon"></i>
                 <span>Containment</span>
             </a>
@@ -29,7 +29,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 <i class="fas fa-exclamation-triangle nav-icon"></i>
                 <span>Contingency Volume</span>
             </a>
-        </div> </nav>
+
+            <a href="vlos_calculator.html" class="nav-button" id="nav-vlos">
+                <i class="fas fa-eye nav-icon"></i>
+                <span>Max VLOS</span>
+            </a>
+        </div> 
+    </nav>
     `;
 
     // 2. Sett inn HTML-koden i placeholder-elementet
@@ -38,18 +44,16 @@ document.addEventListener("DOMContentLoaded", function() {
         placeholder.innerHTML = navbarHTML;
     } else {
         console.error("Navbar placeholder element not found!");
-        return; // Avslutt hvis placeholder ikke finnes
+        return; 
     }
 
-
     // 3. Finn ut hvilken side vi er på og sett riktig knapp til "active"
-    const currentPage = window.location.pathname.split("/").pop(); // F.eks. "index.html"
+    const currentPage = window.location.pathname.split("/").pop(); 
 
     // Nullstill 'active' klassen for alle knapper først
     document.querySelectorAll(".nav-button").forEach(button => button.classList.remove("active"));
 
-
-    // Sett 'active' på riktig knapp (samme logikk som før, siden ID-ene er unike)
+    // Sett 'active' på riktig knapp
     if (currentPage === "index.html" || currentPage === "") {
         document.getElementById("nav-sail")?.classList.add("active");
     } else if (currentPage === "contingency_volume.html") {
@@ -58,6 +62,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("nav-critical-area")?.classList.add("active");
     } else if (currentPage === "containment.html") {
         document.getElementById("nav-containment")?.classList.add("active");
+    } else if (currentPage === "vlos_calculator.html") {
+        document.getElementById("nav-vlos")?.classList.add("active");
     }
-
 });
