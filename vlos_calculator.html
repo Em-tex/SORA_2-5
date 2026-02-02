@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Max VLOS Distance Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/vlos_calculator.css">
+</head>
+<body>
+
+    <div id="navbar-placeholder"></div>
+
+    <div class="container vlos-container">
+        
+        <h1 class="header">Maximum VLOS Distance Calculator</h1>
+        <p class="intro-text">
+            Calculate the maximum Visual Line of Sight (VLOS) distance based on SORA 2.5 (Annex A, A.5.2.5). 
+            The limit is the lesser of ALOS (Aircraft Size) and DLOS (Visibility).
+        </p>
+
+        <div class="calculator-card">
+            
+            <div class="settings-bar">
+                <span class="settings-label">Measurement Units:</span>
+                <div class="toggle-container small-toggle">
+                    <input type="radio" id="unitMetric" name="unitSystem" value="metric" checked>
+                    <label for="unitMetric" class="toggle-btn">Metric (m/km)</label>
+                    
+                    <input type="radio" id="unitImperial" name="unitSystem" value="imperial">
+                    <label for="unitImperial" class="toggle-btn">Imperial (ft/mi)</label>
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <div class="input-group">
+                <label class="input-label">1. Aircraft Type</label>
+                <div class="toggle-container">
+                    <input type="radio" id="rotorcraft" name="aircraftType" value="rotorcraft" checked>
+                    <label for="rotorcraft" class="toggle-btn"><i class="fas fa-helicopter"></i> Rotorcraft</label>
+                    
+                    <input type="radio" id="fixedwing" name="aircraftType" value="fixedwing">
+                    <label for="fixedwing" class="toggle-btn"><i class="fas fa-plane"></i> Fixed Wing</label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="cdInput" class="input-label">
+                    2. Characteristic Dimension (CD)
+                    <span class="info-icon" data-tooltip="Max dimension of the UA (e.g. wingspan or tip-to-tip props)."><i class="fas fa-info-circle"></i></span>
+                </label>
+                <div class="input-wrapper">
+                    <input type="number" id="cdInput" step="0.1" min="0" placeholder="e.g. 0.5">
+                    <span class="unit-display" id="cdUnitLabel">meters</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="gvSlider" class="input-label">
+                    3. Ground Visibility (GV)
+                    <span class="info-icon" data-tooltip="Meteorological visibility. Capped at 5 km for calculation purposes."><i class="fas fa-info-circle"></i></span>
+                </label>
+                
+                <div class="slider-wrapper">
+                    <input type="range" id="gvSlider" min="0" max="5000" step="100" value="5000" class="slider">
+                    <div class="slider-value-box">
+                        <span id="gvDisplayValue">5.0</span> 
+                        <span id="gvDisplayUnit">km</span>
+                    </div>
+                </div>
+                <p class="helper-text">Drag slider to adjust visibility conditions.</p>
+            </div>
+
+            <div class="results-section">
+                <div class="result-box alos-box">
+                    <span class="label">ALOS Limit</span>
+                    <span class="value" id="alosResult">-</span>
+                    <span class="subtext">Based on Aircraft Size</span>
+                </div>
+                
+                <div class="logic-operator">vs</div>
+
+                <div class="result-box dlos-box">
+                    <span class="label">DLOS Limit</span>
+                    <span class="value" id="dlosResult">-</span>
+                    <span class="subtext">Based on Visibility (30%)</span>
+                </div>
+            </div>
+
+            <div class="final-result">
+                <h3>Maximum VLOS Distance</h3>
+                <div class="highlight-value" id="finalResult">-</div>
+                <div id="limitingFactorBox" class="limiting-box">
+                    <i class="fas fa-exclamation-triangle"></i> <span id="limitingFactorText">Enter values above</span>
+                </div>
+            </div>
+            
+            <div class="visual-chart">
+                <div class="chart-row">
+                    <span class="chart-label">ALOS</span>
+                    <div class="bar-track"><div class="bar alos-bar" id="alosBar" style="width: 0%;"></div></div>
+                </div>
+                <div class="chart-row">
+                    <span class="chart-label">DLOS</span>
+                    <div class="bar-track"><div class="bar dlos-bar" id="dlosBar" style="width: 0%;"></div></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="js/navbar.js"></script>
+    <script src="js/vlos_calculator.js"></script>
+</body>
+</html>
