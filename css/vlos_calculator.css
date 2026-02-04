@@ -439,6 +439,28 @@
     font-size: 24px;
 }
 
+/* I css/vlos_calculator.css */
+
+/* Stil for det bevegelige luftfartøyet */
+.aircraft-marker {
+    position: absolute;
+    bottom: 60px; /* Høyere enn piloten for å simulere flygning */
+    left: 0;
+    transform: translateX(-50%); /* Sentrer ikonet på punktet */
+    text-align: center;
+    transition: left 0.5s ease; /* Samme animasjonshastighet som linjene */
+    z-index: 20; /* Sørg for at den ligger over linjene */
+    color: #03477F; /* Mørk blå (samme som DLOS/Theme) */
+    pointer-events: none; /* Lar museklikk gå gjennom */
+}
+
+.aircraft-marker i {
+    font-size: 28px; /* Litt større enn piloten */
+    display: block;
+    /* Legg til en liten skygge for dybde */
+    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
+}
+
 .marker-label {
     display: block;
     font-size: 10px;

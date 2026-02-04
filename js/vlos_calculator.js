@@ -33,6 +33,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Max scale for the landscape chart (in meters)
     const MAX_VISUAL_DISTANCE_M = 2000; 
 
+    // Hent referanser til de nye elementene
+    const aircraftMarker = document.getElementById('aircraftMarker');
+    const aircraftIcon = document.getElementById('aircraftIcon');
+
     function getUnitSystem() {
         return document.querySelector('input[name="unitSystem"]:checked').value;
     }
@@ -128,6 +132,16 @@ document.addEventListener('DOMContentLoaded', function() {
         dlosDisplay.textContent = formatNumber(dlosDisplayVal) + suffix;
         finalDisplay.textContent = formatNumber(vlosDisplayVal) + suffix;
 
+        if (isRotorcraft) {
+            aircraftIcon.className = "fas fa-helicopter";
+            // Juster evt rotasjon hvis flyikonet trenger det
+            aircraftIcon.style.transform = "rotate(0deg)"; 
+        } else {
+            aircraftIcon.className = "fas fa-plane";
+            // Ofte ser fly-ikonet bedre ut hvis det peker litt opp/frem
+            aircraftIcon.style.transform = "rotate(-10deg)"; 
+        }
+
         // Determine Limiting Factor
         let limiter = '';
         if (alosMeters < dlosMeters) {
@@ -140,20 +154,25 @@ document.addEventListener('DOMContentLoaded', function() {
             limiter = 'dlos';
         }
 
-        updateLandscape(alosMeters, dlosMeters);
+        
+
+        updateLandscape(alosMeters, dlosMeters, vlosMeters);
     }
 
-    function updateLandscape(alos, dlos) {
+    function updateLandscape(alos, dlos, vlos) {
         // Calculate percentages based on fixed scale (e.g., 2000m)
         // Clamp at 100% if it exceeds scale
         let alosPct = (alos / MAX_VISUAL_DISTANCE_M) * 100;
         let dlosPct = (dlos / MAX_VISUAL_DISTANCE_M) * 100;
+        let vlosPct = (vlos / MAX_VISUAL_DISTANCE_M) * 100;
 
         if (alosPct > 100) alosPct = 100;
         if (dlosPct > 100) dlosPct = 100;
+        if (vlosPct > 100) vlosPct = 100;
 
         markerALOS.style.left = alosPct + "%";
         markerDLOS.style.left = dlosPct + "%";
+        aircraftMarker.style.left = vlosPct + "%";
 
         // Bring the "limiting" marker to front so it's clearly visible
         if (alos < dlos) {
