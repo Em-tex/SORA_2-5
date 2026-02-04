@@ -72,7 +72,7 @@
                         <div class="stepper-wrapper">
                             <button type="button" class="stepper-btn" id="btnCdMinus"><i class="fas fa-minus"></i></button>
                             <div class="input-wrapper large-input-wrapper">
-                                <input type="number" id="cdInput" step="0.1" min="0" placeholder="0"> 
+                                <input type="number" id="cdInput" step="0.1" min="0" value="0.4" placeholder="0"> 
                                 <span class="unit-display" id="cdUnitLabel">m</span>
                             </div>
                             <button type="button" class="stepper-btn" id="btnCdPlus"><i class="fas fa-plus"></i></button>
@@ -149,33 +149,36 @@
                     <div class="sky"></div>
                     <div class="ground"></div>
                     
-                    <div class="pilot-marker">
-                        <i class="fas fa-user-astronaut"></i>
-                        <span class="marker-label">Pilot</span>
-                    </div>
-
-                    <div id="aircraftMarker" class="aircraft-marker" style="left: 0%;">
-                        <i id="aircraftIcon" class="fas fa-helicopter"></i>
-                    </div>
-
-                    <div id="markerALOS" class="distance-marker marker-alos" style="left: 0%;">
-                        <div class="flag">ALOS</div>
-                        <div class="line"></div>
-                    </div>
-
-                    <div id="markerDLOS" class="distance-marker marker-dlos" style="left: 0%;">
-                        <div class="flag">DLOS</div>
-                        <div class="line"></div>
-                    </div>
-
-                    <div class="ruler">
-                        <span class="tick" style="left: 0%">0m</span>
-                        <span class="tick" style="left: 25%">500m</span>
-                        <span class="tick" style="left: 50%">1000m</span>
-                        <span class="tick" style="left: 75%">1500m</span>
-                        <span class="tick" style="left: 100%">2000m+</span>
-                    </div>
-                </div>
+                    <div class="chart-content">
+                    
+                        <div class="pilot-marker">
+                            <i class="fas fa-user-astronaut"></i>
+                            <span class="marker-label">Pilot</span>
+                        </div>
+                
+                        <div id="aircraftMarker" class="aircraft-marker" style="left: 0%;">
+                            <i id="aircraftIcon" class="fas fa-helicopter"></i>
+                        </div>
+                
+                        <div id="markerALOS" class="distance-marker marker-alos" style="left: 0%;">
+                            <div class="flag">ALOS</div>
+                            <div class="line"></div>
+                        </div>
+                
+                        <div id="markerDLOS" class="distance-marker marker-dlos" style="left: 0%;">
+                            <div class="flag">DLOS</div>
+                            <div class="line"></div>
+                        </div>
+                
+                        <div class="ruler">
+                            <span class="tick" style="left: 0%">0m</span>
+                            <span class="tick" style="left: 25%">500m</span>
+                            <span class="tick" style="left: 50%">1000m</span>
+                            <span class="tick" style="left: 75%">1500m</span>
+                            <span class="tick" style="left: 100%">2000m+</span>
+                        </div>
+                        
+                    </div> </div>
             </div>
 
         </div>

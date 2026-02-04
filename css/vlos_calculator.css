@@ -421,15 +421,23 @@
 .landscape-chart {
     position: relative;
     height: 120px;
-    width: 100%;
+    width: 100%;       /* Full bredde for bakgrunnen */
+    margin: 0;         /* Ingen marg på utsiden */
     background: linear-gradient(to bottom, #dbefff 60%, #e0f2d5 60%); 
 }
 
+.chart-content {
+    position: relative;
+    width: calc(100% - 60px); /* Her trekker vi inn innholdet */
+    margin: 0 auto;           /* Sentrerer innholdet */
+    height: 100%;             
+}
 /* Pilot Icon */
 .pilot-marker {
     position: absolute;
-    bottom: 40px; 
-    left: 10px;
+    bottom: 20px; 
+    left: 0px;
+    transform: translateX(-50%); /*Sentrerer ikonet horisontalt */
     color: #333;
     text-align: center;
     z-index: 5;
