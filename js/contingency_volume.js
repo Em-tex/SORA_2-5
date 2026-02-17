@@ -1,311 +1,294 @@
 // Constants
-const G = 9.81; // Gravitational acceleration (m/s^2)
+const G = 9.81; // Gravity
 
-// Cache DOM elements for performance
-const elements = {
-    v0: document.getElementById('v0'),
-    speedHelpText: document.getElementById('speedHelpText'), // Added for help text
-    tr: document.getElementById('tr'),
-    aircraftType: document.getElementById('aircraftType'),
-    contingencyMethod: document.getElementById('contingencyMethod'),
-    parachuteTimeRow: document.getElementById('parachuteTimeRow'),
-    tp: document.getElementById('tp'),
-    sGnss: document.getElementById('sGnss'),
-    sPos: document.getElementById('sPos'),
-    sK: document.getElementById('sK'),
-    pitchAngleRow: document.getElementById('pitchAngleRow'),
-    thetaMax: document.getElementById('thetaMax'),
-    rollAngleRow: document.getElementById('rollAngleRow'),
-    phiMax: document.getElementById('phiMax'),
-    anglePlaceholder: document.getElementById('anglePlaceholder'),
-    hfg: document.getElementById('hfg'),
-    altitudeMeasurement: document.getElementById('altitudeMeasurement'),
-    sCvValue: document.getElementById('sCvValue'),
-    hCvValue: document.getElementById('hCvValue'),
-    resetButton: document.getElementById('resetContingencyForm'),
-    // Details spans - Horizontal
-    det_sGnss: document.getElementById('det_sGnss'),
-    det_sPos: document.getElementById('det_sPos'),
-    det_sK: document.getElementById('det_sK'),
-    det_sR: document.getElementById('det_sR'),
-    det_sCM: document.getElementById('det_sCM'),
-    det_sCvTotal: document.getElementById('det_sCvTotal'),
-    // Details spans - Vertical
-    det_hfg: document.getElementById('det_hfg'),
-    det_hAM: document.getElementById('det_hAM'),
-    det_hR: document.getElementById('det_hR'),
-    det_hCM: document.getElementById('det_hCM'),
-    det_hCvTotal: document.getElementById('det_hCvTotal'),
-};
-
-// ***** GJENNINNFFØRT DENNE LINJEN *****
-// IDs of all input elements used for saving/loading
-const inputIds = ['v0', 'tr', 'aircraftType', 'contingencyMethod', 'tp', 'sGnss', 'sPos', 'sK', 'thetaMax', 'phiMax', 'hfg', 'altitudeMeasurement'];
-
-// --- START: Storage Functions ---
-const CONTINGENCY_KEY = 'contingency_form_data';
-
-function saveContingencyForm() {
-    const data = {};
-    inputIds.forEach(id => { // Denne trenger inputIds
-        const el = document.getElementById(id);
-        if (el) {
-            data[id] = el.value;
-        }
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Initialize listeners
+    const inputs = document.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', calculateAndDisplay);
+        input.addEventListener('change', calculateAndDisplay);
     });
-    localStorage.setItem(CONTINGENCY_KEY, JSON.stringify(data));
-}
 
-function loadContingencyForm() {
-    const data = JSON.parse(localStorage.getItem(CONTINGENCY_KEY));
-    if (data) {
-        inputIds.forEach(id => { // Denne trenger inputIds
-            const el = document.getElementById(id);
-            if (el && data[id] !== undefined) {
-                el.value = data[id];
-            }
+    // 2. Logic for Method Dropdown
+    const methodSelect = document.getElementById('contingencyMethod');
+    if(methodSelect) {
+        methodSelect.addEventListener('change', function() {
+            const tpGroup = document.getElementById('tpGroup');
+            tpGroup.style.display = (this.value === 'parachute') ? 'block' : 'none';
+            calculateAndDisplay();
         });
-    } else {
-        applyDefaultValues();
     }
-    // UI-oppdatering flyttet til initializeApp for å inkludere custom selects
-}
 
-function resetContingencyForm() {
-    localStorage.removeItem(CONTINGENCY_KEY);
-    applyDefaultValues();
-    
-    // NY: Oppdater visual etter reset
-    updateCustomSelectVisual(elements.aircraftType);
-    updateCustomSelectVisual(elements.contingencyMethod);
+    // 3. Logic for Aircraft Type (Labels and Icons)
+    const aircraftSelect = document.getElementById('aircraftType');
+    if(aircraftSelect) {
+        aircraftSelect.addEventListener('change', function() {
+            updateAircraftUI(this.value);
+            calculateAndDisplay();
+        });
+    }
 
-    updateUIBasedOnSelections();
+    // Initial run
+    updateAircraftUI(document.getElementById('aircraftType').value); // Ensure correct label on load
     calculateAndDisplay();
-}
+});
 
-function applyDefaultValues() {
-    elements.v0.value = 10;
-    elements.tr.value = 1;
-    elements.aircraftType.value = 'multirotor';
-    elements.contingencyMethod.value = 'maneuver';
-    elements.tp.value = 2;
-    elements.sGnss.value = 3;
-    elements.sPos.value = 3;
-    elements.sK.value = 1;
-    elements.thetaMax.value = 45;
-    elements.phiMax.value = 30;
-    elements.hfg.value = 100;
-    elements.altitudeMeasurement.value = 'barometric';
-}
-// --- END: Storage Functions ---
+function updateAircraftUI(type) {
+    const angleLabel = document.getElementById('angleLabel');
+    const overlayIcon = document.querySelector('#aircraftIconOverlay i');
 
-
-// --- NY: Funksjoner for Custom Select ---
-/**
- * Initialiserer alle custom select-bokser på siden.
- */
-function initCustomSelects() {
-    document.querySelectorAll('.custom-select-container').forEach(container => {
-        const hiddenSelect = container.querySelector('select');
-        const trigger = container.querySelector('.custom-select-trigger');
-        const optionsContainer = container.querySelector('.custom-select-options');
-        const options = container.querySelectorAll('.custom-select-option');
-        const arrow = trigger.querySelector('.custom-select-arrow');
-
-        // Åpne/lukke listen
-        trigger.addEventListener('click', (e) => {
-            e.stopPropagation(); // Forhindre at body-klikket lukker med en gang
-            optionsContainer.classList.toggle('open');
-        });
-
-        // Håndter valg fra listen
-        options.forEach(option => {
-            option.addEventListener('click', () => {
-                const selectedValue = option.getAttribute('data-value');
-                const selectedHTML = option.innerHTML;
-
-                // 1. Oppdater den skjulte select-boksen
-                hiddenSelect.value = selectedValue;
-                
-                // 2. Oppdater den synlige trigger-boksen
-                trigger.innerHTML = `<span>${selectedHTML}</span>` + (arrow ? arrow.outerHTML : '<span class="custom-select-arrow">▼</span>');
-                
-                // 3. Lukk listen
-                optionsContainer.classList.remove('open');
-
-                // 4. Utløs 'change'-eventet på den skjulte select-boksen
-                // Dette gjør at den eksisterende calculateAndDisplay()-lytteren fanger opp endringen.
-                hiddenSelect.dispatchEvent(new Event('change'));
-            });
-        });
-    });
-
-    // Lukk alle åpne lister hvis man klikker utenfor
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.custom-select-options.open').forEach(container => {
-            container.classList.remove('open');
-        });
-    });
-}
-
-/**
- * Oppdaterer den synlige delen av en custom select basert på verdien
- * til den underliggende (skjulte) select-boksen.
- * @param {HTMLElement} selectElement - Det skjulte <select>-elementet.
- */
-function updateCustomSelectVisual(selectElement) {
-    const container = selectElement.closest('.custom-select-container');
-    if (!container) return;
-
-    const trigger = container.querySelector('.custom-select-trigger');
-    const currentValue = selectElement.value;
-    const correspondingOption = container.querySelector(`.custom-select-option[data-value="${currentValue}"]`);
-    const arrow = trigger.querySelector('.custom-select-arrow');
-
-    if (trigger && correspondingOption) {
-         trigger.innerHTML = `<span>${correspondingOption.innerHTML}</span>` + (arrow ? arrow.outerHTML : '<span class="custom-select-arrow">▼</span>');
-    }
-}
-// --- SLUTT: Funksjoner for Custom Select ---
-
-
-function calculateHorizontalCV() {
-    const v0 = parseFloat(elements.v0.value) || 0;
-    const tr = parseFloat(elements.tr.value) || 0;
-    const sGnss = parseFloat(elements.sGnss.value) || 0;
-    const sPos = parseFloat(elements.sPos.value) || 0;
-    const sK = parseFloat(elements.sK.value) || 0;
-    const method = elements.contingencyMethod.value;
-    const aircraft = elements.aircraftType.value;
-    const tp = parseFloat(elements.tp.value) || 0;
-    const thetaMax = parseFloat(elements.thetaMax.value) || 0;
-    const phiMax = parseFloat(elements.phiMax.value) || 0;
-
-    const sR = v0 * tr;
-    let sCM = 0;
-
-    if (method === 'maneuver') {
-        if (aircraft === 'multirotor') {
-            const thetaRad = thetaMax * (Math.PI / 180);
-            const tanTheta = Math.tan(thetaRad);
-            sCM = (tanTheta > 1e-9) ? (0.5 * Math.pow(v0, 2) / (G * tanTheta)) : Infinity;
-        } else if (aircraft === 'fixedwing') {
-            const phiRad = phiMax * (Math.PI / 180);
-            const tanPhi = Math.tan(phiRad);
-            sCM = (tanPhi > 1e-9) ? (Math.pow(v0, 2) / (G * tanPhi)) : Infinity;
+    if (type === 'multirotor') {
+        // Multirotor logic
+        if(angleLabel) angleLabel.innerHTML = 'Max Pitch Angle (&theta;)'; // Brake logic
+        if(overlayIcon) {
+            overlayIcon.className = 'fas fa-helicopter';
+            overlayIcon.style.transform = 'rotate(0deg)';
         }
-    } else if (method === 'parachute') {
-        sCM = v0 * tp;
-    }
-
-    const sCV = sGnss + sPos + sK + sR + sCM;
-
-    elements.det_sGnss.textContent = sGnss.toFixed(1);
-    elements.det_sPos.textContent = sPos.toFixed(1);
-    elements.det_sK.textContent = sK.toFixed(1);
-    elements.det_sR.textContent = sR.toFixed(1);
-    elements.det_sCM.textContent = isFinite(sCM) ? sCM.toFixed(1) : 'Infinite (check angle)';
-    elements.det_sCvTotal.textContent = isFinite(sCV) ? sCV.toFixed(1) : 'Infinite';
-
-    elements.sCvValue.textContent = isFinite(sCV) ? sCV.toFixed(1) : '-';
-
-    return sCV;
-}
-
-function calculateVerticalCV() {
-    const v0 = parseFloat(elements.v0.value) || 0;
-    const tr = parseFloat(elements.tr.value) || 0;
-    const hfg = parseFloat(elements.hfg.value) || 0;
-    const altMeasure = elements.altitudeMeasurement.value;
-    const aircraft = elements.aircraftType.value;
-    const method = elements.contingencyMethod.value;
-    const tp = parseFloat(elements.tp.value) || 0;
-
-    const hAM = altMeasure === 'barometric' ? 1.0 : 4.0;
-    const hR = v0 * 0.7 * tr;
-    let hCM = 0;
-
-    if (method === 'maneuver') {
-        if (aircraft === 'multirotor') {
-            hCM = 0.5 * Math.pow(v0, 2) / G;
-        } else if (aircraft === 'fixedwing') {
-            hCM = (Math.pow(v0, 2) / G) * 0.3;
-        }
-    } else if (method === 'parachute') {
-        hCM = v0 * tp * 0.7;
-    }
-
-    const hCV = hfg + hAM + hR + hCM;
-
-    elements.det_hfg.textContent = hfg.toFixed(1);
-    elements.det_hAM.textContent = hAM.toFixed(1);
-    elements.det_hR.textContent = hR.toFixed(1);
-    elements.det_hCM.textContent = hCM.toFixed(1);
-    elements.det_hCvTotal.textContent = hCV.toFixed(1);
-
-    elements.hCvValue.textContent = isFinite(hCV) ? hCV.toFixed(1) : '-';
-
-    return hCV;
-}
-
-function updateUIBasedOnSelections() {
-    const method = elements.contingencyMethod.value;
-    const aircraft = elements.aircraftType.value;
-
-    elements.parachuteTimeRow.style.display = method === 'parachute' ? 'flex' : 'none';
-
-    const showPitch = (method === 'maneuver' && aircraft === 'multirotor');
-    const showRoll = (method === 'maneuver' && aircraft === 'fixedwing');
-
-    elements.pitchAngleRow.style.display = showPitch ? 'flex' : 'none';
-    elements.rollAngleRow.style.display = showRoll ? 'flex' : 'none';
-    elements.anglePlaceholder.style.display = (!showPitch && !showRoll) ? 'flex' : 'none';
-
-    if (aircraft === 'multirotor') {
-        elements.speedHelpText.textContent = 'Must be ≥ 3 m/s for multirotor.';
-        elements.speedHelpText.style.display = 'block';
-    } else if (aircraft === 'fixedwing') {
-        elements.speedHelpText.textContent = 'Must be ≥ 1.25 Vstall,clean for fixed-wing.';
-        elements.speedHelpText.style.display = 'block';
     } else {
-        elements.speedHelpText.style.display = 'none';
+        // Fixed Wing logic
+        if(angleLabel) angleLabel.innerHTML = 'Max Bank Angle (&phi;)'; // Turn logic
+        if(overlayIcon) {
+            overlayIcon.className = 'fas fa-plane';
+            overlayIcon.style.transform = 'rotate(-10deg)'; // Slight tilt for look
+        }
     }
 }
 
 function calculateAndDisplay() {
-    updateUIBasedOnSelections();
+    // --- A. Get Values ---
+    const v0 = parseFloat(document.getElementById('v0').value) || 0;
+    const hfg = parseFloat(document.getElementById('hfg').value) || 0;
+    const hAm = parseFloat(document.getElementById('altitudeMeasurement').value) || 0;
+    const tr = parseFloat(document.getElementById('tr').value) || 0;
+    const aircraftType = document.getElementById('aircraftType').value;
+    const angleVal = parseFloat(document.getElementById('thetaMax').value) || 30;
+    const method = document.getElementById('contingencyMethod').value;
 
-    const sCV = calculateHorizontalCV();
-    const hCV = calculateVerticalCV();
+    const sGnss = parseFloat(document.getElementById('sGnss').value) || 0;
+    const sPos = parseFloat(document.getElementById('sPos').value) || 0;
+    const sK = parseFloat(document.getElementById('sK').value) || 0;
 
-    // Viser kun tallet (uten enhet)
-    elements.sCvValue.textContent = isFinite(sCV) ? sCV.toFixed(1) : '-';
-    elements.hCvValue.textContent = isFinite(hCV) ? hCV.toFixed(1) : '-';
+    // --- B. Calculations (SORA 2.5 Annex A) ---
+    const angleRad = angleVal * (Math.PI / 180);
 
-    saveContingencyForm();
-}
+    // 1. Reaction Phase
+    const sR = v0 * tr;
+    const hR = v0 * 0.707 * tr; // Vertical 45deg assumption
 
-function initializeApp() {
-    loadContingencyForm();
-    
-    // NY: Initialiser custom selects og oppdater visningen
-    initCustomSelects();
-    updateCustomSelectVisual(elements.aircraftType);
-    updateCustomSelectVisual(elements.contingencyMethod);
+    // 2. Maneuver Phase (S_CM)
+    let sCm = 0;
+    let hCm = 0;
 
-    calculateAndDisplay(); // Første kalkulering
-
-    inputIds.forEach(id => { // Denne trenger inputIds
-        const el = document.getElementById(id);
-        if (el) {
-            const eventType = (el.tagName === 'SELECT') ? 'change' : 'input';
-            // De eksisterende lytterne vil nå fange opp 'change'-eventet
-            // som utløses av initCustomSelects
-            el.addEventListener(eventType, calculateAndDisplay);
+    if (method === 'parachute') {
+        const tp = parseFloat(document.getElementById('tp').value) || 0;
+        sCm = v0 * tp;
+        hCm = v0 * 0.707 * tp; 
+    } else {
+        // Standard Maneuver
+        if (aircraftType === 'multirotor') {
+            // Multirotor STOP: V^2 / (2 * g * tan(pitch))
+            if(angleRad > 0) {
+                sCm = (v0 * v0) / (2 * G * Math.tan(angleRad));
+            }
+            hCm = (v0 * v0) / (2 * G); // Kinetic to Potential
+        } else {
+            // Fixed Wing TURN: V^2 / (g * tan(bank))
+            if(angleRad > 0) {
+                sCm = (v0 * v0) / (G * Math.tan(angleRad));
+            }
+            // Zoom climb factor (30% energy)
+            hCm = ((v0 * v0) / (2 * G)) * 0.3; 
         }
-    });
+    }
 
-    elements.resetButton.addEventListener('click', resetContingencyForm);
+    // 3. Totals
+    const sCvBuffer = sGnss + sPos + sK + sR + sCm;
+    const hCvBuffer = hAm + hR + hCm;
+    const hCvTotal = hfg + hCvBuffer;
+
+    // --- C. Update Results ---
+    setVal('sCvValue', sCvBuffer.toFixed(1));
+    setVal('hCvValue', hCvTotal.toFixed(1));
+    
+    setVal('det_sR', sR.toFixed(1) + " m");
+    setVal('det_sCM', sCm.toFixed(1) + " m");
+    setVal('det_hR', hR.toFixed(1) + " m");
+    setVal('det_hCM', hCm.toFixed(1) + " m");
+
+    // --- D. Draw ---
+    drawVisualization(hfg, sCvBuffer, hCvBuffer, hCvTotal);
 }
 
-document.addEventListener('DOMContentLoaded', initializeApp);
+function setVal(id, content) {
+    const el = document.getElementById(id);
+    if(el) el.innerText = content;
+}
+
+// --- CANVAS LOGIC ---
+function drawVisualization(hfg, sBuffer, hBuffer, hTotal) {
+    const canvas = document.getElementById('cvCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    // Clear
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // --- Scaling ---
+    const modelFgWidth = 100; // Arbitrary units for FG width
+    const targetFgPx = 120;
+    let scale = targetFgPx / modelFgWidth;
+
+    const totalWidthM = modelFgWidth + (2 * sBuffer);
+    const totalHeightM = hTotal;
+
+    // Increased padding to accommodate horizontal text on sides
+    const padX = 70; 
+    const padTop = 60; 
+    const padBot = 40;
+    
+    const availW = w - (padX * 2);
+    const availH = h - padTop - padBot;
+
+    // Adjust scale if total is too big
+    if (totalWidthM * scale > availW) scale = availW / totalWidthM;
+    if (totalHeightM * scale > availH) {
+        const hScale = availH / totalHeightM;
+        if(hScale < scale) scale = hScale;
+    }
+
+    // Dimensions in px
+    const fgW = modelFgWidth * scale;
+    const fgH = hfg * scale;
+    const bufW = sBuffer * scale;
+    const bufH = hBuffer * scale;
+
+    // Positions
+    const centerX = w / 2;
+    const groundY = h - padBot;
+    const fgX = centerX - (fgW / 2);
+    const fgY = groundY - fgH;
+    const cvX = fgX - bufW;
+    const cvY = fgY - bufH;
+    const cvW = fgW + (2 * bufW);
+    const cvH = fgH + bufH;
+
+    // --- Update Overlay Icon Position ---
+    const overlay = document.getElementById('aircraftIconOverlay');
+    if(overlay) {
+        const iconY = fgY + (fgH / 2);
+        // Canvas wrapper padding is 10px. 
+        overlay.style.left = (centerX + 10) + 'px'; 
+        overlay.style.top = (iconY + 10) + 'px';
+        overlay.style.display = (fgH < 20 || fgW < 20) ? 'none' : 'block';
+    }
+
+    // --- DRAWING ---
+
+    // 1. Contingency Volume (Yellow)
+    ctx.fillStyle = 'rgba(255, 193, 7, 0.2)';
+    ctx.strokeStyle = '#e0a800';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cvX, cvY, cvW, cvH);
+    ctx.fillRect(cvX, cvY, cvW, cvH);
+
+    // 2. Flight Geography (Green)
+    ctx.fillStyle = 'rgba(40, 167, 69, 0.6)';
+    ctx.strokeStyle = '#1e7e34';
+    ctx.strokeRect(fgX, fgY, fgW, fgH);
+    ctx.fillRect(fgX, fgY, fgW, fgH);
+
+    // 3. Ground
+    ctx.beginPath();
+    ctx.moveTo(0, groundY);
+    ctx.lineTo(w, groundY);
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // 4. Dimensions - UPDATED TEXT LOGIC
+    // Horizontal Buffer (Bottom)
+    drawDimension(ctx, cvX, groundY + 20, fgX, groundY + 20, `Buffer: ${sBuffer.toFixed(1)}m`, 'bottom');
+    
+    // Vertical Margin (Left side) - Horizontal Text
+    // We pass 'left' to handle horizontal text positioning to the left of the arrow
+    drawDimension(ctx, cvX - 25, fgY, cvX - 25, cvY, `Margin: ${hBuffer.toFixed(1)}m`, 'left');
+    
+    // Total Height (Right side) - Horizontal Text
+    drawDimension(ctx, cvX + cvW + 25, groundY, cvX + cvW + 25, cvY, `Total: ${hTotal.toFixed(1)}m`, 'right');
+}
+
+function drawDimension(ctx, x1, y1, x2, y2, text, position) {
+    ctx.beginPath();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    // Determine angle for arrowheads
+    const angle = Math.atan2(y2-y1, x2-x1);
+    drawArrowHead(ctx, x1, y1, angle + Math.PI);
+    drawArrowHead(ctx, x2, y2, angle);
+
+    // Text Settings
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 14px Arial'; // Larger and Bold
+    
+    // Calculate text width for background box
+    const textMetrics = ctx.measureText(text);
+    const textW = textMetrics.width;
+    const textH = 16; // Approx height
+
+    let textX, textY;
+
+    if (position === 'bottom') {
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        textX = (x1 + x2) / 2;
+        textY = y1 + 8;
+    } else if (position === 'left') {
+        // Horizontal text to the left of the vertical line
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        textX = x1 - 10;
+        textY = (y1 + y2) / 2;
+    } else if (position === 'right') {
+        // Horizontal text to the right of the vertical line
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        textX = x1 + 10;
+        textY = (y1 + y2) / 2;
+    }
+
+    // Draw White Background Box for readability
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    let boxX = textX;
+    let boxY = textY;
+
+    // Adjust box position based on alignment
+    if(ctx.textAlign === 'center') boxX -= (textW / 2 + 2);
+    if(ctx.textAlign === 'right') boxX -= (textW + 2);
+    if(ctx.textAlign === 'left') boxX -= 2;
+    
+    if(ctx.textBaseline === 'top') boxY -= 2;
+    if(ctx.textBaseline === 'middle') boxY -= (textH / 2 + 2);
+
+    ctx.fillRect(boxX, boxY, textW + 4, textH + 4);
+    ctx.restore();
+
+    // Draw Text
+    ctx.fillText(text, textX, textY);
+}
+
+function drawArrowHead(ctx, x, y, angle) {
+    const len = 8; // Slightly larger arrows
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + len * Math.cos(angle - Math.PI/6), y + len * Math.sin(angle - Math.PI/6));
+    ctx.lineTo(x + len * Math.cos(angle + Math.PI/6), y + len * Math.sin(angle + Math.PI/6));
+    ctx.fillStyle = '#333';
+    ctx.fill();
+}

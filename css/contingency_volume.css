@@ -1,183 +1,200 @@
-/* Stiler spesifikt for contingency_volume.html */
-
-.critical-area-container {
-    max-width: 800px;
-    text-align: left;
+/* Layout */
+.calculator-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-top: 20px;
 }
 
-.intro-text {
-    margin-bottom: 20px;
-    line-height: 1.5;
-}
-.intro-text:last-of-type {
-    margin-bottom: 30px;
-}
-
-#contingencyForm {
-    margin-bottom: 30px;
+@media (min-width: 992px) {
+    .calculator-grid {
+        grid-template-columns: 350px 1fr;
+        align-items: start;
+    }
 }
 
-/* Sørger for lik høyde på input og select (arves fra critical_area.css) */
-.form-group select,
-.form-group input[type="number"] {
-    min-height: 40px;
-    height: 40px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 1em;
-    width: 100%;
-    background-color: white;
+/* Card Styling */
+.card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    padding: 20px;
+    border: 1px solid #eee;
 }
 
-.form-group select {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    padding-right: 30px;
+/* Inputs */
+.input-group {
+    margin-bottom: 15px;
 }
 
-/* --- CSS Fix for Angle Inputs --- */
-/* Tvinger containeren til å stable elementene vertikalt */
-.form-group.angle-input-group {
-    display: flex; /* Bruker flexbox */
-    flex-direction: column; /* Stabler vertikalt */
-    align-items: flex-start; /* Justerer til venstre */
-    padding-top: 0;
-}
-
-/* Sørger for at elementene inni tar full bredde og har bunnmargin */
-.angle-input-group > label,
-.angle-input-group > input,
-.angle-input-group > small {
-    display: block; /* Nødvendig for at width: 100% skal fungere korrekt */
-    width: 100%;
+.input-group label {
+    display: block;
     margin-bottom: 5px;
-    box-sizing: border-box;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.9rem;
 }
 
-/* Fjerner unødvendig margin øverst/nederst */
-.angle-input-group > input {
-    margin-top: 0;
-}
-.angle-input-group > small {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-/* --- End CSS Fix --- */
-
-
-/* Resultat-styling */
-#resultHorizontal, #resultVertical {
-    margin-bottom: 10px;
+.input-group label i {
+    margin-right: 5px;
+    color: #666;
+    width: 16px;
     text-align: center;
 }
-#calculationDetailsHorizontal, #calculationDetailsVertical {
-    font-size: 0.9em;
-    text-align: left;
+
+.input-group input, 
+.input-group select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box; 
+}
+
+.sub-fieldset {
+    border: 1px solid #e0e0e0;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 8px;
     background-color: #f8f9fa;
-    padding: 10px;
-    border-radius: 4px;
-    margin-bottom: 20px;
-}
-#calculationDetailsHorizontal ul, #calculationDetailsVertical ul {
-    list-style-type: none;
-    padding-left: 0;
-    margin-top: 5px;
-}
-#calculationDetailsHorizontal p, #calculationDetailsVertical p {
-    margin-bottom: 5px;
 }
 
-/* Responsiv */
-@media (max-width: 650px) {
-    .form-group select,
-    .form-group input[type="number"] {
-        padding: 8px;
-        min-height: 36px;
-        height: 36px;
-    }
-    /* Sørger for at vinkel-inputene også stables riktig på mobil,
-       selv om form-row allerede gjør det */
-    .form-group.angle-input-group {
-        margin-bottom: 15px; /* Legger til margin under på mobil */
-    }
+.sub-fieldset legend {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #666;
+    padding: 0 5px;
 }
 
-
-/* --- NY: Stiler for Custom Select --- */
-.custom-select-container {
-    position: relative;
-    width: 100%;
-}
-
-/* Skjul den originale select-boksen */
-.custom-select-container select {
-    display: none;
-}
-
-/* Den synlige "boksen" */
-.custom-select-trigger {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: white;
-    cursor: pointer;
-    min-height: 40px; /* Samme som andre inputs */
-    height: 40px;
-    box-sizing: border-box;
-    font-size: 1em;
-}
-.custom-select-trigger span {
-    display: flex;
-    align-items: center;
-}
-.custom-select-trigger .fas { /* Ikonet */
-    margin-right: 10px;
-    width: 18px; /* Gir litt fast bredde for justering */
+/* Visualization Wrapper */
+.visualization-card {
     text-align: center;
 }
-.custom-select-arrow {
-    font-size: 0.8em;
+
+.vis-desc {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.canvas-wrapper {
+    position: relative; /* Needed for absolute positioning of the icon */
+    width: 100%;
+    overflow-x: auto; 
+    display: flex;
+    justify-content: center;
+    background-color: #fcfcfc;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 10px;
+    box-sizing: border-box;
+    min-height: 350px;
+}
+
+canvas {
+    max-width: 100%;
+    height: auto;
+    z-index: 1;
+}
+
+/* Aircraft Overlay Icon */
+.aircraft-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    pointer-events: none;
+    color: #333;
+    font-size: 24px;
+    transition: all 0.2s ease-out;
+}
+
+/* Legend */
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    font-size: 0.9rem;
     color: #555;
 }
 
-/* Listen med valg */
-.custom-select-options {
-    display: none; /* Skjult som standard */
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-top: none;
-    border-radius: 0 0 4px 4px;
-    z-index: 10;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-/* Vises med JS */
-.custom-select-options.open {
-    display: block;
-}
-
-.custom-select-option {
+.legend-item {
     display: flex;
     align-items: center;
-    padding: 10px;
-    cursor: pointer;
+    gap: 8px;
 }
-.custom-select-option:hover {
-    background-color: #f0f0f0;
+
+.color-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
 }
-.custom-select-option .fas { /* Ikonet */
-    margin-right: 10px;
-    width: 18px; /* Samme som over */
+
+.bg-green {
+    background-color: rgba(40, 167, 69, 0.6);
+    border: 1px solid #1e7e34;
+}
+
+.bg-yellow {
+    background-color: rgba(255, 193, 7, 0.4);
+    border: 1px solid #e0a800;
+}
+
+/* Results */
+.main-results {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    margin-bottom: 20px;
     text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.result-box p {
+    margin: 0 0 5px 0;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.big-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.unit {
+    font-size: 1.2rem;
+    color: #7f8c8d;
+}
+
+.text-muted {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.details-table {
+    width: 100%;
+    font-size: 0.9rem;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.details-table td {
+    padding: 8px 5px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.details-table td:nth-child(even) {
+    font-weight: 600;
+    text-align: right;
+    color: #333;
 }
