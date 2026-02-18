@@ -18,8 +18,8 @@
 
     <div class="container">
         <header class="page-header">
-            <h1><i class="fas fa-cube"></i> Contingency Volume (SORA 2.5)</h1>
-            <p>Calculate safety buffers based on SORA 2.5 Annex A logic.</p>
+            <h1>Contingency Volume (SORA 2.5)</h1>
+            <p>Calculate safety buffers and visualize the operational volume.</p>
         </header>
 
         <div class="calculator-grid">
@@ -28,67 +28,168 @@
                 
                 <form id="cvForm">
                     <div class="input-group">
-                        <label for="v0" title="Maximum Ground Speed (include wind!)"><i class="fas fa-tachometer-alt"></i> Max Ground Speed (V<sub>0</sub>) [m/s]:</label>
-                        <input type="number" id="v0" step="0.1" value="15" min="0">
+                        <label>Aircraft Type:</label>
+                        <div class="toggle-group">
+                            <input type="radio" name="aircraftType" id="type_multi" value="multirotor" checked>
+                            <label for="type_multi" class="toggle-btn">
+                                <i class="fas fa-helicopter"></i> Multirotor
+                            </label>
+
+                            <input type="radio" name="aircraftType" id="type_fixed" value="fixedwing">
+                            <label for="type_fixed" class="toggle-btn">
+                                <i class="fas fa-plane"></i> Fixed Wing
+                            </label>
+                        </div>
                     </div>
 
                     <div class="input-group">
-                        <label for="hfg" title="Height of Flight Geography (Ceiling)"><i class="fas fa-arrow-up"></i> Flight Geography Height (H<sub>FG</sub>) [m]:</label>
-                        <input type="number" id="hfg" step="1" value="120" min="0">
-                    </div>
+                        <label>Contingency Method:</label>
+                        <div class="toggle-group">
+                            <input type="radio" name="contingencyMethod" id="method_std" value="standard" checked>
+                            <label for="method_std" class="toggle-btn">
+                                <i class="fas fa-gamepad"></i> Standard
+                            </label>
 
-                    <div class="input-group">
-                         <label for="altitudeMeasurement" title="Altitude measurement error margin (e.g., Barometric drift)"><i class="fas fa-ruler-vertical"></i> Altimetry Error (H<sub>AM</sub>) [m]:</label>
-                         <input type="number" id="altitudeMeasurement" step="0.1" value="20" min="0">
-                    </div>
-
-                    <div class="input-group">
-                        <label for="tr" title="Pilot reaction time. 2.0s is a safe conservative default for human pilots."><i class="fas fa-stopwatch"></i> Reaction Time (t<sub>R</sub>) [s]:</label>
-                        <input type="number" id="tr" step="0.1" value="2.0" min="0">
-                    </div>
-
-                    <div class="input-group">
-                        <label for="aircraftType"><i class="fas fa-plane"></i> Aircraft Type:</label>
-                        <select id="aircraftType">
-                            <option value="multirotor">Multirotor (Rotary Wing)</option>
-                            <option value="fixedwing">Fixed Wing</option>
-                        </select>
-                    </div>
-
-                    <div class="input-group">
-                        <label for="thetaMax" title="Max angle used for contingency maneuver. Lower angle = longer braking distance.">
-                            <i class="fas fa-undo"></i> 
-                            <span id="angleLabel">Max Pitch Angle (&theta;)</span> [deg]:
-                        </label>
-                        <input type="number" id="thetaMax" value="30" step="1" min="1" max="89">
-                    </div>
-
-                    <div class="input-group">
-                        <label for="contingencyMethod"><i class="fas fa-cogs"></i> Contingency Method:</label>
-                        <select id="contingencyMethod">
-                            <option value="standard">Standard Maneuver</option>
-                            <option value="parachute">Parachute / FTS</option>
-                        </select>
+                            <input type="radio" name="contingencyMethod" id="method_para" value="parachute">
+                            <label for="method_para" class="toggle-btn">
+                                <i class="fas fa-parachute-box"></i> Parachute / FTS
+                            </label>
+                        </div>
                     </div>
 
                     <div class="input-group" id="tpGroup" style="display:none;">
-                        <label for="tp"><i class="fas fa-parachute-box"></i> Parachute Deployment Time (t<sub>P</sub>):</label>
-                        <input type="number" id="tp" value="3" step="0.1">
+                        <label for="tp"><i class="fas fa-parachute-box"></i> Deployment Time (t<sub>P</sub>):</label>
+                        <div class="stepper">
+                            <button type="button" class="step-btn minus" onclick="adjustValue('tp', -0.5)"><i class="fas fa-minus"></i></button>
+                            <input type="number" id="tp" value="3" step="0.1">
+                            <button type="button" class="step-btn plus" onclick="adjustValue('tp', 0.5)"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="input-group">
+                        <div class="label-row">
+                            <label for="v0"><i class="fas fa-tachometer-alt"></i> Max Ground Speed (V<sub>0</sub>):</label>
+                            <i class="fas fa-info-circle info-icon" data-term="v0"></i>
+                        </div>
+                        <div class="control-wrapper">
+                            <div class="stepper">
+                                <button type="button" class="step-btn minus" onclick="adjustValue('v0', -1)"><i class="fas fa-minus"></i></button>
+                                <input type="number" id="v0" step="0.1" value="15" min="0">
+                                <button type="button" class="step-btn plus" onclick="adjustValue('v0', 1)"><i class="fas fa-plus"></i></button>
+                            </div>
+                            <input type="range" id="v0-slider" min="0" max="40" step="1" value="15" class="slider">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="label-row">
+                            <label for="tr"><i class="fas fa-stopwatch"></i> Reaction Time (t<sub>R</sub>):</label>
+                            <i class="fas fa-info-circle info-icon" data-term="tr"></i>
+                        </div>
+                        <div class="control-wrapper">
+                            <div class="stepper">
+                                <button type="button" class="step-btn minus" onclick="adjustValue('tr', -0.5)"><i class="fas fa-minus"></i></button>
+                                <input type="number" id="tr" step="0.1" value="1.5" min="0">
+                                <button type="button" class="step-btn plus" onclick="adjustValue('tr', 0.5)"><i class="fas fa-plus"></i></button>
+                            </div>
+                            <input type="range" id="tr-slider" min="0.5" max="5.0" step="0.1" value="1.5" class="slider">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="label-row">
+                            <label for="thetaMax">
+                                <i class="fas fa-undo"></i> 
+                                <span id="angleLabel">Max Pitch Angle (&theta;)</span>:
+                            </label>
+                            <i class="fas fa-info-circle info-icon" data-term="theta"></i>
+                        </div>
+                        <div class="control-wrapper">
+                            <div class="stepper">
+                                <button type="button" class="step-btn minus" onclick="adjustValue('thetaMax', -5)"><i class="fas fa-minus"></i></button>
+                                <input type="number" id="thetaMax" value="30" step="1" min="1" max="89">
+                                <button type="button" class="step-btn plus" onclick="adjustValue('thetaMax', 5)"><i class="fas fa-plus"></i></button>
+                            </div>
+                            <input type="range" id="thetaMax-slider" min="5" max="60" step="1" value="30" class="slider">
+                        </div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="input-group">
+                        <div class="label-row">
+                            <label for="hfg"><i class="fas fa-arrow-up"></i> Flight Geography Height (H<sub>FG</sub>):</label>
+                            <i class="fas fa-info-circle info-icon" data-term="hfg"></i>
+                        </div>
+                        <div class="stepper">
+                            <button type="button" class="step-btn minus" onclick="adjustValue('hfg', -10)"><i class="fas fa-minus"></i></button>
+                            <input type="number" id="hfg" step="1" value="120" min="0">
+                            <button type="button" class="step-btn plus" onclick="adjustValue('hfg', 10)"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="label-row">
+                            <label for="altSource"><i class="fas fa-satellite"></i> Altitude Source:</label>
+                            <i class="fas fa-info-circle info-icon" data-term="altSource"></i>
+                        </div>
+                        <select id="altSource">
+                            <option value="baro">Barometric (Pressure)</option>
+                            <option value="gnss">GNSS (Geometric/GPS)</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="label-row">
+                            <label for="altitudeMeasurement"><i class="fas fa-ruler-vertical"></i> Altimetry Error (H<sub>AM</sub>):</label>
+                            <i class="fas fa-info-circle info-icon" data-term="ham"></i>
+                        </div>
+                        <div class="stepper">
+                            <button type="button" class="step-btn minus" onclick="adjustValue('altitudeMeasurement', -1)"><i class="fas fa-minus"></i></button>
+                            <input type="number" id="altitudeMeasurement" step="0.1" value="1" min="0">
+                            <button type="button" class="step-btn plus" onclick="adjustValue('altitudeMeasurement', 1)"><i class="fas fa-plus"></i></button>
+                        </div>
                     </div>
 
                     <fieldset class="sub-fieldset">
                         <legend><i class="fas fa-map-marker-alt"></i> Position & Map Errors</legend>
+                        
                         <div class="input-group">
-                            <label for="sGnss">GNSS Error (S<sub>GNSS</sub>) [m]:</label>
-                            <input type="number" id="sGnss" value="10" min="0">
+                            <div class="label-row">
+                                <label for="sGnss">GNSS Error (S<sub>GNSS</sub>):</label>
+                                <i class="fas fa-info-circle info-icon" data-term="sgnss"></i>
+                            </div>
+                            <div class="stepper">
+                                <button type="button" class="step-btn minus" onclick="adjustValue('sGnss', -1)"><i class="fas fa-minus"></i></button>
+                                <input type="number" id="sGnss" value="5" min="0">
+                                <button type="button" class="step-btn plus" onclick="adjustValue('sGnss', 1)"><i class="fas fa-plus"></i></button>
+                            </div>
                         </div>
+
                         <div class="input-group">
-                            <label for="sPos">Position Error (S<sub>Pos</sub>) [m]:</label>
-                            <input type="number" id="sPos" value="0" min="0">
+                            <div class="label-row">
+                                <label for="sPos">Pos. Hold Error (S<sub>Pos</sub>):</label>
+                                <i class="fas fa-info-circle info-icon" data-term="spos"></i>
+                            </div>
+                            <div class="stepper">
+                                <button type="button" class="step-btn minus" onclick="adjustValue('sPos', -1)"><i class="fas fa-minus"></i></button>
+                                <input type="number" id="sPos" value="2" min="0">
+                                <button type="button" class="step-btn plus" onclick="adjustValue('sPos', 1)"><i class="fas fa-plus"></i></button>
+                            </div>
                         </div>
+
                         <div class="input-group">
-                            <label for="sK">Map Error (S<sub>Map</sub>) [m]:</label>
-                            <input type="number" id="sK" value="0" min="0">
+                            <div class="label-row">
+                                <label for="sK">Map Error (S<sub>Map</sub>):</label>
+                                <i class="fas fa-info-circle info-icon" data-term="smap"></i>
+                            </div>
+                            <div class="stepper">
+                                <button type="button" class="step-btn minus" onclick="adjustValue('sK', -1)"><i class="fas fa-minus"></i></button>
+                                <input type="number" id="sK" value="0" min="0">
+                                <button type="button" class="step-btn plus" onclick="adjustValue('sK', 1)"><i class="fas fa-plus"></i></button>
+                            </div>
                         </div>
                     </fieldset>
                 </form>
@@ -97,18 +198,14 @@
             <div class="output-section">
                 
                 <div class="visualization-card card">
-                    <h3><i class="fas fa-eye"></i> Visual Illustration</h3>
-                    <p class="vis-desc">Section view: Flight Geography (Green) enclosed by Contingency Volume (Yellow).</p>
-                    
                     <div class="canvas-wrapper">
                         <div id="aircraftIconOverlay" class="aircraft-overlay">
                             <i class="fas fa-helicopter"></i>
                         </div>
-                        
                         <canvas id="cvCanvas" width="600" height="400"></canvas>
                     </div>
                     
-                    <div class="legend">
+                    <div class="legend-grid">
                         <div class="legend-item">
                             <div class="color-box bg-green"></div>
                             <span>Flight Geography</span>
@@ -116,6 +213,12 @@
                         <div class="legend-item">
                             <div class="color-box bg-yellow"></div>
                             <span>Contingency Volume</span>
+                        </div>
+                        <div class="value-item">
+                            <strong>Buffer (Width):</strong> <span id="vis_sCV">0.0 m</span>
+                        </div>
+                        <div class="value-item">
+                            <strong>Margin (Height):</strong> <span id="vis_hCM">0.0 m</span>
                         </div>
                     </div>
                 </div>
@@ -161,6 +264,12 @@
 
             </div>
         </div>
+    </div>
+
+    <div id="speechBubble" class="speech-bubble" style="display: none;">
+        <h4 id="bubbleTitle">Title</h4>
+        <p id="bubbleText">Text info...</p>
+        <div class="bubble-arrow"></div>
     </div>
 
     <script src="js/navbar.js"></script>
