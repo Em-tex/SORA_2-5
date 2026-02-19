@@ -1,178 +1,233 @@
-/* Stiler spesifikt for critical_area.html */
-
-.critical-area-container {
-    max-width: 800px;
-    text-align: left;
-}
-
-.intro-text {
-    margin-bottom: 20px;
-    line-height: 1.5;
-}
-.intro-text:last-of-type {
-    margin-bottom: 30px;
-}
-
-#criticalAreaForm {
-    margin-bottom: 30px;
-}
-
-.form-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
+/* Layout Grid */
+.calculator-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two columns on desktop */
     gap: 20px;
+    margin-top: 20px;
 }
 
-.form-group.half-width {
-    flex: 1 1 calc(50% - 15px); /* Justert gap */
-    min-width: 200px; /* Kan justeres ved behov */
+.card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
 }
 
+h2, h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Inputs with Icons */
 .form-group {
-    margin-bottom: 0; /* Nullstilles her, settes i @media for mobil */
+    margin-bottom: 20px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px; /* Redusert fra 8px for tettere layout */
-    font-weight: bold;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #34495e;
 }
 
-/* Felles stiler for input og select */
-.form-group input[type="number"],
-.form-group input[type="text"],
-.form-group select {
+.input-icon-wrapper {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7f8c8d;
+    pointer-events: none;
+}
+
+.input-icon-wrapper input[type="number"] {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
+    padding: 12px 12px 12px 40px; 
+    border: 1px solid #bdc3c7;
     border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 1em;
-    background-color: white;
-    min-height: 40px; /* Minimumshøyde */
-    height: 40px;     /* Fast høyde for konsistens */
-    appearance: none; /* Fjerner standard nettleserstil */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    /* Valgfritt: legg til pil for select her hvis ønskelig */
+    font-size: 1rem;
+    box-sizing: border-box; 
 }
 
-/* Spesifikt for select for å gi plass til en eventuell pil */
-.form-group select {
-     padding-right: 30px; /* Plass til pil */
-     /* background-image: url(...); */ /* Legg til pil-ikon her */
-     /* background-repeat: no-repeat; */
-     /* background-position: right 10px center; */
-     /* background-size: 12px; */
+.input-icon-wrapper input[type="number"]:focus {
+    border-color: #003366;
+    outline: none;
+    box-shadow: 0 0 3px rgba(0, 51, 102, 0.3);
 }
 
-
-.checkbox-group {
+.checkbox-wrapper {
     display: flex;
     align-items: center;
-    padding-top: 25px; /* Justerer checkbox vertikalt med inputfelt over */
-}
-
-.checkbox-group input[type="checkbox"] {
-    margin-right: 10px;
-    height: 1.2em;
-    width: 1.2em;
-    cursor: pointer;
-    flex-shrink: 0; /* Forhindrer at checkboxen krymper */
-}
-
-.checkbox-group label {
-    margin-bottom: 0;
-    font-weight: normal;
-    cursor: pointer;
-}
-
-.form-text {
-    display: block;
+    gap: 10px;
     margin-top: 5px;
-    font-size: 0.85em;
-    color: #555;
+    cursor: pointer;
 }
 
-#result {
-    font-size: 1.4em;
-    text-align: center;
-    margin-bottom: 10px;
+/* Custom Slider Styling */
+.custom-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #dfe6e9;
+    outline: none;
+    margin-top: 12px;
 }
-.result-detail {
-    font-size: 1em;
-    text-align: center;
-    color: #333;
-    margin-bottom: 20px;
-    background-color: #e9e9e9;
-    padding: 8px;
+
+.custom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #003366; /* Dark blue thumb */
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.custom-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #003366;
+    cursor: pointer;
+    border: none;
+}
+
+.custom-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #003366; /* Dark CAA Blue */
+    color: #ffffff;
+    border: none;
+    padding: 12px 20px;
     border-radius: 4px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
-#summaryTable {
+.btn-primary:hover {
+    background-color: #002244;
+}
+
+/* Results */
+.result-display {
+    font-size: 1.2rem;
+    margin: 15px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-left: 5px solid #2ecc71;
+    border-radius: 4px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.result-display .value {
+    font-weight: bold;
+    font-size: 2rem;
+    color: #27ae60;
+}
+
+.model-info, .angle-info {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-top: 8px;
+}
+
+/* Table */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.reference-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 20px 0;
+    font-size: 0.9rem;
     text-align: center;
+    min-width: 300px; 
 }
 
-#summaryTable th,
-#summaryTable td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    font-size: 0.95em;
+.reference-table th, .reference-table td {
+    padding: 8px;
+    border: 1px solid #ecf0f1;
 }
 
-#summaryTable thead th {
-    background-color: #03477F;
+.reference-table th {
+    background-color: #ecf0f1;
+}
+
+.highlight-col {
+    background-color: #2ecc71 !important;
     color: white;
-    font-weight: bold;
-}
-#summaryTable tbody td:first-child {
-    background-color: #f2f2f2;
-    font-weight: bold;
-    text-align: left;
+    border-color: #27ae60;
 }
 
-#summaryTable th.highlight-col {
-    outline: 6px solid #F44336;
-    outline-offset: -6px;
-    font-weight: bold !important;
-}
-#summaryTable td.highlight-col {
-    outline: none;
-    font-weight: normal;
+/* Canvas Visualization */
+.canvas-container {
+    width: 100%;
+    height: 250px;
+    background-color: #f0f8ff; 
+    border: 1px solid #dce4ec;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
 }
 
-.table-caption {
-    font-size: 0.85em;
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.viz-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+    font-size: 0.8rem;
     color: #555;
-    text-align: center;
-    margin-top: 5px;
 }
 
-/* Responsiv justering for smale skjermer */
-@media (max-width: 650px) {
-    .form-row {
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 768px) {
+    .calculator-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 10px;
+    }
+
+    .result-display {
         flex-direction: column;
-        gap: 0;
-        margin-bottom: 0;
+        align-items: center;
+        text-align: center;
     }
-    .form-group.half-width {
-        flex-basis: auto;
-        min-width: unset;
-        margin-bottom: 15px; /* Gjenoppretter margin når stablet */
+    
+    .result-display .value {
+        font-size: 2.5rem;
     }
-     .checkbox-group {
-        padding-top: 0; /* Fjerner ekstra padding på mobil */
-        margin-bottom: 15px; /* Legger til margin under checkbox-gruppen */
-    }
-    .form-group input[type="number"],
-    .form-group input[type="text"],
-    .form-group select {
-        padding: 8px;
-        min-height: 36px;
-        height: 36px;
+
+    .reference-table th, .reference-table td {
+        padding: 4px;
+        font-size: 0.8rem;
     }
 }

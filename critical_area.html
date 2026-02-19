@@ -3,114 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Critical Area Calculation</title>
-    <link rel="icon" href="assets/smallLogo.png" type="image/png">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
+    <title>SORA 2.5 Critical Area Calculator</title>
+    
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/critical_area.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-<div id="navbar-placeholder"></div>
+    <div class="container">
+        <h1>Critical Area Calculator (SORA 2.5)</h1>
+        <p class="intro-text">
+            Calculate the precise <strong>Critical Area ($A_c$)</strong> according to SORA 2.5 Annex F. 
+            A calculated $A_c$ lower than the standard value allows you to use a lower "Characteristic Dimension" column in the iGRC table.
+        </p>
 
-<div class="container critical-area-container">
-    <h1>Critical Area Calculation</h1>
+        <div class="calculator-grid">
+            
+            <div class="input-section card">
+                <h2><i class="fa-solid fa-sliders"></i> Configuration</h2>
+                
+                <div class="form-group">
+                    <label>Aircraft Type</label>
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="isRotorcraft">
+                        <label for="isRotorcraft">Is Rotorcraft / Multirotor?</label>
+                    </div>
+                    <small>Multirotors often have steeper impact angles in failure scenarios.</small>
+                </div>
 
-    <p class="intro-text">
-        The calculator may be used by applicants to calculate the critical area of their drone,
-         in order to demonstrate that their drone may be classified in a lower ground risk
-         class compared to the one assigned in the SORA ground risk class table. For example, a drone with characteristic 
-         dimensions of 3.5 m may have a critical area equal to a drone with only a 3-m dimension as 
-         per the SORA ground risk class table. In this case, a reduction in the ground risk class may be claimed in SORA Step#2 .          
-     </p>
-    <p class="intro-text">
-        The calculator is based on the mathematical model defined in
-         Section 1.8 of <a href="http://jarus-rpas.org/wp-content/uploads/2024/06/SORA-v2.5-Annex-F-Release.JAR_doc_29pdf.pdf" target="_blank" rel="noopener noreferrer">JARUS SORA 2.5 Annex F</a>. The UAS operator should choose the column that matches
-         the critical area calculated for the UA that is used, as identified in Table B.8 below.
-    </p>
+                <div class="form-group">
+                    <label for="mtom">MTOM (kg)</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-weight-hanging input-icon"></i>
+                        <input type="number" id="mtom" step="0.1" min="0" max="200" placeholder="e.g. 2.5">
+                    </div>
+                    <input type="range" id="mtomSlider" min="0" max="200" step="0.1" value="0" class="custom-slider">
+                </div>
 
+                <div class="form-group">
+                    <label for="dimension">Characteristic Dimension (m)</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-ruler-horizontal input-icon"></i>
+                        <input type="number" id="dimension" step="0.1" min="0.1" max="15" placeholder="e.g. 0.8">
+                    </div>
+                    <input type="range" id="dimensionSlider" min="0.1" max="15" step="0.1" value="0.1" class="custom-slider">
+                </div>
 
-    <form id="criticalAreaForm">
-        <div class="form-row">
-            <div class="form-group checkbox-group half-width">
-                <input type="checkbox" id="isRotorcraft">
-                <label for="isRotorcraft">Is your UA a rotorcraft or a multirotor?</label>
+                <div class="form-group">
+                    <label for="cruiseSpeed">Max Cruise Speed (m/s)</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-gauge-high input-icon"></i>
+                        <input type="number" id="cruiseSpeed" step="1" min="0" max="100" placeholder="e.g. 15">
+                    </div>
+                    <input type="range" id="cruiseSpeedSlider" min="0" max="100" step="1" value="0" class="custom-slider">
+                </div>
+
+                <div class="form-group">
+                    <label for="minAltitude">Typical Operation Altitude (m)</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-plane-up input-icon"></i>
+                        <input type="number" id="minAltitude" step="1" min="0" max="500" placeholder="e.g. 50">
+                    </div>
+                    <input type="range" id="minAltitudeSlider" min="0" max="500" step="1" value="0" class="custom-slider">
+                </div>
+
+                <div class="button-group">
+                    <button id="resetCriticalAreaForm" class="btn btn-primary">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Values
+                    </button>
+                </div>
             </div>
-             <div class="form-group half-width">
-                 </div>
+
+            <div class="results-section">
+                
+                <div class="card result-card">
+                    <h2><i class="fa-solid fa-calculator"></i> Results</h2>
+                    <div class="result-display">
+                        <span class="label">Critical Area ($A_c$):</span>
+                        <span class="value" id="criticalAreaValue">-</span>
+                        <span class="unit">$m^2$</span>
+                    </div>
+                    <div id="modelUsed" class="model-info">Model: -</div>
+                    <div id="impactAngleResult" class="angle-info" style="display:none;"></div>
+                </div>
+
+                <div class="card viz-card">
+                    <h3><i class="fa-solid fa-eye"></i> Crash Geometry (Side View)</h3>
+                    <div class="canvas-container">
+                        <canvas id="caVizCanvas"></canvas>
+                    </div>
+                    <div class="viz-legend">
+                        <span><i class="fa-solid fa-plane-arrival" style="color:#007bff;"></i> Path</span>
+                        <span><i class="fa-solid fa-person" style="color:#28a745;"></i> Person</span>
+                        <span><span style="display:inline-block;width:12px;height:12px;background:rgba(220, 53, 69, 0.3);"></span> Impact Zone</span>
+                    </div>
+                </div>
+
+                <div class="card table-card">
+                    <h3>iGRC Column Check</h3>
+                    <div class="table-responsive">
+                        <table class="reference-table">
+                            <thead>
+                                <tr>
+                                    <th id="col-1m-head">1 m</th>
+                                    <th id="col-3m-head">3 m</th>
+                                    <th id="col-8m-head">8 m</th>
+                                    <th id="col-20m-head">20 m</th>
+                                    <th id="col-40m-head">40 m</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>&lt; 6.5 $m^2$</td>
+                                    <td>&lt; 65 $m^2$</td>
+                                    <td>&lt; 650 $m^2$</td>
+                                    <td>&lt; 6500 $m^2$</td>
+                                    <td>> 6500 $m^2$</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <small>If your calculated area is below the threshold for your dimension, you may potentially use a lower column in SORA Step #2.</small>
+                </div>
+            </div>
         </div>
-        <div class="form-row">
-            <div class="form-group half-width">
-                <label for="dimension">UAS characteristic dimension (m):</label>
-                <input type="number" id="dimension" min="0" step="0.1" required>
-            </div>
-            <div class="form-group half-width">
-                <label for="cruiseSpeed">Cruise speed (m/s):</label>
-                 <input type="number" id="cruiseSpeed" min="0" step="1" required>
-            </div>
-        </div>
-        <div class="form-row">
-            <div class="form-group half-width">
-                <label for="mtom">Aircraft maximum take-off mass MTOM (kg):</label>
-                 <input type="number" id="mtom" min="0" step="0.1" required>
-            </div>
-            <div class="form-group half-width">
-                <label for="minAltitude">Minimum operational flight altitude AGL (m):</label>
-                 <input type="number" id="minAltitude" min="0" step="1" required>
-                <small class="form-text">(Relevant for High Impact Angle Model selection)</small>
-            </div>
-        </div>
-    </form>
-
-    <div class="button-bar">
-        <button type="button" id="resetCriticalAreaForm" class="reset-button">
-            <svg class="reset-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path>
-            </svg>
-            <span>Reset</span> </button>
     </div>
-    <div id="result" class="result">
-        Calculated Critical Area: <span id="criticalAreaValue">-</span> m²
-    </div>
-    <div id="modelUsed" class="result-detail">Model Used: -</div>
-    <div id="impactAngleResult" class="result-detail" style="display: none;">Calculated Impact Angle: <span>-</span> °</div>
 
-
-    <h2>Critical Area Thresholds</h2>
-    <table id="summaryTable">
-        <thead>
-            <tr>
-                <th>Maximum characteristic dimension (m)</th>
-                <th id="col-1m-head">1</th>
-                <th id="col-3m-head">3</th>
-                <th id="col-8m-head">8</th>
-                <th id="col-20m-head">20</th>
-                <th id="col-40m-head">40</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Critical area (m²)</td>
-                <td id="col-1m-val">6.5</td>
-                <td id="col-3m-val">65</td>
-                <td id="col-8m-val">650</td>
-                <td id="col-20m-val">6 500</td>
-                <td id="col-40m-val">65 000</td>
-            </tr>
-        </tbody>
-    </table>
-     <p class="table-caption">Table B.8 — Critical areas associated with the maximum characteristic dimension (non-mitigated)</p>
-
-
-</div> 
-<script src="js/critical_area.js"></script>
-<script src="js/navbar.js"></script>
-
+    <script src="js/critical_area.js"></script>
 </body>
 </html>

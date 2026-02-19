@@ -1,80 +1,69 @@
-// Globale variabler for konfigurasjon og elementer
-let frontalAreaPoints = []; // Vil bli lastet fra JSON
-const caInputElements = {}; // Cache elementene
-const caInputIds = ['isRotorcraft', 'dimension', 'cruiseSpeed', 'mtom', 'minAltitude'];
+// Global variables
+let frontalAreaPoints = []; // Loaded from JSON
+const caInputElements = {}; 
+const caSliderElements = {}; 
+const caInputIds = ['dimension', 'cruiseSpeed', 'mtom', 'minAltitude']; // Numeric inputs
 
-// --- START: Lagringsfunksjoner ---
+// Canvas Context
+let canvas, ctx;
+
+// --- STORAGE FUNCTIONS ---
 const CRITICAL_AREA_KEY = 'critical_area_form_data';
 
 function saveCriticalAreaForm() {
     const data = {};
     caInputIds.forEach(id => {
         const el = caInputElements[id];
-        if (el) {
-            data[id] = (el.type === 'checkbox') ? el.checked : el.value;
-        }
+        if (el) data[id] = el.value;
     });
+    const rotorEl = document.getElementById('isRotorcraft');
+    data['isRotorcraft'] = rotorEl ? rotorEl.checked : false;
+    
     localStorage.setItem(CRITICAL_AREA_KEY, JSON.stringify(data));
 }
 
 function loadCriticalAreaForm() {
     const data = JSON.parse(localStorage.getItem(CRITICAL_AREA_KEY));
-    if (!data) {
-        // Sett standard (blank) og lagre
-        caInputIds.forEach(id => {
-            const el = caInputElements[id];
-            if (el) {
-                 if (el.type === 'checkbox') el.checked = false;
-                 else el.value = '';
-            }
-        });
-        saveCriticalAreaForm();
-        return;
-    }
+    if (!data) return;
 
-    // Sett lagrede verdier
     caInputIds.forEach(id => {
          const el = caInputElements[id];
+         const sliderEl = caSliderElements[id];
          if (el && data[id] !== undefined) {
-             if (el.type === 'checkbox') el.checked = data[id];
-             else el.value = data[id];
+             el.value = data[id];
+             if (sliderEl) sliderEl.value = data[id]; // Sync slider
          }
     });
+
+    const rotorEl = document.getElementById('isRotorcraft');
+    if (rotorEl && data['isRotorcraft'] !== undefined) {
+        rotorEl.checked = data['isRotorcraft'];
+    }
 }
 
 function resetCriticalAreaForm() {
     localStorage.removeItem(CRITICAL_AREA_KEY);
     location.reload();
 }
-// --- SLUTT: Lagringsfunksjoner ---
 
+// --- CONSTANTS (SORA 2.5 Annex F) ---
+const R_PERSON = 0.3; 
+const H_PERSON = 1.8; 
+const G = 9.81; 
+const RHO = 1.225; 
+const CD_BALLISTIC = 0.8; 
+const K_NON_LETHAL = 290; 
+const JARUS_IMPACT_ANGLE_DEG = 35; 
+const HIGH_ANGLE_THRESHOLD_DEG = 60; 
+const COEFF_RESTITUTION_JARUS = 0.65; 
+const COEFF_FRICTION = 0.75; 
+const OBSTACLE_REDUCTION_FACTOR = 0.6; 
 
-// Constants based on EASA guidelines and Annex F
-const R_PERSON = 0.3; // Radius of a person (m)
-const H_PERSON = 1.8; // Height of a person (m)
-const G = 9.81; // Gravitational acceleration (m/s^2)
-const RHO = 1.225; // Air density (kg/m^3)
-const CD_BALLISTIC = 0.8; // Drag coefficient for ballistic descent
-const K_NON_LETHAL = 290; // Non-lethal kinetic energy limit (J) for slide
-const JARUS_IMPACT_ANGLE_DEG = 35; // Standard impact angle for JARUS model (degrees)
-const HIGH_ANGLE_THRESHOLD_DEG = 60; // Threshold for using High Impact Angle Model (degrees)
-const COEFF_RESTITUTION_JARUS = 0.65; // Coefficient of restitution (e) for JARUS model at 35 deg
-const COEFF_FRICTION = 0.75; // Coefficient of friction (Cg)
-const OBSTACLE_REDUCTION_FACTOR = 0.6; // For JARUS Case 2 (1m < w <= 8m) - Korrigert <=
+// --- CALCULATION LOGIC ---
 
-/**
- * Linearly interpolates the frontal area based on characteristic dimension.
- * Uses data loaded from critical_area_config.json.
- * @param {number} dimension Characteristic dimension (m).
- *@returns {number} Estimated frontal area (m^2).
- */
 function interpolateFrontalArea(dimension) {
-    // Bruker nå den globalt lastede 'frontalAreaPoints'
     const points = frontalAreaPoints; 
-    if (!points || points.length === 0) {
-        console.error("Frontal area data is not loaded!");
-        return 0.1; // Fallback
-    }
+    if (!points || points.length === 0) return 0.1;
 
     if (dimension <= points[0].dim) return points[0].area;
     if (dimension >= points[points.length - 1].dim) return points[points.length - 1].area;
@@ -85,176 +74,120 @@ function interpolateFrontalArea(dimension) {
             const area1 = points[i].area;
             const dim2 = points[i + 1].dim;
             const area2 = points[i + 1].area;
-            // Linear interpolation formula
             return area1 + ((dimension - dim1) * (area2 - area1)) / (dim2 - dim1);
         }
     }
-    console.error("Interpolation failed for dimension:", dimension);
-    return points[points.length - 1].area; // Fallback
+    return points[points.length - 1].area;
 }
 
-
-/**
- * Calculates the impact angle for a ballistic descent using iteration.
- * Based on EASA Guidelines Annex 1 .
- * @param {number} initialHorizontalSpeed Max cruise speed (m/s).
- * @param {number} altitude AGL (m).
- * @param {number} frontalArea Frontal area (m^2).
- * @param {number} mass MTOM (kg).
- * @returns {number} Impact angle in degrees.
- */
 function calculateImpactAngle(initialHorizontalSpeed, altitude, frontalArea, mass) {
-    if (altitude <= 0) return 90; // Vertical impact at ground level or below
+    if (altitude <= 0) return 90;
 
     let vHorizontal = initialHorizontalSpeed;
     let vVertical = 0;
-    let verticalPosition = 0; // Start at altitude 0 (relative)
-    const dt = 0.01; // Time step (s)
+    let verticalPosition = 0;
+    const dt = 0.01;
     let time = 0;
-    const maxTime = 300; // Safety break after 5 minutes
+    const maxTime = 300; 
 
     while (verticalPosition > -altitude && time < maxTime) {
         const vMagnitude = Math.sqrt(vHorizontal * vHorizontal + vVertical * vVertical);
-
         let dragForceMagnitude = 0;
-        if (vMagnitude > 1e-6) { // Avoid issues at zero speed
+        if (vMagnitude > 1e-6) {
              dragForceMagnitude = 0.5 * RHO * vMagnitude * vMagnitude * frontalArea * CD_BALLISTIC;
         }
 
-        // Acceleration components
         let accHorizontal = 0;
-        let accVertical = -G; // Gravity always acts downwards
+        let accVertical = -G;
 
         if (vMagnitude > 1e-6) {
-            // Drag components oppose velocity components
             accHorizontal -= (dragForceMagnitude * (vHorizontal / vMagnitude)) / mass;
             accVertical -= (dragForceMagnitude * (vVertical / vMagnitude)) / mass;
         }
 
-        // Update velocities using Euler integration (simple but works for small dt)
         vHorizontal += accHorizontal * dt;
         vVertical += accVertical * dt;
-
-        // Update vertical position
         verticalPosition += vVertical * dt;
         time += dt;
 
-        // Ensure horizontal speed doesn't go negative due to drag model simplicity
         if (initialHorizontalSpeed > 0 && vHorizontal < 0) vHorizontal = 0;
-        if (initialHorizontalSpeed === 0) vHorizontal = 0; // If started with 0 horizontal, keep it 0
+        if (initialHorizontalSpeed === 0) vHorizontal = 0;
     }
 
-     if (time >= maxTime) {
-        console.warn("Impact angle calculation timed out.");
-        return 90; // Assume vertical impact if calculation takes too long
-    }
-
-
-    // Calculate final impact angle relative to the ground
-    if (Math.abs(vHorizontal) < 1e-6) return 90; // Pure vertical impact
+    if (Math.abs(vHorizontal) < 1e-6) return 90;
     const finalImpactAngleRad = Math.atan(Math.abs(vVertical) / Math.abs(vHorizontal));
-    return finalImpactAngleRad * (180 / Math.PI); // Convert to degrees
+    return finalImpactAngleRad * (180 / Math.PI);
 }
 
-/**
- * Calculates Critical Area using the JARUS model.
- * Based on EASA Guidelines Chapter 4 and Annex F Sections 1.8 & B.3.
- * @param {number} dimension Characteristic dimension (w) (m).
- * @param {number} cruiseSpeed Max cruise speed (V) (m/s). Used as impact speed V in formula.
- * @param {number} mass MTOM (m) (kg).
- * @returns {number} Calculated Critical Area (Ac) (m^2).
- */
-function calculateJarusModel(dimension, cruiseSpeed, mass) {
+function calculateJarusPhysics(dimension, cruiseSpeed, mass) {
     const w = dimension;
-    const vImpact = cruiseSpeed; // Using cruise speed as impact speed V per EASA doc
+    const vImpact = cruiseSpeed;
     const m = mass;
     const thetaRad = JARUS_IMPACT_ANGLE_DEG * (Math.PI / 180);
 
-    const rD = R_PERSON + w / 2; //
-    const dGlide = H_PERSON / Math.tan(thetaRad); //
+    const rD = R_PERSON + w / 2;
+    const dGlide = H_PERSON / Math.tan(thetaRad); 
 
     let dSlideReduced = 0;
-    // Slide calculation only relevant for > 1m (Case 1 and 2)
     if (w > 1) {
-        // Horizontal speed component at impact
-        const vHorizontalImpact = vImpact * Math.cos(thetaRad); //
-
-        // Calculate non-lethal speed based on energy threshold
+        const vHorizontalImpact = vImpact * Math.cos(thetaRad);
         const vNonLethal = (m > 0) ? Math.sqrt((2 * K_NON_LETHAL) / m) : Infinity;
-
-        // Horizontal speed immediately after impact (considering restitution)
         const vHorizontalAfterImpact = COEFF_RESTITUTION_JARUS * vHorizontalImpact;
 
         if (vHorizontalAfterImpact > vNonLethal) {
-             // Calculate time to reach non-lethal speed (Corrected formula)
              const tSafe = (vHorizontalAfterImpact - vNonLethal) / (COEFF_FRICTION * G);
-
-             // Calculate reduced slide distance
              dSlideReduced = vHorizontalAfterImpact * tSafe - 0.5 * COEFF_FRICTION * G * tSafe * tSafe;
-             dSlideReduced = Math.max(0, dSlideReduced); // Ensure non-negative distance
-        } else {
-            dSlideReduced = 0; // Already non-lethal at impact
+             dSlideReduced = Math.max(0, dSlideReduced);
         }
     }
 
-    let Ac = 0;
-    if (w >= 8) { // Case 1
-        Ac = 2 * rD * (dGlide + dSlideReduced) + Math.PI * rD * rD; //
-    } else if (w > 1 && w < 8) { // Case 2 - Corrected upper bound to <8
-        Ac = OBSTACLE_REDUCTION_FACTOR * (2 * rD * (dGlide + dSlideReduced) + Math.PI * rD * rD); //
-    } else { // Case 3 (w <= 1)
-        // Using EASA doc formula which differs slightly from Annex F B.3
-        Ac = 2 * rD * dGlide + 0.5 * (Math.PI * rD * rD); //
-    }
+    return {
+        rD: rD,
+        dGlide: dGlide,
+        dSlideReduced: dSlideReduced,
+        angleDeg: JARUS_IMPACT_ANGLE_DEG
+    };
+}
 
+function calculateJarusModel(dimension, cruiseSpeed, mass) {
+    const phys = calculateJarusPhysics(dimension, cruiseSpeed, mass);
+    let Ac = 0;
+    const term1 = 2 * phys.rD * (phys.dGlide + phys.dSlideReduced);
+    const term2 = Math.PI * phys.rD * phys.rD;
+
+    if (dimension >= 8) { 
+        Ac = term1 + term2;
+    } else if (dimension > 1 && dimension < 8) { 
+        Ac = OBSTACLE_REDUCTION_FACTOR * (term1 + term2);
+    } else { 
+        Ac = 2 * phys.rD * phys.dGlide + 0.5 * (Math.PI * phys.rD * phys.rD);
+    }
     return Ac;
 }
 
-/**
- * Calculates Critical Area using the High Impact Angle model.
- * Based on EASA Guidelines Chapter 5.
- * @param {number} dimension Characteristic dimension (w) (m).
- * @param {number} mass MTOM (m) (kg).
- * @param {number} frontalArea Estimated frontal area (A) (m^2).
- * @returns {number} Calculated Critical Area (Ac) (m^2).
- */
 function calculateHighImpactModel(dimension, mass, frontalArea) {
     const w = dimension;
     const m = mass;
     const A = frontalArea;
 
-    // Calculate terminal velocity
     const vTerminal = (RHO * A * CD_BALLISTIC > 0) ? Math.sqrt((2 * m * G) / (RHO * A * CD_BALLISTIC)) : 0;
+    const eKTerminal = 0.5 * m * vTerminal * vTerminal; 
+    const eKTerminalKJ = eKTerminal / 1000;
 
-    // Calculate kinetic energy at terminal velocity
-    const eKTerminal = 0.5 * m * vTerminal * vTerminal; // Joules
-    const eKTerminalKJ = eKTerminal / 1000; // Convert to kJ for Fs calculation
-
-    // Determine Safety Factor (Fs) based on EASA Table 6
     let Fs = 0;
     if (eKTerminalKJ < 12) {
         Fs = 2.3;
     } else if (eKTerminalKJ >= 12 && eKTerminalKJ <= 3125) {
-        // Formula from EASA doc Figure: Fs = 1.4 * Ek_tot^0.2
         Fs = 1.4 * Math.pow(eKTerminalKJ, 0.2);
-    } else { // eKTerminalKJ > 3125
+    } else {
         Fs = 7.0;
     }
-     Fs = Math.max(2.3, Math.min(Fs, 7.0)); // Ensure Fs is within [2.3, 7.0] bounds
+     Fs = Math.max(2.3, Math.min(Fs, 7.0));
 
-    // Calculate rD
     const rD = R_PERSON + w / 2;
-
-    // Calculate Critical Area
-    const Ac = Fs * Math.PI * rD * rD;
-
-    return Ac;
+    return Fs * Math.PI * rD * rD;
 }
 
-/**
- * Highlights the correct column HEADER in the summary table based on calculated Ac.
- * @param {number} criticalArea Calculated Critical Area (m^2).
- */
 function highlightTableColumn(criticalArea) {
     const thresholds = [
         { limit: 6.5, id: "1m" },
@@ -265,44 +198,135 @@ function highlightTableColumn(criticalArea) {
     ];
 
     let highlightedId = null;
-
-    if (criticalArea <= 0) { // Handle invalid/zero case
-        highlightedId = null;
-    } else if (criticalArea <= thresholds[0].limit) {
-        highlightedId = thresholds[0].id;
-    } else if (criticalArea <= thresholds[1].limit) {
-        highlightedId = thresholds[1].id;
-    } else if (criticalArea <= thresholds[2].limit) {
-        highlightedId = thresholds[2].id;
-    } else if (criticalArea <= thresholds[3].limit) {
-        highlightedId = thresholds[3].id;
-    } else { // criticalArea > 6500
-        highlightedId = thresholds[4].id;
+    if (criticalArea > 0) {
+         if (criticalArea <= thresholds[0].limit) highlightedId = thresholds[0].id;
+         else if (criticalArea <= thresholds[1].limit) highlightedId = thresholds[1].id;
+         else if (criticalArea <= thresholds[2].limit) highlightedId = thresholds[2].id;
+         else if (criticalArea <= thresholds[3].limit) highlightedId = thresholds[3].id;
+         else highlightedId = thresholds[4].id;
     }
 
-    // Remove highlight from all headers first
     thresholds.forEach(th => {
         document.getElementById(`col-${th.id}-head`)?.classList.remove('highlight-col');
     });
 
-    // Add highlight to the correct header
     if (highlightedId) {
         document.getElementById(`col-${highlightedId}-head`)?.classList.add('highlight-col');
     }
 }
 
 /**
- * Main calculation function triggered by input changes.
+ * --- VISUALIZATION RENDERER ---
  */
-function calculateCriticalArea() {
-    // Sjekk om data er lastet
-    if (frontalAreaPoints.length === 0) {
-        console.error("Critical area config data is not loaded yet.");
+function updateVisualization(vizData) {
+    if (!ctx || !canvas) return;
+
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    ctx.clearRect(0, 0, width, height);
+
+    if (!vizData.isValid) {
+        ctx.fillStyle = "#95a5a6";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "left";
+        ctx.fillText("Waiting for valid inputs to draw...", 20, 30);
         return;
     }
 
-    // Get inputs
-    const isRotorcraft = caInputElements.isRotorcraft.checked;
+    const groundY = height - 30;
+    const startX = 50; 
+
+    const totalDistanceMeters = vizData.glide + vizData.slide;
+    const displayMeters = Math.max(5, totalDistanceMeters * 1.5); 
+    const scale = (width - 100) / displayMeters; 
+
+    const personX = startX + (vizData.glide * scale);
+    const stopX = personX + (vizData.slide * scale);
+    
+    // 1. Draw Ground
+    ctx.beginPath();
+    ctx.moveTo(0, groundY);
+    ctx.lineTo(width, groundY);
+    ctx.strokeStyle = "#34495e";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 2. Draw Critical Area Impact Zone
+    const impactZoneStart = personX - (vizData.glide * scale); 
+    ctx.fillStyle = "rgba(220, 53, 69, 0.3)";
+    ctx.fillRect(impactZoneStart, groundY - 5, stopX - impactZoneStart, 10);
+    
+    // 3. Draw Person (Symbolic)
+    const personH_px = 1.8 * scale * 2; 
+    const pHeight = Math.max(20, Math.min(personH_px, 60)); 
+    
+    ctx.fillStyle = "#28a745";
+    ctx.beginPath();
+    ctx.arc(personX, groundY - pHeight, 5, 0, Math.PI*2); 
+    ctx.fill();
+    ctx.fillRect(personX - 2, groundY - pHeight, 4, pHeight);
+
+    // 4. Draw Drone Path
+    const angleRad = vizData.angle * (Math.PI / 180);
+    let droneY = groundY - (Math.tan(angleRad) * (vizData.glide * scale));
+    
+    if (vizData.angle > 85) droneY = 20; 
+    const drawDroneY = Math.max(20, droneY); 
+    const drawDroneX = personX - ((groundY - drawDroneY) / Math.tan(angleRad));
+
+    ctx.beginPath();
+    ctx.moveTo(drawDroneX, drawDroneY);
+    ctx.lineTo(personX, groundY - (pHeight/2)); 
+    ctx.strokeStyle = "#007bff";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 6]); 
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 5. Draw FontAwesome Icon
+    ctx.save();
+    ctx.translate(drawDroneX, drawDroneY);
+    ctx.rotate(angleRad);
+    
+    // Bruk FontAwesome for ikonene (\uf533 = helicopter, \uf072 = plane)
+    ctx.font = '900 24px "Font Awesome 6 Free"';
+    ctx.fillStyle = "#003366";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    if (vizData.isRotorcraft) {
+        ctx.fillText('\uf533', 0, 0); // fa-helicopter
+    } else {
+        ctx.fillText('\uf072', 0, 0); // fa-plane
+    }
+    
+    ctx.restore();
+
+    // 6. Labels
+    ctx.fillStyle = "#333";
+    ctx.font = "bold 12px sans-serif";
+    ctx.textAlign = "center";
+    
+    ctx.fillText(`${vizData.angle.toFixed(1)}°`, drawDroneX + 25, drawDroneY + 15);
+    
+    ctx.font = "12px sans-serif";
+    ctx.fillText(`Glide: ${vizData.glide.toFixed(1)}m`, (startX + personX)/2, groundY + 20);
+    
+    if (vizData.slide > 0.1) {
+        ctx.fillText(`Slide: ${vizData.slide.toFixed(1)}m`, (personX + stopX)/2, groundY + 20);
+    }
+}
+
+/**
+ * MAIN EXECUTION
+ */
+function calculateCriticalArea() {
+    if (frontalAreaPoints.length === 0) return;
+
+    const isRotorcraftEl = document.getElementById('isRotorcraft');
+    const isRotorcraft = isRotorcraftEl ? isRotorcraftEl.checked : false;
+    
     const dimension = parseFloat(caInputElements.dimension.value);
     const cruiseSpeed = parseFloat(caInputElements.cruiseSpeed.value);
     const mtom = parseFloat(caInputElements.mtom.value);
@@ -312,16 +336,16 @@ function calculateCriticalArea() {
     const modelUsedEl = document.getElementById('modelUsed');
     const impactAngleResultEl = document.getElementById('impactAngleResult');
 
-     // Clear previous results if any input is empty or invalid
+    let vizData = { isValid: false, isRotorcraft: isRotorcraft, angle: 90, glide: 0, slide: 0 };
+
     if (isNaN(dimension) || isNaN(cruiseSpeed) || isNaN(mtom) || isNaN(minAltitude) ||
         dimension <= 0 || cruiseSpeed < 0 || mtom <= 0 || minAltitude < 0) {
         resultValueEl.textContent = '-';
         modelUsedEl.textContent = 'Model Used: -';
         impactAngleResultEl.style.display = 'none';
-        highlightTableColumn(-1); // Clear highlight
-        
-        // Lagre selv om det er tomt/ugyldig
+        highlightTableColumn(-1);
         saveCriticalAreaForm();
+        updateVisualization(vizData);
         return;
     }
 
@@ -329,76 +353,105 @@ function calculateCriticalArea() {
     let modelUsed = "";
     let impactAngle = null;
 
-    // Model Selection Logic
     if (isRotorcraft) {
         const frontalArea = interpolateFrontalArea(dimension);
         impactAngle = calculateImpactAngle(cruiseSpeed, minAltitude, frontalArea, mtom);
         impactAngleResultEl.style.display = 'block';
         impactAngleResultEl.innerHTML = `Calculated Impact Angle: <span>${impactAngle.toFixed(1)}</span> °`;
 
-
-        if (impactAngle > HIGH_ANGLE_THRESHOLD_DEG) { //
+        if (impactAngle > HIGH_ANGLE_THRESHOLD_DEG) {
             modelUsed = "High Impact Angle Model";
-            criticalArea = calculateHighImpactModel(dimension, mtom, frontalArea); //
+            criticalArea = calculateHighImpactModel(dimension, mtom, frontalArea);
+            vizData = { isValid: true, isRotorcraft: true, angle: impactAngle, glide: 0.1, slide: 0 };
         } else {
-            modelUsed = "JARUS Model (Rotorcraft/Multirotor)";
-            criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom); //
+            modelUsed = "JARUS Model (Calculated Angle < 60°)";
+            const phys = calculateJarusPhysics(dimension, cruiseSpeed, mtom);
+            criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom);
+            vizData = { isValid: true, isRotorcraft: true, angle: 35, glide: phys.dGlide, slide: phys.dSlideReduced };
         }
-    } else { // Fixed Wing or similar
-        modelUsed = "JARUS Model (Fixed Wing)";
+    } else { 
+        modelUsed = "JARUS Model (Standard 35°)";
         impactAngleResultEl.style.display = 'none';
-        criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom); //
+        criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom);
+        const phys = calculateJarusPhysics(dimension, cruiseSpeed, mtom);
+        vizData = { isValid: true, isRotorcraft: false, angle: 35, glide: phys.dGlide, slide: phys.dSlideReduced };
     }
 
-    // Display Results
     resultValueEl.textContent = criticalArea.toFixed(2);
     modelUsedEl.textContent = `Model Used: ${modelUsed}`;
-
-    // Highlight Table Column Header
     highlightTableColumn(criticalArea);
-
-    // Lagre de gyldige dataene
     saveCriticalAreaForm();
+    
+    updateVisualization(vizData);
 }
 
-
-// --- START: Event Listeners ---
+// --- INIT ---
 async function initializeApp() {
     try {
-        // 1. Last inn eksterne konfigurasjonsdata
         const response = await fetch('data/critical_area_config.json');
-        if (!response.ok) {
-            throw new Error(`Failed to fetch critical_area_config.json: ${response.statusText}`);
-        }
+        if (!response.ok) throw new Error(`Failed to fetch config`);
         const configData = await response.json();
         frontalAreaPoints = configData.frontalAreaPoints;
 
-        // 2. Cache alle input-elementer
+        // Setup Inputs & Sliders
         caInputIds.forEach(id => {
-            caInputElements[id] = document.getElementById(id);
+            const inputEl = document.getElementById(id);
+            const sliderEl = document.getElementById(`${id}Slider`);
+            caInputElements[id] = inputEl;
+            caSliderElements[id] = sliderEl;
+
+            // Sync Logic
+            if (inputEl && sliderEl) {
+                inputEl.addEventListener('input', (e) => {
+                    sliderEl.value = e.target.value;
+                    calculateCriticalArea();
+                });
+                sliderEl.addEventListener('input', (e) => {
+                    inputEl.value = e.target.value;
+                    calculateCriticalArea();
+                });
+            }
         });
 
-        // 3. Last inn lagrede brukerdata
-        loadCriticalAreaForm();
-        
-        // 4. Kjør kalkulering basert på lastede data
-        calculateCriticalArea(); 
+        const isRotorcraftEl = document.getElementById('isRotorcraft');
+        if (isRotorcraftEl) isRotorcraftEl.addEventListener('change', calculateCriticalArea);
 
-        // 5. Legg til lyttere for alle inputs
-        caInputIds.forEach(id => {
-            caInputElements[id].addEventListener('input', calculateCriticalArea);
-            caInputElements[id].addEventListener('change', calculateCriticalArea); // For checkbox
-        });
-
-        // 6. Legg til lytter for nullstill-knappen
         document.getElementById('resetCriticalAreaForm').addEventListener('click', resetCriticalAreaForm);
 
+        // Setup Canvas
+        canvas = document.getElementById('caVizCanvas');
+        if (canvas) {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+        }
+
+        loadCriticalAreaForm();
+        
+        // Vent på at FontAwesome lastes inn før vi tegner for første gang, 
+        // ellers blir ikonet usynlig ved sidelasting.
+        document.fonts.ready.then(() => {
+            calculateCriticalArea();
+        });
+
+        // Mobile Resize Handler
+        window.addEventListener('resize', () => {
+             if(canvas) {
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvas.parentElement.getBoundingClientRect(); 
+                canvas.width = rect.width * dpr;
+                canvas.height = 250 * dpr; 
+                ctx.scale(dpr, dpr);
+                calculateCriticalArea(); 
+             }
+        });
+
     } catch (error) {
-        console.error("Failed to initialize critical area calculator:", error);
-        document.getElementById('modelUsed').innerHTML = `<span style="color: red;">Feil: Kunne ikke laste kalkulatordata.</span>`;
+        console.error("Initialization error:", error);
     }
 }
 
 document.addEventListener('DOMContentLoaded', initializeApp);
-// --- SLUTT: Event Listeners ---
-

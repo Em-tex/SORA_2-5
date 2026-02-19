@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SORA 2.5 - Contingency Volume Calculator</title>
+    <title>SORA 2.5 - Operational Volume</title>
     
     <link rel="icon" href="assets/smallLogo.png" type="image/png">
 
@@ -18,8 +18,8 @@
 
     <div class="container">
         <header class="page-header">
-            <h1>Contingency Volume (SORA 2.5)</h1>
-            <p>Calculate safety buffers and visualize the operational volume.</p>
+            <h1>Operational Volume (SORA 2.5)</h1>
+            <p>Calculate safety buffers, contingency volumes, and ground risk buffers.</p>
         </header>
 
         <div class="calculator-grid">
@@ -27,6 +27,7 @@
                 <h2><i class="fas fa-sliders-h"></i> Parameters</h2>
                 
                 <form id="cvForm">
+                    
                     <div class="input-group">
                         <label>Aircraft Type:</label>
                         <div class="toggle-group">
@@ -41,6 +42,105 @@
                             </label>
                         </div>
                     </div>
+
+                    <hr class="divider">
+
+                    <div class="input-group highlight-box">
+                        <label><i class="fas fa-shield-alt"></i> Include Ground Risk Buffer (GRB):</label>
+                        <div class="toggle-group">
+                            <input type="radio" name="grbToggle" id="grb_off" value="off" checked>
+                            <label for="grb_off" class="toggle-btn">
+                                <i class="fas fa-times"></i> Off
+                            </label>
+
+                            <input type="radio" name="grbToggle" id="grb_on" value="on">
+                            <label for="grb_on" class="toggle-btn">
+                                <i class="fas fa-check"></i> On
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="grbSection" style="display: none; border-left: 3px solid #dc3545; padding-left: 15px; margin-bottom: 20px;">
+                        
+                        <div class="input-group">
+                            <div class="label-row">
+                                <label for="charDim"><i class="fas fa-ruler-horizontal"></i> Characteristic Dimension (CD):</label>
+                                <i class="fas fa-info-circle info-icon" data-term="cd"></i>
+                            </div>
+                            <div class="stepper">
+                                <button type="button" class="step-btn minus" onclick="adjustValue('charDim', -0.5)"><i class="fas fa-minus"></i></button>
+                                <input type="number" id="charDim" value="1.0" step="0.1" min="0.1">
+                                <button type="button" class="step-btn plus" onclick="adjustValue('charDim', 0.5)"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="label-row">
+                                <label>GRB Calculation Method:</label>
+                                <i class="fas fa-info-circle info-icon" data-term="grbMethod"></i>
+                            </div>
+                            <div class="toggle-group" style="gap: 5px;">
+                                <input type="radio" name="grbMethod" id="grb_1to1" value="1to1" checked>
+                                <label for="grb_1to1" class="toggle-btn" style="padding: 8px; flex: 1 1 45%;">
+                                    <i class="fas fa-ruler-combined"></i> 1:1 Rule
+                                </label>
+
+                                <input type="radio" name="grbMethod" id="grb_ballistic" value="ballistic">
+                                <label for="grb_ballistic" id="lbl_grb_ballistic" class="toggle-btn" style="padding: 8px; flex: 1 1 45%;">
+                                    <i class="fas fa-meteor"></i> Ballistic
+                                </label>
+
+                                <input type="radio" name="grbMethod" id="grb_glide" value="glide">
+                                <label for="grb_glide" id="lbl_grb_glide" class="toggle-btn" style="padding: 8px; flex: 1 1 45%; display: none;">
+                                    <i class="fas fa-plane-arrival"></i> Glide
+                                </label>
+
+                                <input type="radio" name="grbMethod" id="grb_drift" value="drift">
+                                <label for="grb_drift" class="toggle-btn" style="padding: 8px; flex: 1 1 45%;">
+                                    <i class="fas fa-wind"></i> Drift / Parachute
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="input-group" id="grbGlideGroup" style="display:none;">
+                            <div class="label-row">
+                                <label for="glideRatio"><i class="fas fa-paper-plane"></i> Glide Ratio (E):</label>
+                                <i class="fas fa-info-circle info-icon" data-term="glideRatio"></i>
+                            </div>
+                            <div class="stepper">
+                                <button type="button" class="step-btn minus" onclick="adjustValue('glideRatio', -1)"><i class="fas fa-minus"></i></button>
+                                <input type="number" id="glideRatio" value="15" step="0.5" min="1">
+                                <button type="button" class="step-btn plus" onclick="adjustValue('glideRatio', 1)"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+
+                        <div id="grbDriftGroup" style="display:none;">
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="windSpeed"><i class="fas fa-wind"></i> Max Wind Speed (m/s):</label>
+                                    <i class="fas fa-info-circle info-icon" data-term="windSpeed"></i>
+                                </div>
+                                <div class="stepper">
+                                    <button type="button" class="step-btn minus" onclick="adjustValue('windSpeed', -1)"><i class="fas fa-minus"></i></button>
+                                    <input type="number" id="windSpeed" value="10" step="1" min="0">
+                                    <button type="button" class="step-btn plus" onclick="adjustValue('windSpeed', 1)"><i class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="fallSpeed"><i class="fas fa-angle-double-down"></i> Descent Speed (m/s):</label>
+                                    <i class="fas fa-info-circle info-icon" data-term="fallSpeed"></i>
+                                </div>
+                                <div class="stepper">
+                                    <button type="button" class="step-btn minus" onclick="adjustValue('fallSpeed', -0.5)"><i class="fas fa-minus"></i></button>
+                                    <input type="number" id="fallSpeed" value="3.5" step="0.1" min="0.1">
+                                    <button type="button" class="step-btn plus" onclick="adjustValue('fallSpeed', 0.5)"><i class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="divider">
 
                     <div class="input-group">
                         <label>Contingency Method:</label>
@@ -58,7 +158,7 @@
                     </div>
 
                     <div class="input-group" id="tpGroup" style="display:none;">
-                        <label for="tp"><i class="fas fa-parachute-box"></i> Deployment Time (t<sub>P</sub>):</label>
+                        <label for="tp"><i class="fas fa-stopwatch"></i> Deployment Time (t<sub>P</sub>):</label>
                         <div class="stepper">
                             <button type="button" class="step-btn minus" onclick="adjustValue('tp', -0.5)"><i class="fas fa-minus"></i></button>
                             <input type="number" id="tp" value="3" step="0.1">
@@ -128,6 +228,9 @@
                             <input type="number" id="hfg" step="1" value="120" min="0">
                             <button type="button" class="step-btn plus" onclick="adjustValue('hfg', 10)"><i class="fas fa-plus"></i></button>
                         </div>
+                        <small style="color: #6c757d; display: block; margin-top: 5px; font-size: 0.9em;">
+                            Note: Flight Geography dimensions must be at least 3 &times; CD.
+                        </small>
                     </div>
 
                     <div class="input-group">
@@ -205,30 +308,45 @@
                         <canvas id="cvCanvas" width="600" height="400"></canvas>
                     </div>
                     
-                    <div class="legend-grid">
-                        <div class="legend-item">
-                            <div class="color-box bg-green"></div>
-                            <span>Flight Geography</span>
+                    <div class="legend-grid" id="visLegend">
+                        <div class="legend-col">
+                            <div class="legend-header">
+                                <div class="color-box bg-green"></div>
+                                <span>Flight Geo.</span>
+                            </div>
+                            <div class="legend-val">H: <span id="leg_fg_h">0.0 m</span></div>
                         </div>
-                        <div class="legend-item">
-                            <div class="color-box bg-yellow"></div>
-                            <span>Contingency Volume</span>
+
+                        <div class="legend-col">
+                            <div class="legend-header">
+                                <div class="color-box bg-yellow"></div>
+                                <span>Contingency Vol.</span>
+                            </div>
+                            <div class="legend-val">
+                                W: <span id="leg_cv_w">0.0 m</span> <br> 
+                                H: <span id="leg_cv_h">0.0 m</span>
+                            </div>
                         </div>
-                        <div class="value-item">
-                            <strong>Buffer (Width):</strong> <span id="vis_sCV">0.0 m</span>
-                        </div>
-                        <div class="value-item">
-                            <strong>Margin (Height):</strong> <span id="vis_hCM">0.0 m</span>
+
+                        <div class="legend-col" id="legendGrb" style="display: none;">
+                            <div class="legend-header">
+                                <div class="color-box bg-red"></div>
+                                <span>GRB</span>
+                            </div>
+                            <div class="legend-val">W: <span id="leg_grb_w">0.0 m</span></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="result-card card">
+                    
+                    <div id="warning-container" style="display: none; margin-bottom: 15px;"></div>
+
                     <h2><i class="fas fa-calculator"></i> Calculated Values</h2>
                     
                     <div class="main-results">
                         <div class="result-box">
-                            <p>Horizontal Buffer (S<sub>CV</sub>)</p>
+                            <p>CV Buffer (S<sub>CV</sub>)</p>
                             <div><span id="sCvValue" class="big-number">--</span> <span class="unit">m</span></div>
                         </div>
 
@@ -236,6 +354,11 @@
                             <p>Total Ceiling (H<sub>CV</sub>)</p>
                             <div><span id="hCvValue" class="big-number">--</span> <span class="unit">m</span></div>
                             <small class="text-muted">FG + Margin</small>
+                        </div>
+
+                        <div class="result-box highlight-result" id="grbResultBox" style="display:none; width: 100%;">
+                            <p>Ground Risk Buffer (S<sub>GRB</sub>)</p>
+                            <div><span id="sGrbValue" class="big-number" style="color: #dc3545;">--</span> <span class="unit">m</span></div>
                         </div>
                     </div>
 

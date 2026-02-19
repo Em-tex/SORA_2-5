@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             <a href="contingency_volume.html" class="nav-button" id="nav-contingency-volume">
                 <i class="fas fa-exclamation-triangle nav-icon"></i>
-                <span>Contingency Volume</span>
+                <span>Operational Volume</span>
             </a>
 
             <a href="vlos_calculator.html" class="nav-button" id="nav-vlos">

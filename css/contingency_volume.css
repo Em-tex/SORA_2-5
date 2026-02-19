@@ -250,32 +250,51 @@ canvas {
     pointer-events: none;
     color: #333;
     font-size: 24px;
-    transition: all 0.2s ease-out;
+    transition: transform 0.2s ease-out; /* Smooth rotation */
 }
 
-/* Legend & Values Grid */
+/* Legend & Values Grid (UPDATED) */
 .legend-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    display: flex;
+    justify-content: space-around;
+    gap: 15px;
     margin-top: 20px;
     padding: 15px;
     border-top: 1px solid #eee;
-    text-align: left;
 }
 
 @media (max-width: 600px) {
     .legend-grid {
-        grid-template-columns: 1fr; /* Vertical stack on mobile */
-        font-size: 0.9rem;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
     }
 }
 
-.legend-item, .value-item {
+.legend-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.legend-header {
     display: flex;
     align-items: center;
     gap: 8px;
     color: #333;
+    font-weight: 600;
+}
+
+.legend-val {
+    font-size: 1rem;
+    color: #555;
+    background: #f8f9fa;
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    line-height: 1.4;
 }
 
 .color-box {
@@ -293,6 +312,11 @@ canvas {
 .bg-yellow {
     background-color: rgba(255, 193, 7, 0.4);
     border: 1px solid #e0a800;
+}
+
+.bg-red {
+    background-color: rgba(220, 53, 69, 0.4);
+    border: 1px solid #dc3545;
 }
 
 /* Results */
@@ -318,7 +342,27 @@ canvas {
     color: #2c3e50;
 }
 
+.highlight-box {
+    background-color: #f0f4f8;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #cce0ff;
+}
+
+.highlight-result {
+    border: 2px solid #dc3545;
+    background-color: #fff9fa;
+    border-radius: 8px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-top: 10px;
+}
+
 /* Details Table */
+.details-box {
+    margin-top: 20px;
+}
+
 .details-table {
     width: 100%;
     font-size: 0.9rem;
@@ -363,4 +407,29 @@ canvas {
     border-width: 8px;
     border-style: solid;
     border-color: #333 transparent transparent transparent;
+}
+
+/* Warnings & Alerts (NY) */
+.warning-msg {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1.4;
+}
+
+.warning-msg i {
+    color: #ffc107;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.warning-msg b {
+    font-weight: 600;
 }
