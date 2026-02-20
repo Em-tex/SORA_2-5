@@ -1,7 +1,7 @@
 /* Layout Grid */
 .calculator-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Two columns on desktop */
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
     margin-top: 20px;
 }
@@ -87,7 +87,7 @@ h2, h3 {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: #003366; /* Dark blue thumb */
+    background: #003366;
     cursor: pointer;
     transition: transform 0.1s;
 }
@@ -107,7 +107,7 @@ h2, h3 {
 
 /* Buttons */
 .btn-primary {
-    background-color: #003366; /* Dark CAA Blue */
+    background-color: #003366; 
     color: #ffffff;
     border: none;
     padding: 12px 20px;
@@ -179,10 +179,9 @@ h2, h3 {
     border-color: #27ae60;
 }
 
-/* Canvas Visualization */
+/* Canvas Visualization (SKUDDSIKKER LAYOUT) */
 .canvas-container {
     width: 100%;
-    height: 250px;
     background-color: #f0f8ff; 
     border: 1px solid #dce4ec;
     border-radius: 4px;
@@ -190,10 +189,18 @@ h2, h3 {
     overflow: hidden;
 }
 
+.top-view-container {
+    height: 280px; 
+}
+
+.side-view-container {
+    height: 250px; 
+}
+
 canvas {
     display: block;
-    width: 100%;
-    height: 100%;
+    width: 100% !important;
+    height: 100% !important;
 }
 
 .viz-legend {
@@ -206,28 +213,11 @@ canvas {
     color: #555;
 }
 
-/* --- MOBILE RESPONSIVENESS --- */
+/* Responsive */
 @media (max-width: 768px) {
-    .calculator-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .container {
-        padding: 10px;
-    }
-
-    .result-display {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    
-    .result-display .value {
-        font-size: 2.5rem;
-    }
-
-    .reference-table th, .reference-table td {
-        padding: 4px;
-        font-size: 0.8rem;
-    }
+    .calculator-grid { grid-template-columns: 1fr; }
+    .container { padding: 10px; }
+    .result-display { flex-direction: column; align-items: center; text-align: center; }
+    .result-display .value { font-size: 2.5rem; }
+    .reference-table th, .reference-table td { padding: 4px; font-size: 0.8rem; }
 }

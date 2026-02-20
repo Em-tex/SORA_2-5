@@ -5,18 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SORA 2.5 Critical Area Calculator</title>
     
+    <link rel="icon" href="assets/smallLogo.png" type="image/png">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/critical_area.css">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
+    <div style="font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; left: -9999px; visibility: hidden;">
+        <i class="fa-solid fa-helicopter"></i>
+        <i class="fa-solid fa-plane"></i>
+        <i class="fa-solid fa-person"></i>
+    </div>
+
+    <div id="navbar-placeholder"></div>
+
     <div class="container">
         <h1>Critical Area Calculator (SORA 2.5)</h1>
         <p class="intro-text">
-            Calculate the precise <strong>Critical Area ($A_c$)</strong> according to SORA 2.5 Annex F. 
-            A calculated $A_c$ lower than the standard value allows you to use a lower "Characteristic Dimension" column in the iGRC table.
+            Calculate the precise <strong>Critical Area (A<sub>c</sub>)</strong> according to SORA 2.5 Annex F. 
+            A calculated A<sub>c</sub> lower than the standard value may allow you to use a lower "Characteristic Dimension" column in the iGRC table.
         </p>
 
         <div class="calculator-grid">
@@ -81,24 +89,32 @@
                 <div class="card result-card">
                     <h2><i class="fa-solid fa-calculator"></i> Results</h2>
                     <div class="result-display">
-                        <span class="label">Critical Area ($A_c$):</span>
+                        <span class="label">Critical Area (A<sub>c</sub>):</span>
                         <span class="value" id="criticalAreaValue">-</span>
-                        <span class="unit">$m^2$</span>
+                        <span class="unit">m<sup>2</sup></span>
                     </div>
                     <div id="modelUsed" class="model-info">Model: -</div>
                     <div id="impactAngleResult" class="angle-info" style="display:none;"></div>
                 </div>
 
                 <div class="card viz-card">
+                    <h3><i class="fa-solid fa-layer-group"></i> Critical Area Footprint (Top View)</h3>
+                    <div id="topViewContainer" class="canvas-container top-view-container">
+                        <canvas id="caVizCanvasTop"></canvas>
+                    </div>
+                    <div class="viz-legend" style="margin-top:15px;">
+                        <span><span style="color:#3498db; font-size:1.2rem;">■</span> Glide Path</span>
+                        <span><span style="color:#f39c12; font-size:1.2rem;">■</span> Slide Path</span>
+                        <span><span style="color:rgba(231, 76, 60, 0.4); font-size:1.2rem;">■</span> Footprint (A<sub>c</sub>)</span>
+                    </div>
+                </div>
+
+                <div class="card viz-card">
                     <h3><i class="fa-solid fa-eye"></i> Crash Geometry (Side View)</h3>
-                    <div class="canvas-container">
+                    <div id="sideViewContainer" class="canvas-container side-view-container">
                         <canvas id="caVizCanvas"></canvas>
                     </div>
-                    <div class="viz-legend">
-                        <span><i class="fa-solid fa-plane-arrival" style="color:#007bff;"></i> Path</span>
-                        <span><i class="fa-solid fa-person" style="color:#28a745;"></i> Person</span>
-                        <span><span style="display:inline-block;width:12px;height:12px;background:rgba(220, 53, 69, 0.3);"></span> Impact Zone</span>
-                    </div>
+                    <small style="display:block; text-align:center; margin-top:5px; color:#7f8c8d;">Illustrates the impact angle and descent from 1.8m head height.</small>
                 </div>
 
                 <div class="card table-card">
@@ -116,11 +132,11 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>&lt; 6.5 $m^2$</td>
-                                    <td>&lt; 65 $m^2$</td>
-                                    <td>&lt; 650 $m^2$</td>
-                                    <td>&lt; 6500 $m^2$</td>
-                                    <td>> 6500 $m^2$</td>
+                                    <td>&lt; 6.5 m<sup>2</sup></td>
+                                    <td>&lt; 65 m<sup>2</sup></td>
+                                    <td>&lt; 650 m<sup>2</sup></td>
+                                    <td>&lt; 6500 m<sup>2</sup></td>
+                                    <td>> 6500 m<sup>2</sup></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -131,6 +147,7 @@
         </div>
     </div>
 
+    <script src="js/navbar.js"></script>
     <script src="js/critical_area.js"></script>
 </body>
 </html>
