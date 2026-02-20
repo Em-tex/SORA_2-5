@@ -42,37 +42,45 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="mtom">MTOM (kg)</label>
+                    <label for="mtom">MTOM</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-weight-hanging input-icon"></i>
                         <input type="number" id="mtom" step="0.1" min="0" max="200" placeholder="e.g. 2.5">
+                        <span class="unit-label">kg</span>
                     </div>
                     <input type="range" id="mtomSlider" min="0" max="200" step="0.1" value="0" class="custom-slider">
                 </div>
 
                 <div class="form-group">
-                    <label for="dimension">Characteristic Dimension (m)</label>
+                    <label for="dimension">Characteristic Dimension</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-ruler-horizontal input-icon"></i>
                         <input type="number" id="dimension" step="0.1" min="0.1" max="15" placeholder="e.g. 0.8">
+                        <span class="unit-label">m</span>
                     </div>
                     <input type="range" id="dimensionSlider" min="0.1" max="15" step="0.1" value="0.1" class="custom-slider">
                 </div>
 
                 <div class="form-group">
-                    <label for="cruiseSpeed">Max Cruise Speed (m/s)</label>
+                    <label for="cruiseSpeed">Max Cruise Speed</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-gauge-high input-icon"></i>
                         <input type="number" id="cruiseSpeed" step="1" min="0" max="100" placeholder="e.g. 15">
+                        <select id="speedUnit" class="unit-select">
+                            <option value="ms">m/s</option>
+                            <option value="kmh">km/h</option>
+                            <option value="kt">kt</option>
+                        </select>
                     </div>
                     <input type="range" id="cruiseSpeedSlider" min="0" max="100" step="1" value="0" class="custom-slider">
                 </div>
 
-                <div class="form-group">
-                    <label for="minAltitude">Typical Operation Altitude (m)</label>
+                <div class="form-group" id="altitudeGroup" style="display: none;">
+                    <label for="minAltitude">Typical Operation Altitude</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-plane-up input-icon"></i>
                         <input type="number" id="minAltitude" step="1" min="0" max="500" placeholder="e.g. 50">
+                        <span class="unit-label" style="right: 35px;">m</span>
                     </div>
                     <input type="range" id="minAltitudeSlider" min="0" max="500" step="1" value="0" class="custom-slider">
                 </div>
@@ -95,6 +103,35 @@
                     </div>
                     <div id="modelUsed" class="model-info">Model: -</div>
                     <div id="impactAngleResult" class="angle-info" style="display:none;"></div>
+                    
+                    <div id="modelSwitchDisplay" class="transition-info" style="display:none;"></div>
+                    
+                    <div class="table-card-inner">
+                        <h3>iGRC Column Check</h3>
+                        <div class="table-responsive">
+                            <table class="reference-table">
+                                <thead>
+                                    <tr>
+                                        <th id="col-1m-head">1 m</th>
+                                        <th id="col-3m-head">3 m</th>
+                                        <th id="col-8m-head">8 m</th>
+                                        <th id="col-20m-head">20 m</th>
+                                        <th id="col-40m-head">40 m</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="col-1m-data">&lt; 6.5 m<sup>2</sup></td>
+                                        <td id="col-3m-data">&lt; 65 m<sup>2</sup></td>
+                                        <td id="col-8m-data">&lt; 650 m<sup>2</sup></td>
+                                        <td id="col-20m-data">&lt; 6500 m<sup>2</sup></td>
+                                        <td id="col-40m-data">> 6500 m<sup>2</sup></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <small style="display:block; margin-top:10px; color:#7f8c8d;">If your calculated area is below the threshold for your dimension, you may potentially use a lower column in SORA Step #2.</small>
+                    </div>
                 </div>
 
                 <div class="card viz-card">
@@ -115,33 +152,6 @@
                         <canvas id="caVizCanvas"></canvas>
                     </div>
                     <small style="display:block; text-align:center; margin-top:5px; color:#7f8c8d;">Illustrates the impact angle and descent from 1.8m head height.</small>
-                </div>
-
-                <div class="card table-card">
-                    <h3>iGRC Column Check</h3>
-                    <div class="table-responsive">
-                        <table class="reference-table">
-                            <thead>
-                                <tr>
-                                    <th id="col-1m-head">1 m</th>
-                                    <th id="col-3m-head">3 m</th>
-                                    <th id="col-8m-head">8 m</th>
-                                    <th id="col-20m-head">20 m</th>
-                                    <th id="col-40m-head">40 m</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>&lt; 6.5 m<sup>2</sup></td>
-                                    <td>&lt; 65 m<sup>2</sup></td>
-                                    <td>&lt; 650 m<sup>2</sup></td>
-                                    <td>&lt; 6500 m<sup>2</sup></td>
-                                    <td>> 6500 m<sup>2</sup></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <small>If your calculated area is below the threshold for your dimension, you may potentially use a lower column in SORA Step #2.</small>
                 </div>
             </div>
         </div>

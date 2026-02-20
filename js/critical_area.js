@@ -19,6 +19,10 @@ function saveCriticalAreaForm() {
     });
     const rotorEl = document.getElementById('isRotorcraft');
     data['isRotorcraft'] = rotorEl ? rotorEl.checked : false;
+    
+    const speedUnitEl = document.getElementById('speedUnit');
+    if(speedUnitEl) data['speedUnit'] = speedUnitEl.value;
+
     localStorage.setItem(CRITICAL_AREA_KEY, JSON.stringify(data));
 }
 
@@ -38,12 +42,28 @@ function loadCriticalAreaForm() {
     const rotorEl = document.getElementById('isRotorcraft');
     if (rotorEl && data['isRotorcraft'] !== undefined) {
         rotorEl.checked = data['isRotorcraft'];
+        toggleAltitudeVisibility();
+    }
+
+    const speedUnitEl = document.getElementById('speedUnit');
+    if (speedUnitEl && data['speedUnit'] !== undefined) {
+        speedUnitEl.value = data['speedUnit'];
     }
 }
 
 function resetCriticalAreaForm() {
     localStorage.removeItem(CRITICAL_AREA_KEY);
     location.reload();
+}
+
+function toggleAltitudeVisibility() {
+    const isRotorcraft = document.getElementById('isRotorcraft').checked;
+    const altitudeGroup = document.getElementById('altitudeGroup');
+    if(isRotorcraft) {
+        altitudeGroup.style.display = 'block';
+    } else {
+        altitudeGroup.style.display = 'none';
+    }
 }
 
 // --- CONSTANTS ---
@@ -108,6 +128,56 @@ function calculateImpactAngle(initialHorizontalSpeed, altitude, frontalArea, mas
     return Math.atan(Math.abs(vVertical) / Math.abs(vHorizontal)) * (180 / Math.PI);
 }
 
+// TERSKEL-FUNKSJONER FOR OPPSUMMERING
+function findTransitionAltitude(speedMS, frontalArea, mass) {
+    let low = 0; let high = 2000; 
+    if(calculateImpactAngle(speedMS, high, frontalArea, mass) < HIGH_ANGLE_THRESHOLD_DEG) return Infinity; 
+    if(calculateImpactAngle(speedMS, 0.1, frontalArea, mass) >= HIGH_ANGLE_THRESHOLD_DEG) return 0; 
+    for(let i = 0; i < 30; i++) {
+        let mid = (low + high) / 2;
+        let angle = calculateImpactAngle(speedMS, mid, frontalArea, mass);
+        if(angle >= HIGH_ANGLE_THRESHOLD_DEG) high = mid; else low = mid;
+    }
+    return (low + high) / 2;
+}
+
+function findTransitionSpeed(altitude, frontalArea, mass) {
+    let low = 0; let high = 500; 
+    if(calculateImpactAngle(high, altitude, frontalArea, mass) >= HIGH_ANGLE_THRESHOLD_DEG) return Infinity; 
+    if(calculateImpactAngle(low, altitude, frontalArea, mass) < HIGH_ANGLE_THRESHOLD_DEG) return 0; 
+    for(let i = 0; i < 30; i++) {
+        let mid = (low + high) / 2;
+        let angle = calculateImpactAngle(mid, altitude, frontalArea, mass);
+        if(angle >= HIGH_ANGLE_THRESHOLD_DEG) low = mid; else high = mid;
+    }
+    return (low + high) / 2;
+}
+
+function findTransitionDimension(speedMS, altitude, mass) {
+    let low = 0.01; let high = 20; 
+    if(calculateImpactAngle(speedMS, altitude, interpolateFrontalArea(high), mass) < HIGH_ANGLE_THRESHOLD_DEG) return Infinity; 
+    if(calculateImpactAngle(speedMS, altitude, interpolateFrontalArea(low), mass) >= HIGH_ANGLE_THRESHOLD_DEG) return 0; 
+    for(let i = 0; i < 30; i++) {
+        let mid = (low + high) / 2;
+        let angle = calculateImpactAngle(speedMS, altitude, interpolateFrontalArea(mid), mass);
+        if(angle >= HIGH_ANGLE_THRESHOLD_DEG) high = mid; else low = mid;
+    }
+    return (low + high) / 2;
+}
+
+function findTransitionMass(speedMS, altitude, dimension) {
+    let low = 0.01; let high = 500; 
+    let frontalArea = interpolateFrontalArea(dimension);
+    if(calculateImpactAngle(speedMS, altitude, frontalArea, high) >= HIGH_ANGLE_THRESHOLD_DEG) return Infinity; 
+    if(calculateImpactAngle(speedMS, altitude, frontalArea, low) < HIGH_ANGLE_THRESHOLD_DEG) return 0; 
+    for(let i = 0; i < 30; i++) {
+        let mid = (low + high) / 2;
+        let angle = calculateImpactAngle(speedMS, altitude, frontalArea, mid);
+        if(angle >= HIGH_ANGLE_THRESHOLD_DEG) low = mid; else high = mid;
+    }
+    return (low + high) / 2;
+}
+
 function calculateJarusPhysics(dimension, cruiseSpeed, mass) {
     const w = dimension;
     const thetaRad = JARUS_IMPACT_ANGLE_DEG * (Math.PI / 180);
@@ -162,8 +232,14 @@ function highlightTableColumn(criticalArea) {
             if (criticalArea <= th.limit) { highlightedId = th.id; break; }
         }
     }
-    thresholds.forEach(th => document.getElementById(`col-${th.id}-head`)?.classList.remove('highlight-col'));
-    document.getElementById(`col-${highlightedId}-head`)?.classList.add('highlight-col');
+    
+    thresholds.forEach(th => {
+        document.getElementById(`col-${th.id}-head`)?.classList.remove('highlight-col-head');
+        document.getElementById(`col-${th.id}-data`)?.classList.remove('highlight-col-data');
+    });
+    
+    document.getElementById(`col-${highlightedId}-head`)?.classList.add('highlight-col-head');
+    document.getElementById(`col-${highlightedId}-data`)?.classList.add('highlight-col-data');
 }
 
 // --- VISUALIZATION DRAW HELPERS ---
@@ -174,6 +250,7 @@ function drawLabelBox(ctx, text, x, y, bgColor = "#ffffff", textColor = "#333", 
     const h = isLarge ? 26 : 24;
 
     const padding = 5;
+    // Tvinger boksen innenfor canvas, uansett koordinater!
     let drawX = Math.max(w/2 + padding, Math.min(x, canvasWidth - w/2 - padding));
     let drawY = Math.max(h/2 + padding, Math.min(y, canvasHeight - h/2 - padding));
 
@@ -225,7 +302,7 @@ function drawTopView(vizData) {
         ctxTop.fillStyle = "#95a5a6";
         ctxTop.font = "14px Arial";
         ctxTop.textAlign = "center";
-        ctxTop.fillText("Venter på konfigurasjon...", widthTop/2, heightTop/2);
+        ctxTop.fillText("Waiting for configuration...", widthTop/2, heightTop/2);
         return;
     }
 
@@ -235,21 +312,21 @@ function drawTopView(vizData) {
     const totalW = vizData.glide + vizData.slide + (rVisMeters * 2);
     const totalH = rVisMeters * 2;
     
-    const reqMetersW = Math.max(10, totalW * 1.15);
-    const reqMetersH = Math.max(10, totalH * 1.5);
+    // Økt padding-krav for å forhindre overlapp i top-view
+    const reqMetersW = Math.max(15, totalW * 1.3);
+    const reqMetersH = Math.max(15, totalH * 2.5); 
     
     const scale = Math.min((widthTop - 40) / reqMetersW, (heightTop - 60) / reqMetersH);
     
     const glidePx = vizData.glide * scale;
     const slidePx = vizData.slide * scale;
-    const rPx = Math.max(15, rVisMeters * scale); // Sperre mot usynlig areal
+    const rPx = Math.max(10, rVisMeters * scale); // Tving minimum størrelse på radiene
 
     const totalWidthPx = glidePx + slidePx;
     const startX = (widthTop - totalWidthPx) / 2; 
     const impactX = startX + glidePx;
     const endX = impactX + slidePx;
 
-    // 1. FOOTPRINT (Rød sone)
     ctxTop.fillStyle = "rgba(231, 76, 60, 0.15)";
     ctxTop.strokeStyle = "#e74c3c";
     ctxTop.lineWidth = 2;
@@ -265,7 +342,6 @@ function drawTopView(vizData) {
     ctxTop.fill();
     ctxTop.stroke();
 
-    // 2. TEGN BREDDE-MÅL (W)
     const drawWidthLineX = vizData.isHighImpact ? impactX - rPx - 25 : startX - rPx - 25;
     const w_meters = rVisMeters * 2;
     
@@ -281,9 +357,8 @@ function drawTopView(vizData) {
     ctxTop.moveTo(drawWidthLineX - 5, centerY + rPx - 5); ctxTop.lineTo(drawWidthLineX, centerY + rPx); ctxTop.lineTo(drawWidthLineX + 5, centerY + rPx - 5);
     ctxTop.stroke();
 
-    drawLabelBox(ctxTop, `W: ${w_meters.toFixed(1)}m`, drawWidthLineX, centerY, "#f8f9fa", "#2c3e50", widthTop, heightTop, true);
+    drawLabelBox(ctxTop, `W: ${w_meters.toFixed(1)}m`, drawWidthLineX - 10, centerY, "#f8f9fa", "#2c3e50", widthTop, heightTop, true);
 
-    // 3. PATH LINJER
     if (glidePx > 0) {
         ctxTop.beginPath(); ctxTop.moveTo(startX, centerY); ctxTop.lineTo(impactX, centerY);
         ctxTop.strokeStyle = "#3498db"; ctxTop.lineWidth = 6; ctxTop.stroke();
@@ -293,7 +368,6 @@ function drawTopView(vizData) {
         ctxTop.strokeStyle = "#f39c12"; ctxTop.lineWidth = 6; ctxTop.stroke();
     }
 
-    // 4. MARKØRER
     if (vizData.isHighImpact) {
         drawExplosion(ctxTop, impactX, centerY);
     } else {
@@ -303,7 +377,6 @@ function drawTopView(vizData) {
         drawExplosion(ctxTop, endX, centerY);
     }
 
-    // 5. MÅL OG LABELS
     const lblYBot = centerY + rPx + 20;
 
     if (vizData.isHighImpact) {
@@ -311,10 +384,10 @@ function drawTopView(vizData) {
     } else {
         ctxTop.beginPath(); ctxTop.moveTo(endX, centerY); ctxTop.lineTo(endX + rPx * 0.7, centerY - rPx * 0.7);
         ctxTop.strokeStyle = "#c0392b"; ctxTop.lineWidth = 2; ctxTop.stroke();
-        drawLabelBox(ctxTop, `rD = ${rVisMeters.toFixed(1)}m`, endX + rPx + 20, centerY - rPx, "#fff0f0", "#c0392b", widthTop, heightTop, true);
+        drawLabelBox(ctxTop, `rD = ${rVisMeters.toFixed(1)}m`, endX + rPx + 20, centerY - rPx - 10, "#fff0f0", "#c0392b", widthTop, heightTop, true);
 
-        if (glidePx > 0) drawLabelBox(ctxTop, `Glide: ${vizData.glide.toFixed(1)}m`, startX + glidePx/2, centerY - rPx - 25, "#eef7fd", "#2980b9", widthTop, heightTop, true);
-        if (slidePx > 0) drawLabelBox(ctxTop, `Slide: ${vizData.slide.toFixed(1)}m`, impactX + slidePx/2, centerY + rPx + 25, "#fdf8e3", "#d35400", widthTop, heightTop, true);
+        if (glidePx > 0) drawLabelBox(ctxTop, `Glide: ${vizData.glide.toFixed(1)}m`, startX + glidePx/2, centerY - rPx - 35, "#eef7fd", "#2980b9", widthTop, heightTop, true);
+        if (slidePx > 0) drawLabelBox(ctxTop, `Slide: ${vizData.slide.toFixed(1)}m`, impactX + slidePx/2, centerY + rPx + 35, "#fdf8e3", "#d35400", widthTop, heightTop, true);
     }
 }
 
@@ -329,15 +402,13 @@ function drawSideView(vizData) {
     const angleRad = vizData.angle * (Math.PI / 180);
 
     const h18Px = 50; 
-    const maxDrawHeight = groundY - 20; // Høyeste punkt banen tegnes fra
-    const impactX = widthSide * 0.70; 
+    const maxDrawHeight = groundY - 20; 
+    const impactX = widthSide * 0.75; 
 
-    // 1. BAKKE
     ctxSide.beginPath();
     ctxSide.moveTo(0, groundY); ctxSide.lineTo(widthSide, groundY);
     ctxSide.strokeStyle = "#34495e"; ctxSide.lineWidth = 3; ctxSide.stroke();
 
-    // 2. TEGN BANE (Fra toppen av skjermen og ned)
     let pathStartX, pathStartY;
     let droneX, droneY, droneAngle;
     let personX;
@@ -348,11 +419,9 @@ function drawSideView(vizData) {
     ctxSide.beginPath();
 
     if (vizData.isRotorcraft) {
-        // UNIVERSAL PARABEL (for både High Impact og JARUS)
         let H_total = maxDrawHeight;
         let D_total = (2 * H_total) / Math.tan(angleRad);
         
-        // Pass på at parabelen ikke starter utenfor venstre kant
         if (impactX - D_total < 20) {
             D_total = impactX - 20;
             H_total = (D_total * Math.tan(angleRad)) / 2;
@@ -371,18 +440,15 @@ function drawSideView(vizData) {
         }
         ctxSide.stroke();
 
-        // Plasser dronen på 30% av fallet
-        droneX = pathStartX + 0.3 * D_total;
-        droneY = pathStartY + H_total * (0.3 * 0.3);
-        droneAngle = Math.atan((2 * H_total * 0.3) / D_total);
+        droneX = pathStartX + 0.15 * D_total;
+        droneY = pathStartY + H_total * (0.15 * 0.15);
+        droneAngle = Math.atan((2 * H_total * 0.15) / D_total);
 
-        // Regn ut hvor y = 1.8m befinner seg på parabelen
         if (H_total >= h18Px) {
             let t_18 = Math.sqrt((H_total - h18Px) / H_total);
             personX = pathStartX + t_18 * D_total;
         }
     } else {
-        // RETT LINJE (Fixed Wing JARUS)
         let H_total = maxDrawHeight;
         let D_total = H_total / Math.tan(angleRad);
         
@@ -398,8 +464,8 @@ function drawSideView(vizData) {
         ctxSide.lineTo(impactX, groundY);
         ctxSide.stroke();
 
-        droneX = pathStartX + 0.3 * D_total;
-        droneY = pathStartY + 0.3 * H_total;
+        droneX = pathStartX + 0.15 * D_total;
+        droneY = pathStartY + 0.15 * H_total;
         droneAngle = angleRad;
 
         if (H_total >= h18Px) {
@@ -408,34 +474,35 @@ function drawSideView(vizData) {
     }
     ctxSide.setLineDash([]);
 
-    // 3. TEGN PERSON OG SLIDE (KUN HVIS IKKE HIGH IMPACT)
+    // 3. TEGN PERSON OG SLIDE
+    const h18Y = groundY - h18Px;
     if (!vizData.isHighImpact && personX !== undefined) {
-        const h18Y = groundY - h18Px;
         
-        // 1.8m referanselinje
         ctxSide.beginPath();
         ctxSide.moveTo(0, h18Y); ctxSide.lineTo(widthSide, h18Y);
         ctxSide.strokeStyle = "rgba(127, 140, 141, 0.4)"; ctxSide.setLineDash([5, 5]); ctxSide.stroke(); ctxSide.setLineDash([]);
+        
         ctxSide.fillStyle = "#7f8c8d"; ctxSide.font = "bold 12px sans-serif"; ctxSide.textAlign = "left";
-        ctxSide.fillText("1.8m Head Height", 10, h18Y - 8);
+        
+        // Unngå kollisjon mellom text og pathLine
+        let textHeadX = 10;
+        if (pathStartX < 120 && pathStartY < h18Y) { textHeadX = pathStartX + 20; }
+        let textHeadY = h18Y - 8;
+        if (textHeadY < 15) textHeadY = h18Y + 15; // Hvis 1.8m er øverst i hjørnet, dytt teksten under linjen
+        ctxSide.fillText("1.8m Head Height", textHeadX, textHeadY);
 
-        // Person Ikon
         ctxSide.font = `900 ${h18Px}px "Font Awesome 6 Free"`;
         ctxSide.fillStyle = "#27ae60";
         ctxSide.textAlign = "center";
         ctxSide.textBaseline = "bottom";
         ctxSide.fillText('\uf183', personX, groundY + 4); 
 
-        // Slide linje (Tegnes proporsjonalt ut fra Glide-avstanden på skjermen)
         if (vizData.slide > 0 && vizData.glide > 0) {
             const glide_vis_px = impactX - personX; 
             let slide_px = (vizData.slide / vizData.glide) * glide_vis_px;
             let endX = impactX + slide_px;
             
-            // SPERRE: Kutter streken før den forsvinner ut av vinduet
-            if (endX > widthSide - 30) {
-                endX = widthSide - 30;
-            }
+            if (endX > widthSide - 30) endX = widthSide - 30;
 
             ctxSide.strokeStyle = "#f39c12";
             ctxSide.beginPath();
@@ -444,17 +511,18 @@ function drawSideView(vizData) {
             ctxSide.stroke();
             
             drawExplosion(ctxSide, endX, groundY);
-            ctxSide.fillStyle = "#e67e22"; ctxSide.beginPath(); ctxSide.arc(impactX, groundY, 5, 0, Math.PI*2); ctxSide.fill(); // Impact punkt
+            ctxSide.fillStyle = "#e67e22"; ctxSide.beginPath(); ctxSide.arc(impactX, groundY, 5, 0, Math.PI*2); ctxSide.fill(); 
         } else {
             drawExplosion(ctxSide, impactX, groundY);
         }
     } else {
-        // High Impact (Ingen person. Ren, bratt vinkel som treffer bakken i en eksplosjon)
         drawExplosion(ctxSide, impactX, groundY);
     }
 
     // 4. TEGN VINKEL-ARK OG LABELS (Kollisjonssikret)
-    let arcRadius = 40;
+    let availableSpace = impactX - pathStartX;
+    let arcRadius = Math.min(45, Math.max(20, availableSpace * 0.5)); // Buen blir mindre når det er trangt
+
     ctxSide.beginPath();
     ctxSide.moveTo(impactX, groundY); ctxSide.lineTo(impactX - arcRadius - 15, groundY); 
     ctxSide.strokeStyle = "#7f8c8d"; ctxSide.lineWidth = 1; ctxSide.setLineDash([4, 4]); ctxSide.stroke(); ctxSide.setLineDash([]);
@@ -463,18 +531,21 @@ function drawSideView(vizData) {
     ctxSide.arc(impactX, groundY, arcRadius, Math.PI, Math.PI + angleRad); 
     ctxSide.strokeStyle = "#e74c3c"; ctxSide.lineWidth = 2; ctxSide.stroke();
 
-    // Plasser vinkelteksten smart. Hvis personen er i nærheten, dytt teksten opp!
-    let textX = impactX - arcRadius - 20;
-    let textY = groundY - 20;
+    let textX = impactX - arcRadius - 30;
+    let textY = groundY - arcRadius - 10;
+    if (textX < 30) textX = 30; 
     
-    if (!vizData.isHighImpact && personX !== undefined && Math.abs(textX - personX) < 40) {
-        textX = impactX - 25;
-        textY = groundY - arcRadius - 25;
+    // Hvis vinkelen er bratt, ELLER teksten treffer personen: Flytt godt over hodet!
+    if (vizData.angle > 70) { 
+        textX = impactX - arcRadius - 40;
+        textY = groundY - 50;
+    } else if (vizData.angle > 45 || (!vizData.isHighImpact && personX !== undefined && Math.abs(textX - personX) < 60)) {
+        textX = impactX - arcRadius - 20;
+        textY = h18Y - 30; 
     }
 
     drawLabelBox(ctxSide, `${vizData.angle.toFixed(1)}°`, textX, textY, "#fff0f0", "#c0392b", widthSide, heightSide, true);
 
-    // 5. TEGN DRONE IKON
     ctxSide.save();
     ctxSide.translate(droneX, droneY);
     ctxSide.rotate(droneAngle);
@@ -492,13 +563,19 @@ function calculateCriticalArea() {
     const isRotorcraft = isRotorcraftEl ? isRotorcraftEl.checked : false;
     
     const dimension = parseFloat(caInputElements.dimension.value);
-    const cruiseSpeed = parseFloat(caInputElements.cruiseSpeed.value);
     const mtom = parseFloat(caInputElements.mtom.value);
     const minAltitude = parseFloat(caInputElements.minAltitude.value);
+
+    const rawSpeed = parseFloat(caInputElements.cruiseSpeed.value);
+    const speedUnit = document.getElementById('speedUnit').value;
+    let cruiseSpeed = rawSpeed; 
+    if (speedUnit === 'kmh') cruiseSpeed = rawSpeed / 3.6;
+    if (speedUnit === 'kt') cruiseSpeed = rawSpeed * 0.514444;
 
     const resultValueEl = document.getElementById('criticalAreaValue');
     const modelUsedEl = document.getElementById('modelUsed');
     const impactAngleResultEl = document.getElementById('impactAngleResult');
+    const modelSwitchDisplayEl = document.getElementById('modelSwitchDisplay');
 
     let vizData = { isValid: false, isRotorcraft: isRotorcraft, dimension: dimension, angle: 90, glide: 0, slide: 0, area: 0, rD: 0, isHighImpact: false };
 
@@ -507,6 +584,7 @@ function calculateCriticalArea() {
         resultValueEl.textContent = '-';
         modelUsedEl.textContent = 'Model Used: -';
         if (impactAngleResultEl) impactAngleResultEl.style.display = 'none';
+        if (modelSwitchDisplayEl) modelSwitchDisplayEl.style.display = 'none';
         highlightTableColumn(-1);
         saveCriticalAreaForm();
         drawSideView(vizData); 
@@ -522,6 +600,31 @@ function calculateCriticalArea() {
         const frontalArea = interpolateFrontalArea(dimension);
         impactAngle = calculateImpactAngle(cruiseSpeed, minAltitude, frontalArea, mtom);
 
+        // --- TRANSITION SUMMARY ---
+        const switchAlt = findTransitionAltitude(cruiseSpeed, frontalArea, mtom);
+        const switchSpd = findTransitionSpeed(minAltitude, frontalArea, mtom);
+        const switchDim = findTransitionDimension(cruiseSpeed, minAltitude, mtom);
+        const switchMass = findTransitionMass(cruiseSpeed, minAltitude, dimension);
+        
+        let spdDisp = switchSpd;
+        let spdUnitStr = 'm/s';
+        if (speedUnit === 'kmh') { spdDisp = switchSpd * 3.6; spdUnitStr = 'km/h'; }
+        if (speedUnit === 'kt') { spdDisp = switchSpd / 0.514444; spdUnitStr = 'kt'; }
+
+        let altText = (switchAlt === Infinity) ? "Never" : (switchAlt === 0) ? "Always" : `> ${switchAlt.toFixed(0)} m`;
+        let spdText = (switchSpd === Infinity) ? "Always" : (switchSpd === 0) ? "Never" : `< ${spdDisp.toFixed(1)} ${spdUnitStr}`;
+        let dimText = (switchDim === Infinity) ? "Never" : (switchDim === 0) ? "Always" : `> ${switchDim.toFixed(1)} m`;
+        let massText = (switchMass === Infinity) ? "Always" : (switchMass === 0) ? "Never" : `< ${switchMass.toFixed(1)} kg`;
+
+        if (modelSwitchDisplayEl) {
+            modelSwitchDisplayEl.style.display = 'block';
+            modelSwitchDisplayEl.innerHTML = `<strong>High Impact Angle Model (>60°) triggers if (with current parameters):</strong><br>
+            • Altitude: <strong>${altText}</strong><br>
+            • Speed: <strong>${spdText}</strong><br>
+            • Dimension: <strong>${dimText}</strong><br>
+            • MTOM: <strong>${massText}</strong>`;
+        }
+
         if (impactAngle > HIGH_ANGLE_THRESHOLD_DEG) {
             modelUsed = "High Impact Angle Model";
             if (impactAngleResultEl) {
@@ -532,18 +635,19 @@ function calculateCriticalArea() {
             
             vizData = { isValid: true, isRotorcraft: true, dimension: dimension, angle: impactAngle, glide: 0, slide: 0, area: criticalArea, rD: 0, isHighImpact: true };
         } else {
-            modelUsed = `JARUS Model (Standard 35°)`;
+            modelUsed = `JARUS Model (Calculated < 60°)`;
             if (impactAngleResultEl) {
                 impactAngleResultEl.style.display = 'block';
                 impactAngleResultEl.innerHTML = `Calculated ballistic angle: <span>${impactAngle.toFixed(1)}°</span> (< 60°)`;
             }
             const phys = calculateJarusPhysics(dimension, cruiseSpeed, mtom);
             criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom);
-            vizData = { isValid: true, isRotorcraft: true, dimension: dimension, angle: 35, glide: phys.dGlide, slide: phys.dSlideReduced, area: criticalArea, rD: phys.rD, isHighImpact: false };
+            vizData = { isValid: true, isRotorcraft: true, dimension: dimension, angle: impactAngle, glide: phys.dGlide, slide: phys.dSlideReduced, area: criticalArea, rD: phys.rD, isHighImpact: false };
         }
     } else { 
         modelUsed = "JARUS Model (Standard 35°)";
         if (impactAngleResultEl) impactAngleResultEl.style.display = 'none';
+        if (modelSwitchDisplayEl) modelSwitchDisplayEl.style.display = 'none';
         
         criticalArea = calculateJarusModel(dimension, cruiseSpeed, mtom);
         const phys = calculateJarusPhysics(dimension, cruiseSpeed, mtom);
@@ -612,7 +716,16 @@ async function initializeApp() {
     });
 
     const isRotorcraftEl = document.getElementById('isRotorcraft');
-    if (isRotorcraftEl) isRotorcraftEl.addEventListener('change', calculateCriticalArea);
+    if (isRotorcraftEl) {
+        isRotorcraftEl.addEventListener('change', () => {
+            toggleAltitudeVisibility();
+            calculateCriticalArea();
+        });
+    }
+
+    const speedUnitEl = document.getElementById('speedUnit');
+    if(speedUnitEl) speedUnitEl.addEventListener('change', calculateCriticalArea);
+
     document.getElementById('resetCriticalAreaForm').addEventListener('click', resetCriticalAreaForm);
 
     setupCanvases();
