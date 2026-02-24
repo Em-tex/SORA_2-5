@@ -12,22 +12,22 @@ document.addEventListener("DOMContentLoaded", function() {
                 <span>SAIL</span>
             </a>
 
-            <a href="containment.html" class="nav-button" id="nav-containment">
-                <i class="fas fa-draw-polygon nav-icon"></i>
-                <span>Containment</span>
-            </a>
-
             <div class="dropdown">
-                <a href="critical_area.html" class="nav-button" id="nav-critical-area">
+                <a href="tradeoff_tables.html" class="nav-button" id="nav-igrc-main">
                     <i class="fas fa-layer-group nav-icon"></i>
                     <span>iGRC <i class="fas fa-caret-down" style="margin-left: 5px;"></i></span>
                 </a>
                 <div class="dropdown-content">
-                    <a href="critical_area.html"><i class="fas fa-bullseye" style="width: 20px;"></i> Critical Area</a>
-                    <a href="igrc_analytical.html"><i class="fas fa-calculator" style="width: 20px;"></i> Analytical Formula</a>
                     <a href="tradeoff_tables.html"><i class="fas fa-balance-scale" style="width: 20px;"></i> Trade-off Tables</a>
+                    <a href="igrc_analytical.html"><i class="fas fa-calculator" style="width: 20px;"></i> Analytical Formula</a>
+                    <a href="critical_area.html"><i class="fas fa-bullseye" style="width: 20px;"></i> Critical Area</a>
                 </div>
             </div>
+
+            <a href="containment.html" class="nav-button" id="nav-containment">
+                <i class="fas fa-draw-polygon nav-icon"></i>
+                <span>Containment</span>
+            </a>
 
             <a href="contingency_volume.html" class="nav-button" id="nav-contingency-volume">
                 <i class="fas fa-exclamation-triangle nav-icon"></i>
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function() {
     `;
 
     const placeholder = document.getElementById("navbar-placeholder");
-     if (placeholder) {
+    if (placeholder) {
         placeholder.innerHTML = navbarHTML;
     }
 
@@ -51,14 +51,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.querySelectorAll(".nav-button").forEach(button => button.classList.remove("active"));
 
+    // Logikk for å sette iGRC-knappen som aktiv for alle tre undersider
+    const igrcPages = ["tradeoff_tables.html", "igrc_analytical.html", "critical_area.html"];
+
     if (currentPage === "index.html" || currentPage === "") {
         document.getElementById("nav-sail")?.classList.add("active");
-    } else if (currentPage === "contingency_volume.html") {
-        document.getElementById("nav-contingency-volume")?.classList.add("active");
-    } else if (currentPage === "critical_area.html" || currentPage === "igrc_analytical.html" || currentPage === "tradeoff_tables.html") {
-        document.getElementById("nav-critical-area")?.classList.add("active");
+    } else if (igrcPages.includes(currentPage)) {
+        document.getElementById("nav-igrc-main")?.classList.add("active");
     } else if (currentPage === "containment.html") {
         document.getElementById("nav-containment")?.classList.add("active");
+    } else if (currentPage === "contingency_volume.html") {
+        document.getElementById("nav-contingency-volume")?.classList.add("active");
     } else if (currentPage === "vlos_calculator.html") {
         document.getElementById("nav-vlos")?.classList.add("active");
     }
