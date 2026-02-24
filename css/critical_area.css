@@ -81,54 +81,61 @@
     color: #7f8c8d;
 }
 
-/* Tekstfeltet har nå 80px padding til høyre slik at tall ikke krasjer med m/s eller pilene */
+/* Gitt 105px høyre-padding så tallene stopper i god tid før m/s-boksen */
 .input-icon-wrapper input[type="number"] {
     width: 100%;
-    padding: 10px 80px 10px 35px; 
+    padding: 10px 105px 10px 35px; 
     border: 1px solid #bdc3c7;
     border-radius: 4px;
     font-size: 1em;
     box-sizing: border-box;
 }
 
-/* --- Benevnelser (kg, m) og Nedtrekksmeny (m/s) --- */
+/* --- Profesjonell blokk for benevnelser og nedtrekksmeny --- */
 .unit-label {
     position: absolute;
-    right: 35px; /* Flyttet til venstre for å gjøre plass til pilene */
+    right: 30px; /* Sitter eksakt til venstre for opp/ned pilene */
+    height: calc(100% - 2px); /* Fyller høyden inni feltet */
+    top: 1px;
+    background: #f8f9fa; /* Svak grå bakgrunn for kontrast */
     color: #7f8c8d;
     font-weight: bold;
-    pointer-events: none; /* Lar deg klikke gjennom teksten for å skrive */
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    border-left: 1px solid #ddd; /* Tynn skillelinje */
+    pointer-events: none; /* Lar musen klikke gjennom for å skrive i feltet */
+    border-radius: 0 3px 3px 0;
 }
 
 .unit-select {
     position: absolute;
-    right: 30px; /* Flyttet til venstre for å gjøre plass til pilene */
-    padding: 5px;
-    border: none;             /* Fjerner kantlinjen */
-    background: transparent;  /* Fjerner den grå bakgrunnen */
-    color: #7f8c8d;           /* Setter samme farge som "kg" */
+    right: 30px; /* Sitter eksakt til venstre for opp/ned pilene */
+    height: calc(100% - 2px); 
+    top: 1px;
+    background: #f8f9fa;
+    color: #03477F;
     font-weight: bold;
+    padding: 0 5px 0 10px;
+    border: none;
+    border-left: 1px solid #ddd;
     cursor: pointer;
-    outline: none;            
-    transition: color 0.2s;
+    outline: none;
+    transition: background-color 0.2s;
 }
 
 .unit-select:hover {
-    color: #03477F; 
+    background: #eef2f5;
 }
 
-/* --- Spesialstyling for opp/ned pilene (Spinners) --- */
+/* --- Tvinger opp/ned-pilene til å være faste 30px brede --- */
 .input-icon-wrapper input[type="number"]::-webkit-inner-spin-button,
 .input-icon-wrapper input[type="number"]::-webkit-outer-spin-button {
     opacity: 1; /* Alltid synlige */
-    height: auto; 
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    width: 25px; /* Gjør dem bredere og lettere å treffe med musen */
+    width: 30px; /* Brede og treffsikre */
+    height: 100%; /* Fyller hele høyden */
+    margin: 0;
     cursor: pointer;
-    margin: 0; 
 }
 
 .custom-slider {
@@ -269,13 +276,11 @@
 /* =========================================================
    Visualizations (Grid & Canvas)
    ========================================================= */
-
-/* Grid for side-om-side visning av illustrasjonene */
 .viz-row {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* To kolonner */
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
-    align-items: stretch; /* Tvinger kortene til å bli eksakt like høye */
+    align-items: stretch; 
     margin-top: 20px;
 }
 
@@ -295,7 +300,6 @@
     display: flex;
 }
 
-/* Lar selve tegnebrettet fylle all ledig plass i høyden slik at bunnen flukter pent */
 .viz-row .canvas-container {
     flex-grow: 1; 
     min-height: 250px; 
@@ -317,14 +321,13 @@
 }
 
 /* =========================================================
-   Responsive Design (Mobil)
+   Responsive Design
    ========================================================= */
 @media (max-width: 900px) {
-    /* På mindre skjermer legges ting under hverandre (1 kolonne) */
     .calculator-grid, .viz-row {
         grid-template-columns: 1fr;
     }
     .viz-row .canvas-container {
-        min-height: 200px; /* Litt lavere minimumshøyde på mobil */
+        min-height: 200px; 
     }
 }
