@@ -93,7 +93,6 @@
             </div>
 
             <div class="results-section">
-                
                 <div class="card result-card">
                     <h2><i class="fa-solid fa-calculator"></i> Results</h2>
                     <div class="result-display">
@@ -133,31 +132,31 @@
                         <small style="display:block; margin-top:10px; color:#7f8c8d;">If your calculated area is below the threshold for your dimension, you may potentially use a lower column in SORA Step #2.</small>
                     </div>
                 </div>
-
-                <div class="viz-row">
-                    <div class="card viz-card" style="margin-bottom: 0;">
-                        <h3><i class="fa-solid fa-layer-group"></i> Critical Area Footprint (Top View)</h3>
-                        <div id="topViewContainer" class="canvas-container top-view-container">
-                            <canvas id="caVizCanvasTop"></canvas>
-                        </div>
-                        <div class="viz-legend" style="margin-top:15px;">
-                            <span><span style="color:#3498db; font-size:1.2rem;">■</span> Glide Path</span>
-                            <span><span style="color:#f39c12; font-size:1.2rem;">■</span> Slide Path</span>
-                            <span><span style="color:rgba(231, 76, 60, 0.4); font-size:1.2rem;">■</span> Footprint (A<sub>c</sub>)</span>
-                        </div>
-                    </div>
-
-                    <div class="card viz-card" style="margin-bottom: 0;">
-                        <h3><i class="fa-solid fa-eye"></i> Crash Geometry (Side View)</h3>
-                        <div id="sideViewContainer" class="canvas-container side-view-container">
-                            <canvas id="caVizCanvas"></canvas>
-                        </div>
-                        <small style="display:block; text-align:center; margin-top:5px; color:#7f8c8d;">Illustrates the impact angle and descent from 1.8m head height.</small>
-                    </div>
-                </div>
-
             </div>
         </div>
+
+        <div class="viz-row" style="margin-top: 20px;">
+            <div class="card viz-card" style="margin-bottom: 0;">
+                <h3><i class="fa-solid fa-layer-group"></i> Critical Area Footprint (Top View)</h3>
+                <div id="topViewContainer" class="canvas-container top-view-container">
+                    <canvas id="caVizCanvasTop"></canvas>
+                </div>
+                <div class="viz-legend" style="margin-top:15px;">
+                    <span><span style="color:#3498db; font-size:1.2rem;">■</span> Glide Path</span>
+                    <span><span style="color:#f39c12; font-size:1.2rem;">■</span> Slide Path</span>
+                    <span><span style="color:rgba(231, 76, 60, 0.4); font-size:1.2rem;">■</span> Footprint (A<sub>c</sub>)</span>
+                </div>
+            </div>
+
+            <div class="card viz-card" style="margin-bottom: 0;">
+                <h3><i class="fa-solid fa-eye"></i> Crash Geometry (Side View)</h3>
+                <div id="sideViewContainer" class="canvas-container side-view-container">
+                    <canvas id="caVizCanvas"></canvas>
+                </div>
+                <small style="display:block; text-align:center; margin-top:5px; color:#7f8c8d;">Illustrates the impact angle and descent from 1.8m head height.</small>
+            </div>
+        </div>
+
     </div>
 
     <script src="js/navbar.js"></script>
