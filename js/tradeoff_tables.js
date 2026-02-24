@@ -159,11 +159,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         <thead>
                             <tr>
                                 <th colspan="2" class="unselectable">Maximum UA characteristic dimension</th>
-                                ${dLim.map((d, i) => `<th class="dim-header ${col===i?'highlight-col':''}">${formatDim(d)} m</th>`).join('')}
+                                ${dLim.map((d) => `<th class="dim-header">${formatDim(d)} m</th>`).join('')}
                             </tr>
                             <tr>
                                 <th colspan="2" class="vel-header unselectable">Maximum speed</th>
-                                ${vLim.map((v, i) => `<th class="vel-header ${col===i?'highlight-col':''}">${Math.round(v)} m/s</th>`).join('')}
+                                ${vLim.map((v) => `<th class="vel-header">${Math.round(v)} m/s</th>`).join('')}
                             </tr>
                         </thead>
                         <tbody>
@@ -183,12 +183,20 @@ document.addEventListener("DOMContentLoaded", function() {
                                     ${popDensityCell}
                                     <td class="pop-header wide-col">${rowLabel}</td>
                                     ${[0, 1, 2, 3, 4].map(c => {
+                                        // NY LOGIKK: Setter highlight på kollone-cellene
+                                        let hClass = "";
+                                        if (row === r && col === c) hClass = "highlight-cell"; // Krysset
+                                        else if (col === c) hClass = "highlight-col"; // Resten av kolonnen
+
                                         if (r === 6 && c === 2) {
-                                            return `<td colspan="3" class="not-part ${row===6 && col>=2 ? 'highlight-cell' : ''}">Not part of SORA</td>`;
+                                            if (row === 6 && col >= 2) hClass = "highlight-cell";
+                                            else if (col >= 2) hClass = "highlight-col";
+                                            
+                                            return `<td colspan="3" class="not-part ${hClass}">Not part of SORA</td>`;
                                         } else if (r === 6 && c > 2) {
                                             return ''; 
                                         } else {
-                                            return `<td class="${row===r && col===c ? 'highlight-cell' : ''}">${igrcMatrix[r][c]}</td>`;
+                                            return `<td class="${hClass}">${igrcMatrix[r][c]}</td>`;
                                         }
                                     }).join('')}
                                 </tr>
@@ -222,4 +230,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         tablesContainer.innerHTML = tHtml;
     }
+
+    renderAll();
 });

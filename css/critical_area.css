@@ -284,3 +284,17 @@ canvas {
     .result-display .value { font-size: 2.5rem; }
     .reference-table th, .reference-table td { padding: 4px; font-size: 0.8rem; }
 }
+
+/* Nytt grid for side-om-side visning av illustrasjonene */
+.viz-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .viz-row {
+        grid-template-columns: 1fr;
+    }
+}

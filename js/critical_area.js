@@ -711,11 +711,24 @@ function initializeApp() {
     const speedUnitEl = document.getElementById('speedUnit');
     if(speedUnitEl) speedUnitEl.addEventListener('change', calculateCriticalArea);
 
-    // KUDOS: Her tvinger vi en bunnsolid restart av appen når Reset trykkes
+    // KUDOS: Her tvinger vi feltene tomme før vi kalkulerer på nytt
     document.getElementById('resetCriticalAreaForm').addEventListener('click', (e) => {
         e.preventDefault();
         localStorage.removeItem(CRITICAL_AREA_KEY);
-        window.location.reload(); 
+        
+        caInputIds.forEach(id => {
+            if (caInputElements[id]) caInputElements[id].value = '';
+            if (caSliderElements[id]) caSliderElements[id].value = (id === 'dimension' ? 0.1 : 0);
+        });
+
+        const rotorEl = document.getElementById('isRotorcraft');
+        if (rotorEl) rotorEl.checked = false;
+        
+        const speedUnitEl = document.getElementById('speedUnit');
+        if (speedUnitEl) speedUnitEl.value = 'ms';
+
+        toggleAltitudeVisibility();
+        calculateCriticalArea();
     });
 
     setupCanvases();
