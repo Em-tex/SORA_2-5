@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     <table class="sora-style-table">
                         <thead>
                             <tr>
-                                <th colspan="2" class="unselectable">Maximum UA characteristic dimension</th>
+                                <th colspan="2" class="dim-header unselectable">Maximum UA characteristic dimension</th>
                                 ${dLim.map((d) => `<th class="dim-header">${formatDim(d)} m</th>`).join('')}
                             </tr>
                             <tr>
@@ -183,10 +183,9 @@ document.addEventListener("DOMContentLoaded", function() {
                                     ${popDensityCell}
                                     <td class="pop-header wide-col">${rowLabel}</td>
                                     ${[0, 1, 2, 3, 4].map(c => {
-                                        // NY LOGIKK: Setter highlight på kollone-cellene
                                         let hClass = "";
-                                        if (row === r && col === c) hClass = "highlight-cell"; // Krysset
-                                        else if (col === c) hClass = "highlight-col"; // Resten av kolonnen
+                                        if (row === r && col === c) hClass = "highlight-cell";
+                                        else if (col === c) hClass = "highlight-col";
 
                                         if (r === 6 && c === 2) {
                                             if (row === 6 && col >= 2) hClass = "highlight-cell";
