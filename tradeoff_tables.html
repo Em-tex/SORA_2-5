@@ -47,9 +47,10 @@
                 <div class="input-group">
                     <label>Population Density (persons/km&sup2;):</label>
                     <div class="slider-container">
-                        <input type="range" id="dens-slider" min="1" max="60000" value="500" step="10">
-                        <input type="number" id="dens-input" value="500" min="1" max="200000">
+                        <input type="range" id="dens-slider" min="0" max="60000" value="500" step="10">
+                        <input type="number" id="dens-input" value="500" min="0" max="200000">
                     </div>
+                    <small id="cga-hint" style="color:#03477F; font-weight:bold; display:none; margin-top:5px;">(0 = Controlled Ground Area)</small>
                 </div>
             </div>
         </div>

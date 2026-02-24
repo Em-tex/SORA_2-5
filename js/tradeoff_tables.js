@@ -9,31 +9,35 @@ document.addEventListener("DOMContentLoaded", function() {
     
     const densSlider = document.getElementById('dens-slider');
     const densInput = document.getElementById('dens-input');
+    const cgaHint = document.getElementById('cga-hint');
     
     const originalContainer = document.getElementById('original-table-container');
     const tablesContainer = document.getElementById('tradeoff-tables-container');
 
-    // Standardgrenser fra SORA 2.5 (Original tabell)
+    // Standardgrenser fra SORA 2.5 (Original tabell - inkludert CGA som indeks 0)
     const baseDimLimits = [1, 3, 8, 20, 40];
     const baseVelLimits = [25, 35, 75, 120, 200];
-    const basePopLimits = [5, 50, 500, 5000, 50000]; 
+    const basePopLimits = [0, 5, 50, 500, 5000, 50000]; 
+
+    // Utvidet matrise som inkluderer Controlled Ground Area
     const igrcMatrix = [
+        [1, 1, 2, 3, 3],  // Controlled Ground Area (Når verdi er nøyaktig 0)
         [2, 3, 4, 5, 6],  // < 5
         [3, 4, 5, 6, 7],  // < 50
         [4, 5, 6, 7, 8],  // < 500
-        [5, 6, 7, 8, 9],  // < 5000
-        [6, 7, 8, 9, 10], // < 50000
-        [7, 8, 'N/A', 'N/A', 'N/A'] // > 50000
+        [5, 6, 7, 8, 9],  // < 5,000
+        [6, 7, 8, 9, 10], // < 50,000
+        [7, 8, 'N/A', 'N/A', 'N/A'] // > 50,000
     ];
 
-    // Korrigerte definisjoner: "Pakkedealer" for hver trade-off (Reduksjon og Gevinst)
+    // Letteleste definisjoner av trade-off pakkene
     const tradeOffs = [
-        { id: 'T1', name: 'T1: -50% Pop. Density ➔ +40% Velocity', popMod: 0.5, velMod: 1.4, dimMod: 1.0 },
-        { id: 'T2', name: 'T2: -50% Pop. Density ➔ +100% Size', popMod: 0.5, velMod: 1.0, dimMod: 2.0 },
-        { id: 'T3', name: 'T3: -50% Size ➔ +100% Pop. Density', popMod: 2.0, velMod: 1.0, dimMod: 0.5 },
-        { id: 'T4', name: 'T4: -50% Size ➔ +40% Velocity', popMod: 1.0, velMod: 1.4, dimMod: 0.5 },
-        { id: 'T5', name: 'T5: -25% Velocity ➔ +70% Pop. Density', popMod: 1.7, velMod: 0.75, dimMod: 1.0 },
-        { id: 'T6', name: 'T6: -25% Velocity ➔ +70% Size', popMod: 1.0, velMod: 0.75, dimMod: 1.7 }
+        { id: 'T1', name: 'T1: Reduce Population Density by 50% to Increase Velocity by 40%', popMod: 0.5, velMod: 1.4, dimMod: 1.0 },
+        { id: 'T2', name: 'T2: Reduce Population Density by 50% to Increase Size by 100%', popMod: 0.5, velMod: 1.0, dimMod: 2.0 },
+        { id: 'T3', name: 'T3: Reduce Size by 50% to Increase Population Density by 100%', popMod: 2.0, velMod: 1.0, dimMod: 0.5 },
+        { id: 'T4', name: 'T4: Reduce Size by 50% to Increase Velocity by 40%', popMod: 1.0, velMod: 1.4, dimMod: 0.5 },
+        { id: 'T5', name: 'T5: Reduce Velocity by 25% to Increase Population Density by 70%', popMod: 1.7, velMod: 0.75, dimMod: 1.0 },
+        { id: 'T6', name: 'T6: Reduce Velocity by 25% to Increase Size by 70%', popMod: 1.0, velMod: 0.75, dimMod: 1.7 }
     ];
 
     // Last inn lagrede innstillinger
@@ -47,10 +51,17 @@ document.addEventListener("DOMContentLoaded", function() {
             slider.value = val;
             input.value = val;
             localStorage.setItem('igrc_' + type, val);
+            
+            if (type === 'pop') {
+                cgaHint.style.display = (parseFloat(val) === 0) ? 'block' : 'none';
+            }
             renderAll();
         };
         slider.addEventListener('input', e => update(e.target.value));
         input.addEventListener('input', e => update(e.target.value));
+        
+        // Kjør en gang ved oppstart for å sette hint-status
+        if(type === 'pop') update(input.value); 
     }
 
     sync(velSlider, velInput, 'vel');
@@ -68,57 +79,86 @@ document.addEventListener("DOMContentLoaded", function() {
         return val;
     }
 
+    // Hjelpefunksjon for å legge til tusenseparator
+    function formatNum(num) {
+        return Math.round(num).toLocaleString('en-US');
+    }
+
     function generateTableHTML(title, popInput, velInput_ms, dimInput, mod) {
-        // Beregn forskyvning i grensene basert på valgt trade-off
+        // Beregn forskyvning i grensene
         const pLim = basePopLimits.map(v => (v * mod.popMod));
         const dLim = baseDimLimits.map(v => (v * mod.dimMod));
         const vLim = baseVelLimits.map(v => (v * mod.velMod));
 
-        // Finn riktig kolonne for brukerens input
+        // Finn riktig kolonne
         let colDim = dLim.findIndex(limit => dimInput <= limit);
         if (colDim === -1) colDim = 5;
         let colVel = vLim.findIndex(limit => velInput_ms <= limit);
         if (colVel === -1) colVel = 5;
         const col = Math.max(colDim, colVel);
 
-        // Finn riktig rad for brukerens input
-        let row = pLim.findIndex(limit => popInput < limit);
-        if (row === -1) row = 5;
+        // Finn riktig rad inkludert CGA (0)
+        let row = 6;
+        if (popInput === 0) {
+            row = 0;
+        } else {
+            for (let i = 1; i < pLim.length; i++) {
+                if (popInput < pLim[i]) {
+                    row = i;
+                    break;
+                }
+            }
+        }
 
-        // Finn resulterende iGRC score
-        let score = (row < 6 && col < 5) ? igrcMatrix[row][col] : 'N/A';
+        // Beregn iGRC
+        let score = (row < 7 && col < 5) ? igrcMatrix[row][col] : 'N/A';
+        if(score === 'N/A' && row === 6 && col < 2) score = igrcMatrix[6][col]; // Fanger opp 7 og 8
         let badgeClass = score === 'N/A' ? 'igrc-na' : 'igrc-' + score;
 
         let html = `
             <div class="tradeoff-card">
                 <div class="tradeoff-header">
-                    <h3 style="font-size: 0.95rem;">${title}</h3>
-                    <span class="badge ${badgeClass}">iGRC: ${score}</span>
+                    <h3 style="font-size: 0.95rem; margin-right: 10px;">${title}</h3>
+                    <span class="badge ${badgeClass}" style="flex-shrink:0;">iGRC: ${score}</span>
                 </div>
                 <div class="table-responsive">
                     <table class="sora-style-table">
                         <thead>
                             <tr>
                                 <th rowspan="2" class="wide-col">Max Pop. Density (per km&sup2;)</th>
-                                <th colspan="5" class="dim-header">Max Characteristic Dimension</th>
+                                <th colspan="5" class="dim-header">Maximum UA characteristic dimension</th>
                             </tr>
                             <tr>
                                 ${dLim.map((d, i) => `<th class="dim-header ${col===i?'highlight-col':''}">&le; ${d.toFixed(1)}m</th>`).join('')}
                             </tr>
                             <tr>
-                                <th class="vel-header">Maximum Speed</th>
+                                <th class="vel-header wide-col" style="font-weight:bold;">Maximum speed</th>
                                 ${vLim.map((v, i) => `<th class="vel-header ${col===i?'highlight-col':''}">&le; ${Math.round(v)} m/s</th>`).join('')}
                             </tr>
                         </thead>
                         <tbody>
-                            ${[0,1,2,3,4,5].map(r => `
-                            <tr class="${row===r?'highlight-row':''}">
-                                <td class="wide-col">${r===5 ? '&gt; '+Math.round(pLim[4]) : '&lt; '+Math.round(pLim[r])}</td>
-                                ${[0,1,2,3,4].map(c => `
-                                    <td class="${row===r && col===c ? 'highlight-cell' : ''}">${igrcMatrix[r][c]}</td>
-                                `).join('')}
-                            </tr>
-                            `).join('')}
+                            ${[0, 1, 2, 3, 4, 5, 6].map(r => {
+                                let rowLabel = "";
+                                if (r === 0) rowLabel = "Controlled Ground Area";
+                                else if (r === 6) rowLabel = "&gt; " + formatNum(pLim[5]);
+                                else rowLabel = "&lt; " + formatNum(pLim[r]);
+
+                                return `
+                                <tr class="${row===r?'highlight-row':''}">
+                                    <td class="wide-col unselectable">${rowLabel}</td>
+                                    ${[0, 1, 2, 3, 4].map(c => {
+                                        if (r === 6 && c === 2) {
+                                            // Slå sammen N/A-cellene for "> 50k" raden (lik original SORA-tabell)
+                                            return `<td colspan="3" class="not-part ${row===6 && col>=2 ? 'highlight-cell' : ''}">Not part of SORA</td>`;
+                                        } else if (r === 6 && c > 2) {
+                                            return ''; // Skipper generering fordi den dekkes av colspan
+                                        } else {
+                                            return `<td class="${row===r && col===c ? 'highlight-cell' : ''}">${igrcMatrix[r][c]}</td>`;
+                                        }
+                                    }).join('')}
+                                </tr>
+                                `;
+                            }).join('')}
                         </tbody>
                     </table>
                 </div>
@@ -130,22 +170,18 @@ document.addEventListener("DOMContentLoaded", function() {
     function renderAll() {
         const velRaw = parseFloat(velInput.value) || 0;
         const dim = parseFloat(dimInput.value) || 0;
-        const pop = parseFloat(densInput.value) || 0;
+        const pop = parseFloat(densInput.value); // Tillater 0
         const vel_ms = getVelocityInMS(velRaw, velUnit.value);
 
-        // Generer Original-tabellen (Modifikatorer = 1.0)
         originalContainer.innerHTML = generateTableHTML(
             "Original Reference Table (T0)", pop, vel_ms, dim, 
             { popMod: 1.0, velMod: 1.0, dimMod: 1.0 }
         );
 
-        // Generer T1 til T6
         let tHtml = '';
         tradeOffs.forEach(t => {
             tHtml += generateTableHTML(t.name, pop, vel_ms, dim, t);
         });
         tablesContainer.innerHTML = tHtml;
     }
-
-    renderAll();
 });
