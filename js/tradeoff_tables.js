@@ -36,68 +36,59 @@ document.addEventListener("DOMContentLoaded", function() {
         { id: 'T6', name: 'T6: Reduce Velocity by 25% to Increase Size by 70%', popMod: 1.0, velMod: 0.75, dimMod: 1.7 }
     ];
 
-    // Last inn fra localStorage (men lar sync-funksjonen oppdatere pop-slideren)
-    if(localStorage.getItem('igrc_vel')) {
+    if(velInput && localStorage.getItem('igrc_vel')) {
         velInput.value = localStorage.getItem('igrc_vel');
-        velSlider.value = velInput.value;
+        if(velSlider) velSlider.value = velInput.value;
     }
-    if(localStorage.getItem('igrc_dim')) {
+    if(dimInput && localStorage.getItem('igrc_dim')) {
         dimInput.value = localStorage.getItem('igrc_dim');
-        dimSlider.value = dimInput.value;
+        if(dimSlider) dimSlider.value = dimInput.value;
     }
-    if(localStorage.getItem('igrc_pop')) {
+    if(densInput && localStorage.getItem('igrc_pop')) {
         densInput.value = localStorage.getItem('igrc_pop');
     }
-    if(localStorage.getItem('igrc_unit')) {
+    if(velUnit && localStorage.getItem('igrc_unit')) {
         velUnit.value = localStorage.getItem('igrc_unit');
     }
 
     function sync(slider, input, type) {
+        if (!slider || !input) return;
+
         const updateFromSlider = (e) => {
             let val = parseFloat(e.target.value);
-            
             if (type === 'pop') {
-                // Logaritmisk oversettelse: slider (0-1000) -> population (0-100000)
                 let rawVal = Math.exp((val / 1000) * Math.log(100001)) - 1;
-                
-                // Avrunder til fine, "runde" tall basert på størrelsesorden
                 if (rawVal < 10) val = Math.round(rawVal);
                 else if (rawVal < 100) val = Math.round(rawVal / 5) * 5;
                 else if (rawVal < 1000) val = Math.round(rawVal / 10) * 10;
                 else if (rawVal < 10000) val = Math.round(rawVal / 100) * 100;
                 else val = Math.round(rawVal / 1000) * 1000;
             }
-            
             input.value = val;
             localStorage.setItem('igrc_' + type, val);
-            if (type === 'pop') cgaHint.style.display = (parseFloat(val) === 0) ? 'block' : 'none';
+            if (type === 'pop' && cgaHint) cgaHint.style.display = (parseFloat(val) === 0) ? 'block' : 'none';
             renderAll();
         };
 
         const updateFromInput = (e) => {
             let val = parseFloat(e.target.value) || 0;
-            
             if (type === 'pop') {
-                // Konverterer tilbake fra tall til sliderposisjon
                 let cappedVal = Math.min(val, 100000); 
-                let sliderVal = 1000 * Math.log(cappedVal + 1) / Math.log(100001);
-                slider.value = sliderVal;
+                slider.value = 1000 * Math.log(cappedVal + 1) / Math.log(100001);
             } else {
                 slider.value = val;
             }
-            
             localStorage.setItem('igrc_' + type, val);
-            if (type === 'pop') cgaHint.style.display = (val === 0) ? 'block' : 'none';
+            if (type === 'pop' && cgaHint) cgaHint.style.display = (val === 0) ? 'block' : 'none';
             renderAll();
         };
 
         slider.addEventListener('input', updateFromSlider);
         input.addEventListener('input', updateFromInput);
         
-        // Kjør en gang ved oppstart for å plassere slider og hint korrekt
         if(type === 'pop') {
             let initialVal = parseFloat(input.value) || 0;
-            cgaHint.style.display = (initialVal === 0) ? 'block' : 'none';
+            if(cgaHint) cgaHint.style.display = (initialVal === 0) ? 'block' : 'none';
             let cappedVal = Math.min(initialVal, 100000);
             slider.value = 1000 * Math.log(cappedVal + 1) / Math.log(100001);
         } 
@@ -107,10 +98,12 @@ document.addEventListener("DOMContentLoaded", function() {
     sync(dimSlider, dimInput, 'dim');
     sync(densSlider, densInput, 'pop');
     
-    velUnit.addEventListener('change', e => {
-        localStorage.setItem('igrc_unit', e.target.value);
-        renderAll();
-    });
+    if (velUnit) {
+        velUnit.addEventListener('change', e => {
+            localStorage.setItem('igrc_unit', e.target.value);
+            renderAll();
+        });
+    }
 
     function getVelocityInMS(val, unit) {
         if(unit === 'kmh') return val / 3.6;
@@ -119,10 +112,12 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function formatNum(num) {
+        if (isNaN(num)) return "0";
         return Math.round(num).toLocaleString('en-US');
     }
 
     function formatDim(num) {
+        if (isNaN(num)) return "0";
         return num % 1 === 0 ? num : num.toFixed(1);
     }
 
@@ -208,10 +203,13 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function renderAll() {
-        const velRaw = parseFloat(velInput.value) || 0;
-        const dim = parseFloat(dimInput.value) || 0;
-        const pop = parseFloat(densInput.value);
-        const vel_ms = getVelocityInMS(velRaw, velUnit.value);
+        if (!originalContainer || !tablesContainer) return;
+        
+        const velRaw = parseFloat(velInput?.value) || 0;
+        const dim = parseFloat(dimInput?.value) || 0;
+        const pop = parseFloat(densInput?.value) || 0;
+        const unit = velUnit ? velUnit.value : 'ms';
+        const vel_ms = getVelocityInMS(velRaw, unit);
 
         originalContainer.innerHTML = generateTableHTML(
             "Original Reference Table (T0)", pop, vel_ms, dim, 

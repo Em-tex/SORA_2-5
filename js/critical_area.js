@@ -1,5 +1,4 @@
 // Global variables
-// Fjernet fetch, lagt dataene direkte inn for å unngå async-krasj
 let frontalAreaPoints = [
     { "dim": 0.1, "area": 0.01 },
     { "dim": 0.5, "area": 0.05 },
@@ -59,26 +58,6 @@ function loadCriticalAreaForm() {
     if (speedUnitEl && data['speedUnit'] !== undefined) {
         speedUnitEl.value = data['speedUnit'];
     }
-}
-
-// Forbedret reset-funksjon for umiddelbar respons
-function resetCriticalAreaForm() {
-    localStorage.removeItem(CRITICAL_AREA_KEY);
-    
-    // Sett standardverdier manuelt
-    if(caInputElements['mtom']) { caInputElements['mtom'].value = ''; caSliderElements['mtom'].value = 0; }
-    if(caInputElements['dimension']) { caInputElements['dimension'].value = ''; caSliderElements['dimension'].value = 0.1; }
-    if(caInputElements['cruiseSpeed']) { caInputElements['cruiseSpeed'].value = ''; caSliderElements['cruiseSpeed'].value = 0; }
-    if(caInputElements['minAltitude']) { caInputElements['minAltitude'].value = ''; caSliderElements['minAltitude'].value = 0; }
-    
-    const rotorEl = document.getElementById('isRotorcraft');
-    if (rotorEl) rotorEl.checked = false;
-    toggleAltitudeVisibility();
-    
-    const speedUnitEl = document.getElementById('speedUnit');
-    if (speedUnitEl) speedUnitEl.value = 'ms';
-    
-    calculateCriticalArea();
 }
 
 function toggleAltitudeVisibility() {
@@ -732,15 +711,17 @@ function initializeApp() {
     const speedUnitEl = document.getElementById('speedUnit');
     if(speedUnitEl) speedUnitEl.addEventListener('change', calculateCriticalArea);
 
-    document.getElementById('resetCriticalAreaForm').addEventListener('click', resetCriticalAreaForm);
+    // KUDOS: Her tvinger vi en bunnsolid restart av appen når Reset trykkes
+    document.getElementById('resetCriticalAreaForm').addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.removeItem(CRITICAL_AREA_KEY);
+        window.location.reload(); 
+    });
 
     setupCanvases();
     loadCriticalAreaForm();
     
-    // Kjører beregning en gang direkte
     calculateCriticalArea();
-    
-    // Og en gang til når fontene er klare (for at canvas-tegningene med ikoner skal bli riktig)
     document.fonts.ready.then(() => calculateCriticalArea());
     
     window.addEventListener('resize', () => {
