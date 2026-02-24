@@ -1,4 +1,6 @@
-/* Styling for SORA 2.5 Critical Area Calculator */
+/* =========================================================
+   Styling for SORA 2.5 Critical Area Calculator 
+   ========================================================= */
 
 .intro-text {
     font-size: 1.1em;
@@ -35,7 +37,9 @@
     margin-bottom: 15px;
 }
 
-/* Form Styles */
+/* =========================================================
+   Form Styles & Inputs
+   ========================================================= */
 .form-group {
     margin-bottom: 20px;
 }
@@ -77,39 +81,54 @@
     color: #7f8c8d;
 }
 
+/* Tekstfeltet har nå 80px padding til høyre slik at tall ikke krasjer med m/s eller pilene */
 .input-icon-wrapper input[type="number"] {
     width: 100%;
-    padding: 10px 10px 10px 35px;
+    padding: 10px 80px 10px 35px; 
     border: 1px solid #bdc3c7;
     border-radius: 4px;
     font-size: 1em;
     box-sizing: border-box;
 }
 
+/* --- Benevnelser (kg, m) og Nedtrekksmeny (m/s) --- */
 .unit-label {
     position: absolute;
-    right: 15px;
+    right: 35px; /* Flyttet til venstre for å gjøre plass til pilene */
     color: #7f8c8d;
     font-weight: bold;
-    pointer-events: none; /* Sørger for at du kan klikke gjennom teksten for å skrive */
+    pointer-events: none; /* Lar deg klikke gjennom teksten for å skrive */
 }
 
 .unit-select {
     position: absolute;
-    right: 5px;
+    right: 30px; /* Flyttet til venstre for å gjøre plass til pilene */
     padding: 5px;
-    border: none;             /* Fjernet den stygge kanten */
-    background: transparent;  /* Gjør den grå boksen usynlig */
-    color: #7f8c8d;           /* Samme fine farge som "kg" og "m" */
+    border: none;             /* Fjerner kantlinjen */
+    background: transparent;  /* Fjerner den grå bakgrunnen */
+    color: #7f8c8d;           /* Setter samme farge som "kg" */
     font-weight: bold;
     cursor: pointer;
-    outline: none;            /* Fjerner blå fokus-ring når du klikker */
+    outline: none;            
     transition: color 0.2s;
 }
 
-/* Gir en liten fargeendring når du holder musen over, så man forstår at den er klikkbar */
 .unit-select:hover {
     color: #03477F; 
+}
+
+/* --- Spesialstyling for opp/ned pilene (Spinners) --- */
+.input-icon-wrapper input[type="number"]::-webkit-inner-spin-button,
+.input-icon-wrapper input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1; /* Alltid synlige */
+    height: auto; 
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 25px; /* Gjør dem bredere og lettere å treffe med musen */
+    cursor: pointer;
+    margin: 0; 
 }
 
 .custom-slider {
@@ -117,7 +136,9 @@
     margin-top: 10px;
 }
 
-/* Buttons */
+/* =========================================================
+   Buttons
+   ========================================================= */
 .button-group {
     display: flex;
     gap: 10px;
@@ -148,7 +169,9 @@
     background-color: #F06C00;
 }
 
-/* Results Section */
+/* =========================================================
+   Results Section
+   ========================================================= */
 .result-display {
     background: #f8f9fa;
     padding: 15px;
@@ -202,7 +225,9 @@
     line-height: 1.4;
 }
 
-/* Table */
+/* =========================================================
+   Table
+   ========================================================= */
 .table-card-inner {
     margin-top: 20px;
     border-top: 1px solid #eee;
@@ -241,7 +266,25 @@
     color: #F06C00;
 }
 
-/* Visualizations */
+/* =========================================================
+   Visualizations (Grid & Canvas)
+   ========================================================= */
+
+/* Grid for side-om-side visning av illustrasjonene */
+.viz-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* To kolonner */
+    gap: 20px;
+    align-items: stretch; /* Tvinger kortene til å bli eksakt like høye */
+    margin-top: 20px;
+}
+
+.viz-row .viz-card {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+}
+
 .canvas-container {
     width: 100%;
     background: #ffffff;
@@ -249,9 +292,13 @@
     border-radius: 4px;
     position: relative;
     overflow: hidden;
-    /* Sikrer en fin høyde for tegnebrettet */
-    min-height: 250px;
     display: flex;
+}
+
+/* Lar selve tegnebrettet fylle all ledig plass i høyden slik at bunnen flukter pent */
+.viz-row .canvas-container {
+    flex-grow: 1; 
+    min-height: 250px; 
 }
 
 .canvas-container canvas {
@@ -269,31 +316,15 @@
     flex-wrap: wrap;
 }
 
-/* Nytt grid for side-om-side visning av illustrasjonene */
-.viz-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    align-items: stretch; /* Tvinger kortene til å bli like høye */
-    margin-top: 20px;
-}
-
-.viz-row .viz-card {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 0;
-}
-
-.viz-row .canvas-container {
-    flex-grow: 1; /* Lar canvas fylle all ledig plass i høyden slik at bunnen flukter */
-}
-
-/* Responsive */
+/* =========================================================
+   Responsive Design (Mobil)
+   ========================================================= */
 @media (max-width: 900px) {
+    /* På mindre skjermer legges ting under hverandre (1 kolonne) */
     .calculator-grid, .viz-row {
         grid-template-columns: 1fr;
     }
     .viz-row .canvas-container {
-        min-height: 200px;
+        min-height: 200px; /* Litt lavere minimumshøyde på mobil */
     }
 }
