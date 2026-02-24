@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             <div class="dropdown">
                 <a href="tradeoff_tables.html" class="nav-button" id="nav-igrc-main">
-                    <i class="fas fa-chart-bar nav-icon"></i>
+                    <i class="fas fa-street-view nav-icon"></i>
                     <span>iGRC <i class="fas fa-caret-down" style="margin-left: 5px;"></i></span>
                 </a>
                 <div class="dropdown-content">
