@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iGRC Trade-off Tables - SORA 2.5</title>
+    <link rel="icon" href="assets/smallLogo.png" type="image/png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/igrc.css">
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <main class="container">
+        <h2>iGRC Trade-off Tables (Annex F)</h2>
+        <div class="annotation">
+            <p>Adjust your operational parameters below. The 6 tables show the resulting iGRC calculated for each specific trade-off option.</p>
+        </div>
+
+        <div class="calculator-card">
+            <div class="input-group">
+                <label>Maximum Velocity (m/s): <span id="vel-val">15</span></label>
+                <input type="range" id="vel-slider" min="1" max="250" value="15" step="1">
+            </div>
+            <div class="input-group">
+                <label>Max Characteristic Dimension (m): <span id="dim-val">2.0</span></label>
+                <input type="range" id="dim-slider" min="0.1" max="50" value="2.0" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Population Density (persons/km&sup2;): <span id="dens-val">500</span></label>
+                <input type="range" id="dens-slider" min="1" max="60000" value="500" step="10">
+            </div>
+        </div>
+
+        <div id="tables-container" class="tables-grid">
+            </div>
+    </main>
+
+    <script src="js/navbar.js"></script>
+    <script src="js/tradeoff_tables.js"></script>
+</body>
+</html>

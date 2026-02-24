@@ -1,5 +1,3 @@
-// Innhold for: js/navbar.js
-
 document.addEventListener("DOMContentLoaded", function() {
 
     // 1. Definer HTML-koden for navigasjonsbåndet
@@ -20,10 +18,17 @@ document.addEventListener("DOMContentLoaded", function() {
                 <span>Containment</span>
             </a>
 
-            <a href="critical_area.html" class="nav-button" id="nav-critical-area">
-                 <i class="fas fa-bullseye nav-icon"></i>
-                <span>Critical Area</span>
-            </a>
+            <div class="dropdown">
+                <a href="critical_area.html" class="nav-button" id="nav-critical-area">
+                     <i class="fas fa-bullseye nav-icon"></i>
+                    <span>iGRC <i class="fas fa-caret-down" style="margin-left: 5px;"></i></span>
+                </a>
+                <div class="dropdown-content">
+                    <a href="critical_area.html">Critical Area</a>
+                    <a href="igrc_analytical.html">Analytical Formula</a>
+                    <a href="tradeoff_tables.html">Trade-off Tables</a>
+                </div>
+            </div>
 
             <a href="contingency_volume.html" class="nav-button" id="nav-contingency-volume">
                 <i class="fas fa-exclamation-triangle nav-icon"></i>
@@ -53,12 +58,12 @@ document.addEventListener("DOMContentLoaded", function() {
     // Nullstill 'active' klassen for alle knapper først
     document.querySelectorAll(".nav-button").forEach(button => button.classList.remove("active"));
 
-    // Sett 'active' på riktig knapp
+    // Sett 'active' på riktig knapp (Inkluderer de nye undersidene for iGRC)
     if (currentPage === "index.html" || currentPage === "") {
         document.getElementById("nav-sail")?.classList.add("active");
     } else if (currentPage === "contingency_volume.html") {
         document.getElementById("nav-contingency-volume")?.classList.add("active");
-    } else if (currentPage === "critical_area.html") {
+    } else if (currentPage === "critical_area.html" || currentPage === "igrc_analytical.html" || currentPage === "tradeoff_tables.html") {
         document.getElementById("nav-critical-area")?.classList.add("active");
     } else if (currentPage === "containment.html") {
         document.getElementById("nav-containment")?.classList.add("active");

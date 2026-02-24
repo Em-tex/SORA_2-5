@@ -1,0 +1,164 @@
+/* --- Dropdown Navigasjon (tilpasset din style.css) --- */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Sørger for at hover på lenken i dropdown oppfører seg som vanlige knapper */
+.dropdown:hover .nav-button {
+    background-color: #F06C00;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #03477F; /* Mørk blå for å matche navbar */
+    min-width: 200px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.3);
+    z-index: 1001;
+    border-radius: 5px;
+    top: 100%;
+    left: 5px; /* Liten justering for å sentrere med margin */
+}
+
+.dropdown-content a {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-weight: bold;
+    font-size: 0.95em;
+    border-radius: 5px;
+}
+
+.dropdown-content a:hover {
+    background-color: #F06C00; /* Oransje på hover */
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+@media (max-width: 600px) {
+    .dropdown {
+        width: 100%;
+    }
+    .dropdown-content {
+        position: static;
+        width: calc(100% - 30px);
+        margin-left: 5px;
+        box-shadow: none;
+        background-color: #023661; /* Litt mørkere for kontrast på mobil */
+    }
+}
+
+/* --- Spesifikk styling for iGRC elementer --- */
+.badge {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    border-radius: 8px;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+/* Fargekoding for iGRC (Match fargekoder med orginale skjemaer om ønskelig) */
+.igrc-1, .igrc-2 { background-color: #28a745; }
+.igrc-3, .igrc-4 { background-color: #85c226; }
+.igrc-5, .igrc-6 { background-color: #ffc107; color: #333;}
+.igrc-7, .igrc-8 { background-color: #fd7e14; }
+.igrc-9, .igrc-10 { background-color: #dc3545; }
+
+.calculator-card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    border: 1px solid #ddd;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.slider-container input[type="range"] {
+    flex-grow: 1;
+}
+
+.slider-container input[type="number"] {
+    width: 120px;
+    padding: 8px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Tradeoff tabeller styling */
+.tables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.tradeoff-card {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.tradeoff-card h3 {
+    font-size: 1rem;
+    margin-top: 0;
+    min-height: 40px;
+    color: #03477F;
+}
+
+.result-display {
+    margin-bottom: 15px;
+}
+
+.mini-igrc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    margin-top: 10px;
+}
+
+.mini-igrc-table th, .mini-igrc-table td {
+    border: 1px solid #ccc;
+    padding: 5px 2px;
+    text-align: center;
+}
+
+.mini-igrc-table th {
+    background-color: #cce5ff; /* Matcher original tabell */
+    color: #333;
+}
+
+.highlight-row { background-color: rgba(240, 108, 0, 0.1); }
+.highlight-col { background-color: rgba(240, 108, 0, 0.1); }
+.highlight-cell {
+    background-color: #F06C00 !important; /* Din oransje brand-farge */
+    color: white;
+    font-weight: bold;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+}

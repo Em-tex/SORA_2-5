@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iGRC Analytical Formula - SORA 2.5</title>
+    <link rel="icon" href="assets/smallLogo.png" type="image/png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/igrc.css">
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <main class="container">
+        <h2>iGRC Analytical Formula</h2>
+        <div class="annotation">
+            <p>Calculate the initial Ground Risk Class (iGRC) using the analytical formula from Annex F: <code>iGRC = &lceil;raw iGRC - 0.5&rceil;</code> where <code>raw iGRC = 7 + log10(Dpop * Ac)</code>.</p>
+        </div>
+
+        <div class="calculator-card">
+            <div class="input-group">
+                <label for="dpop-slider">Population Density (D<sub>pop</sub>) [persons/km&sup2;]: <span id="dpop-val">100</span></label>
+                <div class="slider-container">
+                    <input type="range" id="dpop-slider" min="1" max="100000" value="100" step="1">
+                    <input type="number" id="dpop-input" value="100" min="1" max="500000">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="ac-slider">Critical Area (A<sub>c</sub>) [m&sup2;]: <span id="ac-val">50</span></label>
+                <div class="slider-container">
+                    <input type="range" id="ac-slider" min="1" max="2000" value="50" step="1">
+                    <input type="number" id="ac-input" value="50" min="1" max="10000">
+                </div>
+            </div>
+
+            <div class="result">
+                <p>Raw iGRC score: <span id="exact-result" style="font-weight: normal;">0.000</span></p>
+                <p style="margin-top: 10px;">Final Applied iGRC: <span id="final-igrc" class="badge">1</span></p>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/navbar.js"></script>
+    <script src="js/igrc_analytical.js"></script>
+</body>
+</html>
