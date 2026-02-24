@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // Elementer
     const velSlider = document.getElementById('vel-slider');
     const velInput = document.getElementById('vel-input');
     const velUnit = document.getElementById('vel-unit');
@@ -14,12 +13,10 @@ document.addEventListener("DOMContentLoaded", function() {
     const originalContainer = document.getElementById('original-table-container');
     const tablesContainer = document.getElementById('tradeoff-tables-container');
 
-    // Standardgrenser fra SORA 2.5
     const baseDimLimits = [1, 3, 8, 20, 40];
     const baseVelLimits = [25, 35, 75, 120, 200];
     const basePopLimits = [0, 5, 50, 500, 5000, 50000]; 
 
-    // Utvidet matrise inkl. Controlled Ground Area
     const igrcMatrix = [
         [1, 1, 2, 3, 3],  // 0: Controlled Ground Area
         [2, 3, 4, 5, 6],  // 1: < 5
@@ -30,7 +27,6 @@ document.addEventListener("DOMContentLoaded", function() {
         [7, 8, 'N/A', 'N/A', 'N/A'] // 6: > 50,000
     ];
 
-    // Lettleste definisjoner av SORA 2.5 Trade-offs
     const tradeOffs = [
         { id: 'T1', name: 'T1: Reduce Population Density by 50% to Increase Velocity by 40%', popMod: 0.5, velMod: 1.4, dimMod: 1.0 },
         { id: 'T2', name: 'T2: Reduce Population Density by 50% to Increase Size by 100%', popMod: 0.5, velMod: 1.0, dimMod: 2.0 },
@@ -40,7 +36,6 @@ document.addEventListener("DOMContentLoaded", function() {
         { id: 'T6', name: 'T6: Reduce Velocity by 25% to Increase Size by 70%', popMod: 1.0, velMod: 0.75, dimMod: 1.7 }
     ];
 
-    // Last inn lagrede innstillinger fra localStorage
     if(localStorage.getItem('igrc_vel')) velInput.value = velSlider.value = localStorage.getItem('igrc_vel');
     if(localStorage.getItem('igrc_dim')) dimInput.value = dimSlider.value = localStorage.getItem('igrc_dim');
     if(localStorage.getItem('igrc_pop')) densInput.value = densSlider.value = localStorage.getItem('igrc_pop');
@@ -72,37 +67,31 @@ document.addEventListener("DOMContentLoaded", function() {
         renderAll();
     });
 
-    // Konvertering til m/s for SORA formler
     function getVelocityInMS(val, unit) {
         if(unit === 'kmh') return val / 3.6;
         if(unit === 'kt') return val / 1.94384;
         return val;
     }
 
-    // Formaterer befolkningstall med tusenseparator (f.eks. 5,000)
     function formatNum(num) {
         return Math.round(num).toLocaleString('en-US');
     }
 
-    // Fjerner ".0" på dimensjoner som blir heltall, for et renere utseende
     function formatDim(num) {
         return num % 1 === 0 ? num : num.toFixed(1);
     }
 
     function generateTableHTML(title, popInput, velInput_ms, dimInput, mod) {
-        // Forskyv grensene basert på valgt trade-off
         const pLim = basePopLimits.map(v => (v * mod.popMod));
         const dLim = baseDimLimits.map(v => (v * mod.dimMod));
         const vLim = baseVelLimits.map(v => (v * mod.velMod));
 
-        // Finn riktig kolonne (høyeste av dimensjon og hastighet)
         let colDim = dLim.findIndex(limit => dimInput <= limit);
         if (colDim === -1) colDim = 5;
         let colVel = vLim.findIndex(limit => velInput_ms <= limit);
         if (colVel === -1) colVel = 5;
         const col = Math.max(colDim, colVel);
 
-        // Finn riktig rad (inkl. Controlled Ground Area)
         let row = 6;
         if (popInput === 0) {
             row = 0;
@@ -115,10 +104,11 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        // Hent resulterende iGRC (håndterer N/A automatisk fra matrisen)
         let score = (row < 7 && col < 5) ? igrcMatrix[row][col] : 'N/A';
+        if(score === 'N/A' && row === 6 && col < 2) score = igrcMatrix[6][col]; 
         let badgeClass = score === 'N/A' ? 'igrc-na' : 'igrc-' + score;
 
+        // Oppdatert HTML-struktur for å matche forsiden (index.html) eksakt
         let html = `
             <div class="tradeoff-card">
                 <div class="tradeoff-header">
@@ -129,26 +119,30 @@ document.addEventListener("DOMContentLoaded", function() {
                     <table class="sora-style-table">
                         <thead>
                             <tr>
-                                <th rowspan="2" class="wide-col">Max Pop. Density (per km&sup2;)</th>
-                                <th colspan="5" class="dim-header">Maximum UA characteristic dimension</th>
+                                <th colspan="2" class="unselectable">Maximum UA characteristic dimension</th>
+                                ${dLim.map((d, i) => `<th class="dim-header ${col===i?'highlight-col':''}">${formatDim(d)} m</th>`).join('')}
                             </tr>
                             <tr>
-                                ${dLim.map((d, i) => `<th class="dim-header ${col===i?'highlight-col':''}">&le; ${formatDim(d)}m</th>`).join('')}
-                            </tr>
-                            <tr>
-                                <th class="vel-header wide-col" style="font-weight:bold;">Maximum speed</th>
-                                ${vLim.map((v, i) => `<th class="vel-header ${col===i?'highlight-col':''}">&le; ${Math.round(v)} m/s</th>`).join('')}
+                                <th colspan="2" class="vel-header unselectable">Maximum speed</th>
+                                ${vLim.map((v, i) => `<th class="vel-header ${col===i?'highlight-col':''}">${Math.round(v)} m/s</th>`).join('')}
                             </tr>
                         </thead>
                         <tbody>
-                            ${[0, 1, 2, 3, 4, 5, 6].map(r => {
+                            ${[0, 1, 2, 3, 4, 5, 6].map((r) => {
                                 let rowLabel = "";
                                 if (r === 0) rowLabel = "Controlled Ground Area";
                                 else if (r === 6) rowLabel = "&gt; " + formatNum(pLim[5]);
                                 else rowLabel = "&lt; " + formatNum(pLim[r]);
 
+                                // Legg til kolonnen for "Maximum iGRC population density..." kun på første rad
+                                let popDensityCell = "";
+                                if (r === 0) {
+                                    popDensityCell = `<td rowspan="7" style="max-width: 150px; text-align: left;" class="unselectable">Maximum iGRC population density (people/km&sup2;)</td>`;
+                                }
+
                                 return `
                                 <tr class="${row===r?'highlight-row':''}">
+                                    ${popDensityCell}
                                     <td class="wide-col unselectable">${rowLabel}</td>
                                     ${[0, 1, 2, 3, 4].map(c => {
                                         if (r === 6 && c === 2) {
