@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // Elements
+    // Elementer
     const velSlider = document.getElementById('vel-slider');
     const velInput = document.getElementById('vel-input');
     const velUnit = document.getElementById('vel-unit');
@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const originalContainer = document.getElementById('original-table-container');
     const tablesContainer = document.getElementById('tradeoff-tables-container');
 
-    // Constants
+    // Standardgrenser fra SORA 2.5 (Original tabell)
     const baseDimLimits = [1, 3, 8, 20, 40];
     const baseVelLimits = [25, 35, 75, 120, 200];
     const basePopLimits = [5, 50, 500, 5000, 50000]; 
@@ -26,16 +26,17 @@ document.addEventListener("DOMContentLoaded", function() {
         [7, 8, 'N/A', 'N/A', 'N/A'] // > 50000
     ];
 
+    // Korrigerte definisjoner: "Pakkedealer" for hver trade-off (Reduksjon og Gevinst)
     const tradeOffs = [
-        { id: 'T1', name: 'T1: Reduce Pop 50% OR Increase Vel 40%', popMod: 0.5, velMod: 1.4, dimMod: 1.0 },
-        { id: 'T2', name: 'T2: Reduce Pop 50% OR Increase Size 100%', popMod: 0.5, velMod: 1.0, dimMod: 2.0 },
-        { id: 'T3', name: 'T3: Reduce Size 50% OR Increase Pop 100%', popMod: 2.0, velMod: 1.0, dimMod: 0.5 },
-        { id: 'T4', name: 'T4: Reduce Size 50% OR Increase Vel 40%', popMod: 1.0, velMod: 1.4, dimMod: 0.5 },
-        { id: 'T5', name: 'T5: Reduce Vel 25% OR Increase Pop 70%', popMod: 1.7, velMod: 0.75, dimMod: 1.0 },
-        { id: 'T6', name: 'T6: Reduce Vel 25% OR Increase Size 70%', popMod: 1.0, velMod: 0.75, dimMod: 1.7 }
+        { id: 'T1', name: 'T1: -50% Pop. Density ➔ +40% Velocity', popMod: 0.5, velMod: 1.4, dimMod: 1.0 },
+        { id: 'T2', name: 'T2: -50% Pop. Density ➔ +100% Size', popMod: 0.5, velMod: 1.0, dimMod: 2.0 },
+        { id: 'T3', name: 'T3: -50% Size ➔ +100% Pop. Density', popMod: 2.0, velMod: 1.0, dimMod: 0.5 },
+        { id: 'T4', name: 'T4: -50% Size ➔ +40% Velocity', popMod: 1.0, velMod: 1.4, dimMod: 0.5 },
+        { id: 'T5', name: 'T5: -25% Velocity ➔ +70% Pop. Density', popMod: 1.7, velMod: 0.75, dimMod: 1.0 },
+        { id: 'T6', name: 'T6: -25% Velocity ➔ +70% Size', popMod: 1.0, velMod: 0.75, dimMod: 1.7 }
     ];
 
-    // Load saved settings
+    // Last inn lagrede innstillinger
     if(localStorage.getItem('igrc_vel')) velInput.value = velSlider.value = localStorage.getItem('igrc_vel');
     if(localStorage.getItem('igrc_dim')) dimInput.value = dimSlider.value = localStorage.getItem('igrc_dim');
     if(localStorage.getItem('igrc_pop')) densInput.value = densSlider.value = localStorage.getItem('igrc_pop');
@@ -68,28 +69,30 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function generateTableHTML(title, popInput, velInput_ms, dimInput, mod) {
-        // Calculate shifted limits for display
+        // Beregn forskyvning i grensene basert på valgt trade-off
         const pLim = basePopLimits.map(v => (v * mod.popMod));
         const dLim = baseDimLimits.map(v => (v * mod.dimMod));
         const vLim = baseVelLimits.map(v => (v * mod.velMod));
 
-        // Find cell matching the input
+        // Finn riktig kolonne for brukerens input
         let colDim = dLim.findIndex(limit => dimInput <= limit);
         if (colDim === -1) colDim = 5;
         let colVel = vLim.findIndex(limit => velInput_ms <= limit);
         if (colVel === -1) colVel = 5;
         const col = Math.max(colDim, colVel);
 
+        // Finn riktig rad for brukerens input
         let row = pLim.findIndex(limit => popInput < limit);
         if (row === -1) row = 5;
 
+        // Finn resulterende iGRC score
         let score = (row < 6 && col < 5) ? igrcMatrix[row][col] : 'N/A';
         let badgeClass = score === 'N/A' ? 'igrc-na' : 'igrc-' + score;
 
         let html = `
             <div class="tradeoff-card">
                 <div class="tradeoff-header">
-                    <h3>${title}</h3>
+                    <h3 style="font-size: 0.95rem;">${title}</h3>
                     <span class="badge ${badgeClass}">iGRC: ${score}</span>
                 </div>
                 <div class="table-responsive">
@@ -130,13 +133,13 @@ document.addEventListener("DOMContentLoaded", function() {
         const pop = parseFloat(densInput.value) || 0;
         const vel_ms = getVelocityInMS(velRaw, velUnit.value);
 
-        // Render Original (Modifiers = 1.0)
+        // Generer Original-tabellen (Modifikatorer = 1.0)
         originalContainer.innerHTML = generateTableHTML(
             "Original Reference Table (T0)", pop, vel_ms, dim, 
             { popMod: 1.0, velMod: 1.0, dimMod: 1.0 }
         );
 
-        // Render T1-T6
+        // Generer T1 til T6
         let tHtml = '';
         tradeOffs.forEach(t => {
             tHtml += generateTableHTML(t.name, pop, vel_ms, dim, t);
