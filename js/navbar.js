@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
 
-    // 1. Definer HTML-koden for navigasjonsbåndet
     const navbarHTML = `
     <nav class="navbar">
         <div class="navbar-wrapper"> 
@@ -20,13 +19,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
             <div class="dropdown">
                 <a href="critical_area.html" class="nav-button" id="nav-critical-area">
-                     <i class="fas fa-bullseye nav-icon"></i>
+                    <i class="fas fa-layer-group nav-icon"></i>
                     <span>iGRC <i class="fas fa-caret-down" style="margin-left: 5px;"></i></span>
                 </a>
                 <div class="dropdown-content">
-                    <a href="critical_area.html">Critical Area</a>
-                    <a href="igrc_analytical.html">Analytical Formula</a>
-                    <a href="tradeoff_tables.html">Trade-off Tables</a>
+                    <a href="critical_area.html"><i class="fas fa-bullseye" style="width: 20px;"></i> Critical Area</a>
+                    <a href="igrc_analytical.html"><i class="fas fa-calculator" style="width: 20px;"></i> Analytical Formula</a>
+                    <a href="tradeoff_tables.html"><i class="fas fa-balance-scale" style="width: 20px;"></i> Trade-off Tables</a>
                 </div>
             </div>
 
@@ -43,22 +42,15 @@ document.addEventListener("DOMContentLoaded", function() {
     </nav>
     `;
 
-    // 2. Sett inn HTML-koden i placeholder-elementet
     const placeholder = document.getElementById("navbar-placeholder");
      if (placeholder) {
         placeholder.innerHTML = navbarHTML;
-    } else {
-        console.error("Navbar placeholder element not found!");
-        return; 
     }
 
-    // 3. Finn ut hvilken side vi er på og sett riktig knapp til "active"
     const currentPage = window.location.pathname.split("/").pop(); 
 
-    // Nullstill 'active' klassen for alle knapper først
     document.querySelectorAll(".nav-button").forEach(button => button.classList.remove("active"));
 
-    // Sett 'active' på riktig knapp (Inkluderer de nye undersidene for iGRC)
     if (currentPage === "index.html" || currentPage === "") {
         document.getElementById("nav-sail")?.classList.add("active");
     } else if (currentPage === "contingency_volume.html") {

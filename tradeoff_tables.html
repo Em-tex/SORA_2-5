@@ -5,41 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iGRC Trade-off Tables - SORA 2.5</title>
     <link rel="icon" href="assets/smallLogo.png" type="image/png">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/igrc.css">
 </head>
 <body>
     <div id="navbar-placeholder"></div>
 
-    <main class="container">
+    <main class="container tradeoff-container">
         <h2>iGRC Trade-off Tables (Annex F)</h2>
         <div class="annotation">
-            <p>Adjust your operational parameters below. The 6 tables show the resulting iGRC calculated for each specific trade-off option.</p>
+            <p>Adjust your operational parameters below. The tables will update dynamically to show the original iGRC and the resulting iGRC for all 6 trade-off options. Settings are saved automatically.</p>
         </div>
 
         <div class="calculator-card">
-            <div class="input-group">
-                <label>Maximum Velocity (m/s): <span id="vel-val">15</span></label>
-                <input type="range" id="vel-slider" min="1" max="250" value="15" step="1">
-            </div>
-            <div class="input-group">
-                <label>Max Characteristic Dimension (m): <span id="dim-val">2.0</span></label>
-                <input type="range" id="dim-slider" min="0.1" max="50" value="2.0" step="0.1">
-            </div>
-            <div class="input-group">
-                <label>Population Density (persons/km&sup2;): <span id="dens-val">500</span></label>
-                <input type="range" id="dens-slider" min="1" max="60000" value="500" step="10">
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Maximum Velocity:</label>
+                    <div class="slider-container">
+                        <input type="range" id="vel-slider" min="1" max="250" value="15" step="1">
+                        <input type="number" id="vel-input" value="15" min="1" max="1000">
+                        <select id="vel-unit">
+                            <option value="ms">m/s</option>
+                            <option value="kmh">km/h</option>
+                            <option value="kt">kt</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>Max Characteristic Dimension (m):</label>
+                    <div class="slider-container">
+                        <input type="range" id="dim-slider" min="0.1" max="50" value="2.0" step="0.1">
+                        <input type="number" id="dim-input" value="2.0" min="0.1" max="100" step="0.1">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Population Density (persons/km&sup2;):</label>
+                    <div class="slider-container">
+                        <input type="range" id="dens-slider" min="1" max="60000" value="500" step="10">
+                        <input type="number" id="dens-input" value="500" min="1" max="200000">
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div id="tables-container" class="tables-grid">
-            </div>
+        <div id="original-table-container"></div>
+        <hr style="margin: 30px 0; border: 0; border-top: 2px dashed #ccc;">
+        <div id="tradeoff-tables-container" class="tables-grid-3x2"></div>
     </main>
 
     <script src="js/navbar.js"></script>

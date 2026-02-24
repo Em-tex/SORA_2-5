@@ -1,164 +1,155 @@
-/* --- Dropdown Navigasjon (tilpasset din style.css) --- */
+/* --- Dropdown Fix --- */
 .dropdown {
     position: relative;
-    display: inline-block;
-}
-
-/* Sørger for at hover på lenken i dropdown oppfører seg som vanlige knapper */
-.dropdown:hover .nav-button {
-    background-color: #F06C00;
+    display: inline-flex;
+    align-items: center;
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
-    background-color: #03477F; /* Mørk blå for å matche navbar */
-    min-width: 200px;
+    background-color: #03477F;
+    min-width: 220px;
     box-shadow: 0px 8px 16px rgba(0,0,0,0.3);
     z-index: 1001;
     border-radius: 5px;
     top: 100%;
-    left: 5px; /* Liten justering for å sentrere med margin */
+    left: 0;
 }
 
 .dropdown-content a {
     color: white;
     padding: 12px 16px;
     text-decoration: none;
-    display: block;
+    display: flex;
+    align-items: center;
     font-weight: bold;
     font-size: 0.95em;
-    border-radius: 5px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.dropdown-content a:last-child {
+    border-bottom: none;
 }
 
 .dropdown-content a:hover {
-    background-color: #F06C00; /* Oransje på hover */
+    background-color: #F06C00;
+    border-radius: 5px;
 }
 
 .dropdown:hover .dropdown-content {
     display: block;
 }
 
-@media (max-width: 600px) {
-    .dropdown {
-        width: 100%;
-    }
-    .dropdown-content {
-        position: static;
-        width: calc(100% - 30px);
-        margin-left: 5px;
-        box-shadow: none;
-        background-color: #023661; /* Litt mørkere for kontrast på mobil */
-    }
-}
-
-/* --- Spesifikk styling for iGRC elementer --- */
+/* --- iGRC Farger --- */
 .badge {
     display: inline-block;
-    padding: 10px 20px;
-    font-size: 1.5rem;
+    padding: 8px 16px;
+    font-size: 1.2rem;
     font-weight: bold;
     color: white;
     border-radius: 8px;
-    text-align: center;
-    transition: background-color 0.3s;
 }
 
-/* Fargekoding for iGRC (Match fargekoder med orginale skjemaer om ønskelig) */
 .igrc-1, .igrc-2 { background-color: #28a745; }
 .igrc-3, .igrc-4 { background-color: #85c226; }
 .igrc-5, .igrc-6 { background-color: #ffc107; color: #333;}
 .igrc-7, .igrc-8 { background-color: #fd7e14; }
 .igrc-9, .igrc-10 { background-color: #dc3545; }
+.igrc-na { background-color: #666; }
 
-.calculator-card {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-    border: 1px solid #ddd;
+/* --- Layout Trade-off UI --- */
+.tradeoff-container {
+    max-width: 1200px; /* Litt bredere for å få plass til grid */
+}
+
+.input-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
 }
 
 .input-group {
-    margin-bottom: 20px;
-}
-
-.input-group label {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 10px;
-    font-size: 1.1em;
+    flex: 1;
+    min-width: 250px;
 }
 
 .slider-container {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
+    margin-top: 5px;
 }
 
-.slider-container input[type="range"] {
-    flex-grow: 1;
-}
+.slider-container input[type="range"] { flex-grow: 1; }
+.slider-container input[type="number"] { width: 80px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;}
+.slider-container select { padding: 5px; border: 1px solid #ccc; border-radius: 4px; background: white;}
 
-.slider-container input[type="number"] {
-    width: 120px;
-    padding: 8px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-/* Tradeoff tabeller styling */
-.tables-grid {
+.tables-grid-3x2 {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
-.tradeoff-card {
-    background: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+@media (max-width: 1000px) {
+    .tables-grid-3x2 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 700px) {
+    .tables-grid-3x2 { grid-template-columns: 1fr; }
 }
 
-.tradeoff-card h3 {
-    font-size: 1rem;
-    margin-top: 0;
-    min-height: 40px;
+/* --- SORA Main Table Replica --- */
+.tradeoff-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.tradeoff-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #ddd;
+}
+
+.tradeoff-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
     color: #03477F;
 }
 
-.result-display {
-    margin-bottom: 15px;
+.table-responsive {
+    overflow-x: auto;
+    padding: 10px;
 }
 
-.mini-igrc-table {
+.sora-style-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.75rem;
-    margin-top: 10px;
-}
-
-.mini-igrc-table th, .mini-igrc-table td {
-    border: 1px solid #ccc;
-    padding: 5px 2px;
+    font-size: 0.8rem;
     text-align: center;
 }
 
-.mini-igrc-table th {
-    background-color: #cce5ff; /* Matcher original tabell */
-    color: #333;
+.sora-style-table th, .sora-style-table td {
+    border: 1px solid #ccc;
+    padding: 6px 4px;
 }
 
-.highlight-row { background-color: rgba(240, 108, 0, 0.1); }
-.highlight-col { background-color: rgba(240, 108, 0, 0.1); }
+.dim-header { background-color: #cce5ff; color: #000; }
+.vel-header { background-color: #d4edda; color: #000; }
+.wide-col { text-align: left; padding-left: 10px; background-color: #f1f1f1;}
+
+/* Highlight active cell logic */
+.highlight-row td { background-color: rgba(240, 108, 0, 0.05); }
+.highlight-col { background-color: rgba(240, 108, 0, 0.1) !important; }
 .highlight-cell {
-    background-color: #F06C00 !important; /* Din oransje brand-farge */
+    background-color: #F06C00 !important; /* CAA Oransje */
     color: white;
     font-weight: bold;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
 }
