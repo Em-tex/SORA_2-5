@@ -1,5 +1,15 @@
 // Global variables
-let frontalAreaPoints = []; 
+// Fjernet fetch, lagt dataene direkte inn for å unngå async-krasj
+let frontalAreaPoints = [
+    { "dim": 0.1, "area": 0.01 },
+    { "dim": 0.5, "area": 0.05 },
+    { "dim": 1.0, "area": 0.20 },
+    { "dim": 3.0, "area": 1.50 },
+    { "dim": 8.0, "area": 8.00 },
+    { "dim": 20.0, "area": 40.00 },
+    { "dim": 40.0, "area": 100.00 }
+]; 
+
 const caInputElements = {}; 
 const caSliderElements = {}; 
 const caInputIds = ['dimension', 'cruiseSpeed', 'mtom', 'minAltitude'];
@@ -51,18 +61,31 @@ function loadCriticalAreaForm() {
     }
 }
 
+// Forbedret reset-funksjon for umiddelbar respons
 function resetCriticalAreaForm() {
     localStorage.removeItem(CRITICAL_AREA_KEY);
-    location.reload();
+    
+    // Sett standardverdier manuelt
+    if(caInputElements['mtom']) { caInputElements['mtom'].value = ''; caSliderElements['mtom'].value = 0; }
+    if(caInputElements['dimension']) { caInputElements['dimension'].value = ''; caSliderElements['dimension'].value = 0.1; }
+    if(caInputElements['cruiseSpeed']) { caInputElements['cruiseSpeed'].value = ''; caSliderElements['cruiseSpeed'].value = 0; }
+    if(caInputElements['minAltitude']) { caInputElements['minAltitude'].value = ''; caSliderElements['minAltitude'].value = 0; }
+    
+    const rotorEl = document.getElementById('isRotorcraft');
+    if (rotorEl) rotorEl.checked = false;
+    toggleAltitudeVisibility();
+    
+    const speedUnitEl = document.getElementById('speedUnit');
+    if (speedUnitEl) speedUnitEl.value = 'ms';
+    
+    calculateCriticalArea();
 }
 
 function toggleAltitudeVisibility() {
     const isRotorcraft = document.getElementById('isRotorcraft').checked;
     const altitudeGroup = document.getElementById('altitudeGroup');
-    if(isRotorcraft) {
-        altitudeGroup.style.display = 'block';
-    } else {
-        altitudeGroup.style.display = 'none';
+    if(altitudeGroup) {
+        altitudeGroup.style.display = isRotorcraft ? 'block' : 'none';
     }
 }
 
@@ -250,7 +273,6 @@ function drawLabelBox(ctx, text, x, y, bgColor = "#ffffff", textColor = "#333", 
     const h = isLarge ? 26 : 24;
 
     const padding = 5;
-    // Tvinger boksen innenfor canvas, uansett koordinater!
     let drawX = Math.max(w/2 + padding, Math.min(x, canvasWidth - w/2 - padding));
     let drawY = Math.max(h/2 + padding, Math.min(y, canvasHeight - h/2 - padding));
 
@@ -312,7 +334,6 @@ function drawTopView(vizData) {
     const totalW = vizData.glide + vizData.slide + (rVisMeters * 2);
     const totalH = rVisMeters * 2;
     
-    // Økt padding-krav for å forhindre overlapp i top-view
     const reqMetersW = Math.max(15, totalW * 1.3);
     const reqMetersH = Math.max(15, totalH * 2.5); 
     
@@ -320,7 +341,7 @@ function drawTopView(vizData) {
     
     const glidePx = vizData.glide * scale;
     const slidePx = vizData.slide * scale;
-    const rPx = Math.max(10, rVisMeters * scale); // Tving minimum størrelse på radiene
+    const rPx = Math.max(10, rVisMeters * scale); 
 
     const totalWidthPx = glidePx + slidePx;
     const startX = (widthTop - totalWidthPx) / 2; 
@@ -474,7 +495,6 @@ function drawSideView(vizData) {
     }
     ctxSide.setLineDash([]);
 
-    // 3. TEGN PERSON OG SLIDE
     const h18Y = groundY - h18Px;
     if (!vizData.isHighImpact && personX !== undefined) {
         
@@ -484,11 +504,10 @@ function drawSideView(vizData) {
         
         ctxSide.fillStyle = "#7f8c8d"; ctxSide.font = "bold 12px sans-serif"; ctxSide.textAlign = "left";
         
-        // Unngå kollisjon mellom text og pathLine
         let textHeadX = 10;
         if (pathStartX < 120 && pathStartY < h18Y) { textHeadX = pathStartX + 20; }
         let textHeadY = h18Y - 8;
-        if (textHeadY < 15) textHeadY = h18Y + 15; // Hvis 1.8m er øverst i hjørnet, dytt teksten under linjen
+        if (textHeadY < 15) textHeadY = h18Y + 15; 
         ctxSide.fillText("1.8m Head Height", textHeadX, textHeadY);
 
         ctxSide.font = `900 ${h18Px}px "Font Awesome 6 Free"`;
@@ -519,9 +538,8 @@ function drawSideView(vizData) {
         drawExplosion(ctxSide, impactX, groundY);
     }
 
-    // 4. TEGN VINKEL-ARK OG LABELS (Kollisjonssikret)
     let availableSpace = impactX - pathStartX;
-    let arcRadius = Math.min(45, Math.max(20, availableSpace * 0.5)); // Buen blir mindre når det er trangt
+    let arcRadius = Math.min(45, Math.max(20, availableSpace * 0.5)); 
 
     ctxSide.beginPath();
     ctxSide.moveTo(impactX, groundY); ctxSide.lineTo(impactX - arcRadius - 15, groundY); 
@@ -535,7 +553,6 @@ function drawSideView(vizData) {
     let textY = groundY - arcRadius - 10;
     if (textX < 30) textX = 30; 
     
-    // Hvis vinkelen er bratt, ELLER teksten treffer personen: Flytt godt over hodet!
     if (vizData.angle > 70) { 
         textX = impactX - arcRadius - 40;
         textY = groundY - 50;
@@ -579,8 +596,8 @@ function calculateCriticalArea() {
 
     let vizData = { isValid: false, isRotorcraft: isRotorcraft, dimension: dimension, angle: 90, glide: 0, slide: 0, area: 0, rD: 0, isHighImpact: false };
 
-    if (isNaN(dimension) || isNaN(cruiseSpeed) || isNaN(mtom) || isNaN(minAltitude) ||
-        dimension <= 0 || cruiseSpeed < 0 || mtom <= 0 || minAltitude < 0) {
+    if (isNaN(dimension) || isNaN(cruiseSpeed) || isNaN(mtom) || (isRotorcraft && isNaN(minAltitude)) ||
+        dimension <= 0 || cruiseSpeed < 0 || mtom <= 0 || (isRotorcraft && minAltitude < 0)) {
         resultValueEl.textContent = '-';
         modelUsedEl.textContent = 'Model Used: -';
         if (impactAngleResultEl) impactAngleResultEl.style.display = 'none';
@@ -600,7 +617,6 @@ function calculateCriticalArea() {
         const frontalArea = interpolateFrontalArea(dimension);
         impactAngle = calculateImpactAngle(cruiseSpeed, minAltitude, frontalArea, mtom);
 
-        // --- TRANSITION SUMMARY ---
         const switchAlt = findTransitionAltitude(cruiseSpeed, frontalArea, mtom);
         const switchSpd = findTransitionSpeed(minAltitude, frontalArea, mtom);
         const switchDim = findTransitionDimension(cruiseSpeed, minAltitude, mtom);
@@ -692,17 +708,7 @@ function setupCanvases() {
     }
 }
 
-async function initializeApp() {
-    try {
-        const res = await fetch('data/critical_area_config.json');
-        if (res.ok) {
-            const data = await res.json();
-            frontalAreaPoints = data.frontalAreaPoints;
-        }
-    } catch (err) { 
-        console.warn("Using fallbacks.", err); 
-    }
-
+function initializeApp() {
     caInputIds.forEach(id => {
         const inputEl = document.getElementById(id);
         const sliderEl = document.getElementById(`${id}Slider`);
@@ -731,6 +737,10 @@ async function initializeApp() {
     setupCanvases();
     loadCriticalAreaForm();
     
+    // Kjører beregning en gang direkte
+    calculateCriticalArea();
+    
+    // Og en gang til når fontene er klare (for at canvas-tegningene med ikoner skal bli riktig)
     document.fonts.ready.then(() => calculateCriticalArea());
     
     window.addEventListener('resize', () => {

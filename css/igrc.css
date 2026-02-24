@@ -96,8 +96,8 @@
 }
 
 /* Farger fra hovedtabellen i SORA (index.html) */
-.dim-header { background-color: #cce5ff !important; color: #000; font-weight: bold; } /* Blå */
-.vel-header { background-color: #d4edda !important; color: #000; font-weight: bold; } /* Grønn */
+.dim-header { background-color: #cce5ff !important; color: #000; font-weight: bold; white-space: nowrap; } /* Blå */
+.vel-header { background-color: #d4edda !important; color: #000; font-weight: bold; white-space: nowrap; } /* Grønn */
 .pop-header { background-color: #f8d7da !important; color: #000; font-weight: bold; } /* Rosa */
 
 .wide-col { 

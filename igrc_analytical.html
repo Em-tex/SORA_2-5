@@ -23,26 +23,27 @@
             <p>Calculate the initial Ground Risk Class (iGRC) using the analytical formula from Annex F: <code>iGRC = &lceil;raw iGRC - 0.5&rceil;</code> where <code>raw iGRC = 7 + log10(Dpop * Ac)</code>.</p>
         </div>
 
-        <div class="calculator-card">
+        <div class="calculator-card" style="max-width: 700px; margin: 0 auto 30px auto;">
             <div class="input-group">
-                <label for="dpop-slider">Population Density (D<sub>pop</sub>) [persons/km&sup2;]: <span id="dpop-val">100</span></label>
+                <label><i class="fas fa-users" style="color: #03477F; margin-right: 8px;"></i>Population Density (D<sub>pop</sub>) [persons/km&sup2;]:</label>
                 <div class="slider-container">
-                    <input type="range" id="dpop-slider" min="1" max="100000" value="100" step="1">
-                    <input type="number" id="dpop-input" value="100" min="1" max="500000">
+                    <input type="range" id="dpop-slider" min="1" max="1000" value="460" step="1">
+                    <input type="number" id="dpop-input" value="100" min="1" max="200000">
                 </div>
             </div>
 
-            <div class="input-group">
-                <label for="ac-slider">Critical Area (A<sub>c</sub>) [m&sup2;]: <span id="ac-val">50</span></label>
+            <div class="input-group" style="margin-top: 25px;">
+                <label><i class="fas fa-draw-polygon" style="color: #03477F; margin-right: 8px;"></i>Critical Area (A<sub>c</sub>) [m&sup2;]:</label>
                 <div class="slider-container">
                     <input type="range" id="ac-slider" min="1" max="2000" value="50" step="1">
                     <input type="number" id="ac-input" value="50" min="1" max="10000">
                 </div>
             </div>
 
-            <div class="result">
+            <div class="result" style="margin-top: 30px; text-align: center;">
                 <p>Raw iGRC score: <span id="exact-result" style="font-weight: normal;">0.000</span></p>
                 <p style="margin-top: 10px;">Final Applied iGRC: <span id="final-igrc" class="badge">1</span></p>
+                <p id="calc-steps" style="font-size: 0.9em; color: #555; margin-top: 15px;"></p>
             </div>
         </div>
     </main>

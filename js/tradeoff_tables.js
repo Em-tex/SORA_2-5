@@ -36,26 +36,71 @@ document.addEventListener("DOMContentLoaded", function() {
         { id: 'T6', name: 'T6: Reduce Velocity by 25% to Increase Size by 70%', popMod: 1.0, velMod: 0.75, dimMod: 1.7 }
     ];
 
-    if(localStorage.getItem('igrc_vel')) velInput.value = velSlider.value = localStorage.getItem('igrc_vel');
-    if(localStorage.getItem('igrc_dim')) dimInput.value = dimSlider.value = localStorage.getItem('igrc_dim');
-    if(localStorage.getItem('igrc_pop')) densInput.value = densSlider.value = localStorage.getItem('igrc_pop');
-    if(localStorage.getItem('igrc_unit')) velUnit.value = localStorage.getItem('igrc_unit');
+    // Last inn fra localStorage (men lar sync-funksjonen oppdatere pop-slideren)
+    if(localStorage.getItem('igrc_vel')) {
+        velInput.value = localStorage.getItem('igrc_vel');
+        velSlider.value = velInput.value;
+    }
+    if(localStorage.getItem('igrc_dim')) {
+        dimInput.value = localStorage.getItem('igrc_dim');
+        dimSlider.value = dimInput.value;
+    }
+    if(localStorage.getItem('igrc_pop')) {
+        densInput.value = localStorage.getItem('igrc_pop');
+    }
+    if(localStorage.getItem('igrc_unit')) {
+        velUnit.value = localStorage.getItem('igrc_unit');
+    }
 
     function sync(slider, input, type) {
-        const update = (val) => {
-            slider.value = val;
-            input.value = val;
-            localStorage.setItem('igrc_' + type, val);
+        const updateFromSlider = (e) => {
+            let val = parseFloat(e.target.value);
             
             if (type === 'pop') {
-                cgaHint.style.display = (parseFloat(val) === 0) ? 'block' : 'none';
+                // Logaritmisk oversettelse: slider (0-1000) -> population (0-100000)
+                let rawVal = Math.exp((val / 1000) * Math.log(100001)) - 1;
+                
+                // Avrunder til fine, "runde" tall basert på størrelsesorden
+                if (rawVal < 10) val = Math.round(rawVal);
+                else if (rawVal < 100) val = Math.round(rawVal / 5) * 5;
+                else if (rawVal < 1000) val = Math.round(rawVal / 10) * 10;
+                else if (rawVal < 10000) val = Math.round(rawVal / 100) * 100;
+                else val = Math.round(rawVal / 1000) * 1000;
             }
+            
+            input.value = val;
+            localStorage.setItem('igrc_' + type, val);
+            if (type === 'pop') cgaHint.style.display = (parseFloat(val) === 0) ? 'block' : 'none';
             renderAll();
         };
-        slider.addEventListener('input', e => update(e.target.value));
-        input.addEventListener('input', e => update(e.target.value));
+
+        const updateFromInput = (e) => {
+            let val = parseFloat(e.target.value) || 0;
+            
+            if (type === 'pop') {
+                // Konverterer tilbake fra tall til sliderposisjon
+                let cappedVal = Math.min(val, 100000); 
+                let sliderVal = 1000 * Math.log(cappedVal + 1) / Math.log(100001);
+                slider.value = sliderVal;
+            } else {
+                slider.value = val;
+            }
+            
+            localStorage.setItem('igrc_' + type, val);
+            if (type === 'pop') cgaHint.style.display = (val === 0) ? 'block' : 'none';
+            renderAll();
+        };
+
+        slider.addEventListener('input', updateFromSlider);
+        input.addEventListener('input', updateFromInput);
         
-        if(type === 'pop') update(input.value); 
+        // Kjør en gang ved oppstart for å plassere slider og hint korrekt
+        if(type === 'pop') {
+            let initialVal = parseFloat(input.value) || 0;
+            cgaHint.style.display = (initialVal === 0) ? 'block' : 'none';
+            let cappedVal = Math.min(initialVal, 100000);
+            slider.value = 1000 * Math.log(cappedVal + 1) / Math.log(100001);
+        } 
     }
 
     sync(velSlider, velInput, 'vel');
@@ -118,11 +163,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     <table class="sora-style-table">
                         <thead>
                             <tr>
-                                <th colspan="2" class="dim-header">Maximum UA characteristic dimension</th>
+                                <th colspan="2" class="unselectable">Maximum UA characteristic dimension</th>
                                 ${dLim.map((d, i) => `<th class="dim-header ${col===i?'highlight-col':''}">${formatDim(d)} m</th>`).join('')}
                             </tr>
                             <tr>
-                                <th colspan="2" class="vel-header">Maximum speed</th>
+                                <th colspan="2" class="vel-header unselectable">Maximum speed</th>
                                 ${vLim.map((v, i) => `<th class="vel-header ${col===i?'highlight-col':''}">${Math.round(v)} m/s</th>`).join('')}
                             </tr>
                         </thead>
