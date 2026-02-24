@@ -91,16 +91,25 @@
     right: 15px;
     color: #7f8c8d;
     font-weight: bold;
+    pointer-events: none; /* Sørger for at du kan klikke gjennom teksten for å skrive */
 }
 
 .unit-select {
     position: absolute;
     right: 5px;
     padding: 5px;
-    border: 1px solid #bdc3c7;
-    border-radius: 4px;
-    background: #f9f9f9;
+    border: none;             /* Fjernet den stygge kanten */
+    background: transparent;  /* Gjør den grå boksen usynlig */
+    color: #7f8c8d;           /* Samme fine farge som "kg" og "m" */
     font-weight: bold;
+    cursor: pointer;
+    outline: none;            /* Fjerner blå fokus-ring når du klikker */
+    transition: color 0.2s;
+}
+
+/* Gir en liten fargeendring når du holder musen over, så man forstår at den er klikkbar */
+.unit-select:hover {
+    color: #03477F; 
 }
 
 .custom-slider {
