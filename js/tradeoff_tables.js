@@ -108,7 +108,6 @@ document.addEventListener("DOMContentLoaded", function() {
         if(score === 'N/A' && row === 6 && col < 2) score = igrcMatrix[6][col]; 
         let badgeClass = score === 'N/A' ? 'igrc-na' : 'igrc-' + score;
 
-        // Oppdatert HTML-struktur for å matche forsiden (index.html) eksakt
         let html = `
             <div class="tradeoff-card">
                 <div class="tradeoff-header">
@@ -119,11 +118,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     <table class="sora-style-table">
                         <thead>
                             <tr>
-                                <th colspan="2" class="unselectable">Maximum UA characteristic dimension</th>
+                                <th colspan="2" class="dim-header">Maximum UA characteristic dimension</th>
                                 ${dLim.map((d, i) => `<th class="dim-header ${col===i?'highlight-col':''}">${formatDim(d)} m</th>`).join('')}
                             </tr>
                             <tr>
-                                <th colspan="2" class="vel-header unselectable">Maximum speed</th>
+                                <th colspan="2" class="vel-header">Maximum speed</th>
                                 ${vLim.map((v, i) => `<th class="vel-header ${col===i?'highlight-col':''}">${Math.round(v)} m/s</th>`).join('')}
                             </tr>
                         </thead>
@@ -134,16 +133,15 @@ document.addEventListener("DOMContentLoaded", function() {
                                 else if (r === 6) rowLabel = "&gt; " + formatNum(pLim[5]);
                                 else rowLabel = "&lt; " + formatNum(pLim[r]);
 
-                                // Legg til kolonnen for "Maximum iGRC population density..." kun på første rad
                                 let popDensityCell = "";
                                 if (r === 0) {
-                                    popDensityCell = `<td rowspan="7" style="max-width: 150px; text-align: left;" class="unselectable">Maximum iGRC population density (people/km&sup2;)</td>`;
+                                    popDensityCell = `<td rowspan="7" style="max-width: 150px; text-align: left;" class="pop-header">Maximum iGRC population density (people/km&sup2;)</td>`;
                                 }
 
                                 return `
                                 <tr class="${row===r?'highlight-row':''}">
                                     ${popDensityCell}
-                                    <td class="wide-col unselectable">${rowLabel}</td>
+                                    <td class="pop-header wide-col">${rowLabel}</td>
                                     ${[0, 1, 2, 3, 4].map(c => {
                                         if (r === 6 && c === 2) {
                                             return `<td colspan="3" class="not-part ${row===6 && col>=2 ? 'highlight-cell' : ''}">Not part of SORA</td>`;
