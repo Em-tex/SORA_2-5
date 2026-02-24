@@ -14,23 +14,23 @@ document.addEventListener("DOMContentLoaded", function() {
     const originalContainer = document.getElementById('original-table-container');
     const tablesContainer = document.getElementById('tradeoff-tables-container');
 
-    // Standardgrenser fra SORA 2.5 (Original tabell - inkludert CGA som indeks 0)
+    // Standardgrenser fra SORA 2.5
     const baseDimLimits = [1, 3, 8, 20, 40];
     const baseVelLimits = [25, 35, 75, 120, 200];
     const basePopLimits = [0, 5, 50, 500, 5000, 50000]; 
 
-    // Utvidet matrise som inkluderer Controlled Ground Area
+    // Utvidet matrise inkl. Controlled Ground Area
     const igrcMatrix = [
-        [1, 1, 2, 3, 3],  // Controlled Ground Area (Når verdi er nøyaktig 0)
-        [2, 3, 4, 5, 6],  // < 5
-        [3, 4, 5, 6, 7],  // < 50
-        [4, 5, 6, 7, 8],  // < 500
-        [5, 6, 7, 8, 9],  // < 5,000
-        [6, 7, 8, 9, 10], // < 50,000
-        [7, 8, 'N/A', 'N/A', 'N/A'] // > 50,000
+        [1, 1, 2, 3, 3],  // 0: Controlled Ground Area
+        [2, 3, 4, 5, 6],  // 1: < 5
+        [3, 4, 5, 6, 7],  // 2: < 50
+        [4, 5, 6, 7, 8],  // 3: < 500
+        [5, 6, 7, 8, 9],  // 4: < 5,000
+        [6, 7, 8, 9, 10], // 5: < 50,000
+        [7, 8, 'N/A', 'N/A', 'N/A'] // 6: > 50,000
     ];
 
-    // Letteleste definisjoner av trade-off pakkene
+    // Lettleste definisjoner av SORA 2.5 Trade-offs
     const tradeOffs = [
         { id: 'T1', name: 'T1: Reduce Population Density by 50% to Increase Velocity by 40%', popMod: 0.5, velMod: 1.4, dimMod: 1.0 },
         { id: 'T2', name: 'T2: Reduce Population Density by 50% to Increase Size by 100%', popMod: 0.5, velMod: 1.0, dimMod: 2.0 },
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function() {
         { id: 'T6', name: 'T6: Reduce Velocity by 25% to Increase Size by 70%', popMod: 1.0, velMod: 0.75, dimMod: 1.7 }
     ];
 
-    // Last inn lagrede innstillinger
+    // Last inn lagrede innstillinger fra localStorage
     if(localStorage.getItem('igrc_vel')) velInput.value = velSlider.value = localStorage.getItem('igrc_vel');
     if(localStorage.getItem('igrc_dim')) dimInput.value = dimSlider.value = localStorage.getItem('igrc_dim');
     if(localStorage.getItem('igrc_pop')) densInput.value = densSlider.value = localStorage.getItem('igrc_pop');
@@ -60,7 +60,6 @@ document.addEventListener("DOMContentLoaded", function() {
         slider.addEventListener('input', e => update(e.target.value));
         input.addEventListener('input', e => update(e.target.value));
         
-        // Kjør en gang ved oppstart for å sette hint-status
         if(type === 'pop') update(input.value); 
     }
 
@@ -73,31 +72,37 @@ document.addEventListener("DOMContentLoaded", function() {
         renderAll();
     });
 
+    // Konvertering til m/s for SORA formler
     function getVelocityInMS(val, unit) {
         if(unit === 'kmh') return val / 3.6;
         if(unit === 'kt') return val / 1.94384;
         return val;
     }
 
-    // Hjelpefunksjon for å legge til tusenseparator
+    // Formaterer befolkningstall med tusenseparator (f.eks. 5,000)
     function formatNum(num) {
         return Math.round(num).toLocaleString('en-US');
     }
 
+    // Fjerner ".0" på dimensjoner som blir heltall, for et renere utseende
+    function formatDim(num) {
+        return num % 1 === 0 ? num : num.toFixed(1);
+    }
+
     function generateTableHTML(title, popInput, velInput_ms, dimInput, mod) {
-        // Beregn forskyvning i grensene
+        // Forskyv grensene basert på valgt trade-off
         const pLim = basePopLimits.map(v => (v * mod.popMod));
         const dLim = baseDimLimits.map(v => (v * mod.dimMod));
         const vLim = baseVelLimits.map(v => (v * mod.velMod));
 
-        // Finn riktig kolonne
+        // Finn riktig kolonne (høyeste av dimensjon og hastighet)
         let colDim = dLim.findIndex(limit => dimInput <= limit);
         if (colDim === -1) colDim = 5;
         let colVel = vLim.findIndex(limit => velInput_ms <= limit);
         if (colVel === -1) colVel = 5;
         const col = Math.max(colDim, colVel);
 
-        // Finn riktig rad inkludert CGA (0)
+        // Finn riktig rad (inkl. Controlled Ground Area)
         let row = 6;
         if (popInput === 0) {
             row = 0;
@@ -110,9 +115,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        // Beregn iGRC
+        // Hent resulterende iGRC (håndterer N/A automatisk fra matrisen)
         let score = (row < 7 && col < 5) ? igrcMatrix[row][col] : 'N/A';
-        if(score === 'N/A' && row === 6 && col < 2) score = igrcMatrix[6][col]; // Fanger opp 7 og 8
         let badgeClass = score === 'N/A' ? 'igrc-na' : 'igrc-' + score;
 
         let html = `
@@ -129,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <th colspan="5" class="dim-header">Maximum UA characteristic dimension</th>
                             </tr>
                             <tr>
-                                ${dLim.map((d, i) => `<th class="dim-header ${col===i?'highlight-col':''}">&le; ${d.toFixed(1)}m</th>`).join('')}
+                                ${dLim.map((d, i) => `<th class="dim-header ${col===i?'highlight-col':''}">&le; ${formatDim(d)}m</th>`).join('')}
                             </tr>
                             <tr>
                                 <th class="vel-header wide-col" style="font-weight:bold;">Maximum speed</th>
@@ -148,10 +152,9 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <td class="wide-col unselectable">${rowLabel}</td>
                                     ${[0, 1, 2, 3, 4].map(c => {
                                         if (r === 6 && c === 2) {
-                                            // Slå sammen N/A-cellene for "> 50k" raden (lik original SORA-tabell)
                                             return `<td colspan="3" class="not-part ${row===6 && col>=2 ? 'highlight-cell' : ''}">Not part of SORA</td>`;
                                         } else if (r === 6 && c > 2) {
-                                            return ''; // Skipper generering fordi den dekkes av colspan
+                                            return ''; 
                                         } else {
                                             return `<td class="${row===r && col===c ? 'highlight-cell' : ''}">${igrcMatrix[r][c]}</td>`;
                                         }
@@ -170,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function renderAll() {
         const velRaw = parseFloat(velInput.value) || 0;
         const dim = parseFloat(dimInput.value) || 0;
-        const pop = parseFloat(densInput.value); // Tillater 0
+        const pop = parseFloat(densInput.value);
         const vel_ms = getVelocityInMS(velRaw, velUnit.value);
 
         originalContainer.innerHTML = generateTableHTML(
