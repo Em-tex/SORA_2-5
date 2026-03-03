@@ -1,6 +1,11 @@
 /* Importerer Overpass fonten fra Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Overpass:wght@400;700&display=swap');
 
+/* --- STOPP HOPPING (SCROLLBAR FIX) --- */
+html {
+    overflow-y: scroll; /* Tvinger rullefelt alltid, hindrer sideveis hopp mellom korte/lange sider */
+}
+
 /* Felles stiler for hele applikasjonen */
 
 /* Navigasjonsbånd */
@@ -14,18 +19,17 @@
     z-index: 1000;
 }
 
-/* Wrapper for navbar innhold */
+/* Wrapper for navbar innhold - ØKT BREDDE */
 .navbar-wrapper {
-    max-width: 1000px; /* Matcher .container max-width */
-    margin: 0 auto;    /* Sentrerer wrapperen */
+    max-width: 1400px; /* Økt fra 1000px for bedre utnyttelse på desktop */
+    margin: 0 auto;    
     display: flex;
-    justify-content: flex-start; /* Venstrejusterer innholdet (logoen) */
+    justify-content: flex-start; 
     align-items: center; 
     padding-left: 20px;
     padding-right: 20px;
     box-sizing: border-box; 
 }
-
 
 /* Stil for selve lenken rundt logoen */
 .nav-logo-link {
@@ -67,7 +71,6 @@
     flex-shrink: 0;
 }
 
-
 body {
     font-family: 'Overpass', Arial, sans-serif;
     margin: 0;
@@ -75,17 +78,70 @@ body {
     background-color: #f0f0f0;
 }
 
+/* --- HOVEDCONTAINER - ØKT BREDDE --- */
 .container {
     background: white;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     position: relative;
-    max-width: 1000px;
+    max-width: 1400px; /* Økt fra 1000px - gjelder alle sider */
     margin: 20px auto;
+    box-sizing: border-box; 
 }
 
-/* Logo-stiler (for logoen inne på containment-siden) */
+/* Tvinger eventuelle spesifikke klasser til å følge den nye bredden */
+.tradeoff-container, 
+.igrc-container {
+    max-width: 1400px !important;
+}
+
+/* --- iGRC FANE-NAVIGASJON (TABS) --- */
+.tab-container {
+    display: flex;
+    flex-wrap: wrap; 
+    background-color: #f7f7f7; 
+    border-bottom: 1px solid #ddd; 
+    
+    /* Negative marger trekker fanene helt ut til kanten av containeren */
+    margin: -20px -20px 30px -20px; 
+    padding: 10px 20px 0 20px;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-link {
+    text-decoration: none;
+    color: #555;
+    font-weight: bold;
+    font-size: 0.9rem;
+    padding: 12px 20px;
+    margin-right: 5px;
+    margin-bottom: -1px; 
+    
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0;
+    
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.tab-link:hover {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.tab-link.active {
+    background-color: white;
+    color: #03477F; 
+    border: 1px solid #ddd;
+    border-bottom-color: white; 
+    cursor: default;
+}
+
+/* Logo-stiler */
 .logo-container {
     text-align: left;
     margin-bottom: 20px;
@@ -97,8 +153,9 @@ body {
     cursor: pointer;
 }
 
-h2 {
+h2, h1 {
     text-align: center;
+    color: #333;
 }
 
 /* Felles resultatboks-stil */
@@ -171,7 +228,7 @@ h2 {
 }
 
 
-/* Felles mobil-justeringer */
+/* --- MOBIL-JUSTERINGER --- */
 @media (max-width: 600px) {
     .navbar {
         flex-direction: column;
@@ -196,9 +253,34 @@ h2 {
         width: calc(100% - 30px); 
         text-align: left;
     }
+    
+    /* Mobilcontainer */
     .container {
-        padding: 10px;
+        padding: 10px; 
+        margin: 10px auto;
+        width: 96%; /* Bruker nesten hele bredden på mobil */
     }
+    
+    /* Faner på mobil */
+    .tab-container {
+        margin: -10px -10px 20px -10px;
+        padding: 5px 5px 0 5px;
+    }
+    
+    .tab-link {
+        padding: 10px 5px; 
+        font-size: 0.8rem;
+        flex-grow: 1; /* Spre fanene utover */
+        justify-content: center;
+        text-align: center;
+        margin-right: 2px;
+    }
+    
+    /* Skjul ikoner i faner på veldig små skjermer for plass */
+    @media (max-width: 380px) {
+        .tab-link i { display: none; }
+    }
+
     .continue-button, .button-container a,
     .reset-button { 
         font-size: 14px;
@@ -210,103 +292,5 @@ h2 {
     .button-bar {
         display: block;
         margin-top: 20px;
-    }
-}
-
-/* =========================================
-   DROPDOWN NAVBAR
-   ========================================= */
-.dropdown {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    margin: 0 5px; 
-}
-
-.dropdown .nav-button {
-    margin: 0; 
-    box-sizing: border-box;
-}
-
-/* Usynlig bro for hover */
-.dropdown::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    height: 15px;
-    background: transparent;
-    z-index: 1000;
-}
-
-.dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #03477F;
-    min-width: 220px;
-    box-shadow: 0px 8px 16px rgba(0,0,0,0.3);
-    z-index: 1001;
-    border-radius: 5px;
-    top: calc(100% + 2px); 
-    left: 0;
-}
-
-/* NYTT: Klasse for å vise menyen ved klikk på mobil */
-.dropdown-content.show {
-    display: block;
-}
-
-.dropdown-content a {
-    color: white;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    font-size: 0.95em;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.dropdown-content a:last-child {
-    border-bottom: none;
-}
-
-.dropdown-content a:hover {
-    background-color: #F06C00;
-    border-radius: 5px;
-}
-
-/* Viser menyen når man hovrer (Desktop primary) */
-@media (min-width: 601px) {
-    .dropdown:hover .dropdown-content {
-        display: block;
-    }
-    .dropdown:hover .nav-button:not(.active) {
-        background-color: #F06C00;
-    }
-}
-
-/* Mobil-tilpasning for dropdown */
-@media (max-width: 600px) {
-    .dropdown {
-        width: 100%;
-        margin: 0;
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .dropdown .nav-button {
-        width: calc(100% - 30px);
-        margin: 5px 0;
-    }
-    .dropdown-content {
-        position: static; /* Flyter naturlig under knappen på mobil */
-        width: calc(100% - 30px);
-        box-shadow: none;
-        background-color: #023661; 
-        margin-left: 15px; /* Litt innrykk */
-    }
-    .dropdown::after {
-        display: none; 
     }
 }

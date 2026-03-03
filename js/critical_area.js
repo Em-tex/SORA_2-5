@@ -68,13 +68,16 @@ function toggleAltitudeVisibility() {
     }
 }
 
-// --- LOGARITHMIC SLIDER SETUP ---
+// --- SLIDER HELPERS ---
+
+// 1. LOGARITMISK SLIDER (For Dimensjon og Vekt)
+// Gir god presisjon for lave verdier, men kan nå høye verdier
 function setupLogSlider(sliderId, inputId, minVal, maxVal) {
     const slider = document.getElementById(sliderId);
     const input = document.getElementById(inputId);
     if (!slider || !input) return;
 
-    // Vi antar slideren har min=0 og max=1000 i HTML
+    // HTML slider antas å være 0-1000
     const minLog = Math.log(minVal);
     const maxLog = Math.log(maxVal);
     const scale = (maxLog - minLog) / 1000;
@@ -89,10 +92,8 @@ function setupLogSlider(sliderId, inputId, minVal, maxVal) {
         else if (val < 100) val = Math.round(val * 10) / 10;
         else val = Math.round(val);
         
-        // Clamp
         val = Math.max(minVal, Math.min(val, maxVal));
 
-        // Oppdater kun hvis endret for å unngå loop
         if (parseFloat(input.value) !== val) {
             input.value = val;
             calculateCriticalArea();
@@ -107,6 +108,37 @@ function setupLogSlider(sliderId, inputId, minVal, maxVal) {
         val = Math.max(minVal, Math.min(val, maxVal));
         const pos = (Math.log(val) - minLog) / scale;
         slider.value = pos;
+        calculateCriticalArea();
+    });
+}
+
+// 2. LINEÆR SLIDER (For Fart og Høyde)
+// Gir jevn justering over hele spekteret
+function setupLinearSlider(sliderId, inputId, minVal, maxVal) {
+    const slider = document.getElementById(sliderId);
+    const input = document.getElementById(inputId);
+    if (!slider || !input) return;
+
+    // Sett HTML-attributter direkte for lineær oppførsel
+    slider.min = minVal;
+    slider.max = maxVal;
+    slider.step = (maxVal - minVal) / 1000; // Fin oppløsning
+
+    // Slider -> Input
+    slider.addEventListener('input', () => {
+        // Runde av til 1 desimal for penere visning
+        let val = Math.round(parseFloat(slider.value) * 10) / 10;
+        if (parseFloat(input.value) !== val) {
+            input.value = val;
+            calculateCriticalArea();
+        }
+    });
+
+    // Input -> Slider
+    input.addEventListener('input', () => {
+        let val = parseFloat(input.value);
+        if (isNaN(val)) return;
+        slider.value = val;
         calculateCriticalArea();
     });
 }
@@ -145,7 +177,7 @@ function calculateImpactAngle(initialHorizontalSpeed, altitude, frontalArea, mas
     let vHorizontal = initialHorizontalSpeed;
     let vVertical = 0;
     let verticalPosition = 0;
-    const dt = 0.05; // Slightly coarser step for performance
+    const dt = 0.05; 
     let time = 0;
     
     while (verticalPosition > -altitude && time < 300) {
@@ -173,7 +205,7 @@ function calculateImpactAngle(initialHorizontalSpeed, altitude, frontalArea, mas
     return Math.atan(Math.abs(vVertical) / Math.abs(vHorizontal)) * (180 / Math.PI);
 }
 
-// TERSKEL-FUNKSJONER FOR OPPSUMMERING
+// TERSKEL-FUNKSJONER
 function findTransitionAltitude(speedMS, frontalArea, mass) {
     let low = 0; let high = 2000; 
     if(calculateImpactAngle(speedMS, high, frontalArea, mass) < HIGH_ANGLE_THRESHOLD_DEG) return Infinity; 
@@ -235,6 +267,7 @@ function calculateJarusPhysics(dimension, cruiseSpeed, mass) {
         const vNonLethal = (mass > 0) ? Math.sqrt((2 * K_NON_LETHAL) / mass) : Infinity;
         const vHorizontalAfterImpact = COEFF_RESTITUTION_JARUS * vHorizontalImpact;
 
+        // Slide calculating only happens if impact energy (velocity) is still dangerous
         if (vHorizontalAfterImpact > vNonLethal) {
              const tSafe = (vHorizontalAfterImpact - vNonLethal) / (COEFF_FRICTION * G);
              dSlideReduced = vHorizontalAfterImpact * tSafe - 0.5 * COEFF_FRICTION * G * tSafe * tSafe;
@@ -252,7 +285,7 @@ function calculateJarusModel(dimension, cruiseSpeed, mass) {
 
     if (dimension > 8) Ac = term1 + term2;
     else if (dimension > 1 && dimension <= 8) Ac = OBSTACLE_REDUCTION_FACTOR * (term1 + term2);
-    else Ac = 2 * phys.rD * phys.dGlide + 0.5 * (Math.PI * phys.rD * phys.rD);
+    else Ac = 2 * phys.rD * phys.dGlide + 0.5 * (Math.PI * phys.rD * phys.rD); // Small drones ignore slide in this model branch
     return Ac;
 }
 
@@ -287,7 +320,7 @@ function highlightTableColumn(criticalArea) {
     document.getElementById(`col-${highlightedId}-data`)?.classList.add('highlight-col-data');
 }
 
-// --- VISUALIZATION DRAW HELPERS ---
+// --- VISUALIZATION HELPERS ---
 function drawLabelBox(ctx, text, x, y, bgColor = "#ffffff", textColor = "#333", canvasWidth = 500, canvasHeight = 300, isLarge = false) {
     ctx.font = isLarge ? "bold 15px sans-serif" : "bold 13px sans-serif";
     const metrics = ctx.measureText(text);
@@ -337,7 +370,7 @@ function drawExplosion(ctx, x, y) {
     ctx.restore();
 }
 
-// --- RENDER TOP VIEW (Area Footprint) ---
+// --- RENDER TOP VIEW ---
 function drawTopView(vizData) {
     if (!ctxTop) return;
     ctxTop.clearRect(0, 0, widthTop, heightTop);
@@ -356,8 +389,9 @@ function drawTopView(vizData) {
     const totalW = vizData.glide + vizData.slide + (rVisMeters * 2);
     const totalH = rVisMeters * 2;
     
-    const reqMetersW = Math.max(15, totalW * 1.3);
-    const reqMetersH = Math.max(15, totalH * 2.5); 
+    // Zoom logikk
+    const reqMetersW = Math.max(2, totalW * 1.1); 
+    const reqMetersH = Math.max(2, totalH * 1.5); 
     
     const scale = Math.min((widthTop - 40) / reqMetersW, (heightTop - 60) / reqMetersH);
     
@@ -434,7 +468,7 @@ function drawTopView(vizData) {
     }
 }
 
-// --- RENDER SIDE VIEW (Angle & Descent) ---
+// --- RENDER SIDE VIEW ---
 function drawSideView(vizData) {
     if (!ctxSide) return;
     ctxSide.clearRect(0, 0, widthSide, heightSide);
@@ -692,9 +726,8 @@ function calculateCriticalArea() {
         vizData = { isValid: true, isRotorcraft: false, dimension: dimension, angle: 35, glide: phys.dGlide, slide: phys.dSlideReduced, area: criticalArea, rD: phys.rD, isHighImpact: false };
     }
 
-    // --- NYTT: Lagre resultatet for bruk i Analytical Formula ---
+    // Lagre resultatet
     localStorage.setItem('sora_last_calculated_ac', criticalArea.toFixed(2));
-    // -----------------------------------------------------------
 
     resultValueEl.textContent = criticalArea.toFixed(2);
     modelUsedEl.textContent = `Model Used: ${modelUsed}`;
@@ -740,26 +773,20 @@ function initializeApp() {
         const sliderEl = document.getElementById(`${id}Slider`);
         caInputElements[id] = inputEl;
         caSliderElements[id] = sliderEl;
-
-        // Skip standard listener if using Log Slider helper (it adds its own)
-        // But for safety, keep existing logic unless overridden
     });
 
-    // --- SETT OPP LOGARITMISKE SLIDERE ---
-    // Dimension: 0.1m til 50m (Utvidet range)
+    // --- SETT OPP SLIDERE ---
+    // Dimension: Logaritmisk (0.1m - 50m)
     setupLogSlider('dimensionSlider', 'dimension', 0.1, 50);
-    // MTOM: 0.1kg til 500kg
+    
+    // MTOM: Logaritmisk (0.1kg - 500kg)
     setupLogSlider('mtomSlider', 'mtom', 0.1, 500);
-    // Speed: 0 til 150 (enhet varierer, men slider dekker verdiene)
-    setupLogSlider('cruiseSpeedSlider', 'cruiseSpeed', 1, 150);
+    
+    // Speed: Lineær (0 - 150 m/s) - KORRIGERT
+    setupLinearSlider('cruiseSpeedSlider', 'cruiseSpeed', 0, 150);
 
     // Altitude: Lineær
-    const altSlider = document.getElementById('minAltitudeSlider');
-    const altInput = document.getElementById('minAltitude');
-    if(altSlider && altInput) {
-        altSlider.addEventListener('input', () => { altInput.value = altSlider.value; calculateCriticalArea(); });
-        altInput.addEventListener('input', () => { altSlider.value = altInput.value; calculateCriticalArea(); });
-    }
+    setupLinearSlider('minAltitudeSlider', 'minAltitude', 0, 500);
 
     const isRotorcraftEl = document.getElementById('isRotorcraft');
     if (isRotorcraftEl) {
@@ -775,22 +802,22 @@ function initializeApp() {
     document.getElementById('resetCriticalAreaForm').addEventListener('click', (e) => {
         e.preventDefault();
         localStorage.removeItem(CRITICAL_AREA_KEY);
-        // Remove also the result calculation if resetting
         localStorage.removeItem('sora_last_calculated_ac'); 
         
         caInputIds.forEach(id => {
             if (caInputElements[id]) caInputElements[id].value = '';
         });
 
-        // Set reasonable defaults to avoid errors
+        // Set reasonable defaults
         if(caInputElements['dimension']) caInputElements['dimension'].value = 1;
         if(caInputElements['mtom']) caInputElements['mtom'].value = 2.5;
         if(caInputElements['cruiseSpeed']) caInputElements['cruiseSpeed'].value = 15;
         if(caInputElements['minAltitude']) caInputElements['minAltitude'].value = 50;
         
-        // Trigger updates
+        // Trigger updates for sliders
         if(caInputElements['dimension']) caInputElements['dimension'].dispatchEvent(new Event('input'));
         if(caInputElements['mtom']) caInputElements['mtom'].dispatchEvent(new Event('input'));
+        if(caInputElements['cruiseSpeed']) caInputElements['cruiseSpeed'].dispatchEvent(new Event('input'));
 
         const rotorEl = document.getElementById('isRotorcraft');
         if (rotorEl) rotorEl.checked = false;

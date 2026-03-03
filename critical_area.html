@@ -21,6 +21,13 @@
     <div id="navbar-placeholder"></div>
 
     <div class="container">
+        
+        <div class="tab-container">
+            <a href="tradeoff_tables.html" class="tab-link"><i class="fas fa-balance-scale"></i> Trade-off Tables</a>
+            <a href="igrc_analytical.html" class="tab-link"><i class="fas fa-calculator"></i> Analytical Formula</a>
+            <a href="critical_area.html" class="tab-link active"><i class="fas fa-bullseye"></i> Critical Area</a>
+        </div>
+
         <h1>Critical Area Calculator (SORA 2.5)</h1>
         <p class="intro-text">
             Calculate the precise <strong>Critical Area (A<sub>c</sub>)</strong> according to SORA 2.5 Annex F. 
@@ -61,7 +68,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="cruiseSpeed">Max Cruise Speed</label>
+                    <label for="cruiseSpeed">Maximum Speed</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-gauge-high input-icon"></i>
                         <input type="number" id="cruiseSpeed" step="1" min="0" max="150" placeholder="e.g. 15">

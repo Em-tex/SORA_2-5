@@ -12,17 +12,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 <span>SAIL</span>
             </a>
 
-            <div class="dropdown" id="igrc-dropdown">
-                <a href="tradeoff_tables.html" class="nav-button" id="nav-igrc-main">
-                    <i class="fas fa-street-view nav-icon"></i>
-                    <span>iGRC <i class="fas fa-caret-down" style="margin-left: 5px;"></i></span>
-                </a>
-                <div class="dropdown-content" id="igrc-dropdown-content">
-                    <a href="tradeoff_tables.html"><i class="fas fa-balance-scale" style="width: 20px;"></i> Trade-off Tables</a>
-                    <a href="igrc_analytical.html"><i class="fas fa-calculator" style="width: 20px;"></i> Analytical Formula</a>
-                    <a href="critical_area.html"><i class="fas fa-bullseye" style="width: 20px;"></i> Critical Area</a>
-                </div>
-            </div>
+            <a href="tradeoff_tables.html" class="nav-button" id="nav-igrc-main">
+                <i class="fas fa-street-view nav-icon"></i>
+                <span>iGRC</span>
+            </a>
 
             <a href="containment.html" class="nav-button" id="nav-containment">
                 <i class="fas fa-draw-polygon nav-icon"></i>
@@ -51,8 +44,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.querySelectorAll(".nav-button").forEach(button => button.classList.remove("active"));
 
-    // Sett aktiv knapp
+    // Logikk for å sette iGRC-knappen som aktiv for alle tre undersider
     const igrcPages = ["tradeoff_tables.html", "igrc_analytical.html", "critical_area.html"];
+
     if (currentPage === "index.html" || currentPage === "") {
         document.getElementById("nav-sail")?.classList.add("active");
     } else if (igrcPages.includes(currentPage)) {
@@ -63,32 +57,5 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("nav-contingency-volume")?.classList.add("active");
     } else if (currentPage === "vlos_calculator.html") {
         document.getElementById("nav-vlos")?.classList.add("active");
-    }
-
-    // --- MOBIL FIX FOR DROPDOWN ---
-    const dropdownBtn = document.getElementById("nav-igrc-main");
-    const dropdownContent = document.getElementById("igrc-dropdown-content");
-
-    if (dropdownBtn && dropdownContent) {
-        dropdownBtn.addEventListener("click", function(e) {
-            // Sjekk om vi er på mobil/liten skjerm (under 600px)
-            if (window.innerWidth <= 600) { 
-                const isOpen = dropdownContent.classList.contains("show");
-                
-                // Hvis menyen ikke er åpen, åpne den og hindre navigasjon
-                if (!isOpen) {
-                    e.preventDefault(); 
-                    dropdownContent.classList.add("show");
-                } 
-                // Hvis den allerede er åpen, lar vi standard-oppførsel (navigasjon) skje
-            }
-        });
-
-        // Lukk menyen hvis man klikker utenfor (viktig for mobil UX)
-        document.addEventListener("click", function(e) {
-            if (!document.getElementById("igrc-dropdown").contains(e.target)) {
-                dropdownContent.classList.remove("show");
-            }
-        });
     }
 });

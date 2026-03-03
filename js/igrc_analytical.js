@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     const dpopSlider = document.getElementById('dpop-slider');
     const dpopInput = document.getElementById('dpop-input');
+    const cgaHint = document.getElementById('cga-hint');
     
     const acSlider = document.getElementById('ac-slider');
     const acInput = document.getElementById('ac-input');
@@ -9,41 +10,61 @@ document.addEventListener("DOMContentLoaded", function() {
     const finalIgrc = document.getElementById('final-igrc');
     const calcSteps = document.getElementById('calc-steps');
 
-    // Tillat desimaltall ved å sette step="any"
     dpopInput.step = "any";
     acInput.step = "any";
 
-    // --- LOGIKK FOR Å HENTE DATA ---
-    
-    // 1. Befolkningstetthet: Hent sist brukte verdi, eller default 100
+    // Hent lagrede verdier
+    const calculatedAC = localStorage.getItem('sora_last_calculated_ac');
+    if (calculatedAC && parseFloat(calculatedAC) > 0) {
+        acInput.value = parseFloat(calculatedAC).toFixed(2);
+    } else if (localStorage.getItem('igrc_analytical_ac')) {
+        acInput.value = localStorage.getItem('igrc_analytical_ac');
+    }
+
     if(localStorage.getItem('igrc_analytical_pop')) {
         dpopInput.value = localStorage.getItem('igrc_analytical_pop');
     }
 
-    // 2. Critical Area: Prioriter beregnet verdi fra critical_area.html
-    const calculatedAC = localStorage.getItem('sora_last_calculated_ac');
-    const storedLocalAC = localStorage.getItem('igrc_analytical_ac');
-
-    if (calculatedAC && parseFloat(calculatedAC) > 0) {
-        // Hvis vi har en fersk beregning fra den andre siden, bruk den!
-        acInput.value = parseFloat(calculatedAC).toFixed(2);
-        // Lagre den også lokalt for denne siden med en gang
-        localStorage.setItem('igrc_analytical_ac', acInput.value);
-    } else if (storedLocalAC) {
-        // Hvis ikke, bruk forrige verdi tastet inn på denne siden
-        acInput.value = storedLocalAC;
-    }
-    // Hvis ingen av delene finnes, står default verdien fra HTML (50)
-
     function calculateIGRC() {
-        const dpop = parseFloat(dpopInput.value) || 0;
+        const dpop = parseFloat(dpopInput.value); // Kan være 0
         const ac = parseFloat(acInput.value) || 0;
 
-        if (dpop > 0 && ac > 0) {
+        // Vis/skjul CGA hint
+        if (cgaHint) {
+            cgaHint.style.display = (dpop === 0) ? 'block' : 'none';
+        }
+
+        if (dpop === 0 && ac > 0) {
+            // Spesialtilfelle: Controlled Ground Area (CGA)
+            // Formelen fungerer ikke for 0 (log(0) er udefinert).
+            // SORA Annex F Tabell 2 og 30 angir faste verdier for CGA basert på størrelse:
+            // Ac <= 65 m²  -> iGRC 1
+            // Ac <= 650 m² -> iGRC 2
+            // Ac > 650 m²  -> iGRC 3
+            
+            let cgaScore = 1;
+            if (ac > 650) {
+                cgaScore = 3;
+            } else if (ac > 65) {
+                cgaScore = 2;
+            }
+            
+            exactResult.textContent = "N/A (CGA)";
+            finalIgrc.textContent = cgaScore;
+            finalIgrc.className = "badge igrc-" + cgaScore;
+            
+            if(calcSteps) {
+                calcSteps.innerHTML = "<strong>Controlled Ground Area</strong> (Density = 0)<br>" + 
+                                      "Analytical formula implies -∞. SORA Annex F Table 2 assigns fixed values:<br>" +
+                                      "&bull; A<sub>c</sub> &le; 65 m&sup2;: <strong>iGRC 1</strong><br>" +
+                                      "&bull; A<sub>c</sub> &le; 650 m&sup2;: <strong>iGRC 2</strong><br>" +
+                                      "&bull; A<sub>c</sub> &gt; 650 m&sup2;: <strong>iGRC 3</strong>";
+            }
+
+        } else if (dpop > 0 && ac > 0) {
             const dpop_m2 = dpop / 1000000; 
             const raw_iGRC = 7 + Math.log10(dpop_m2 * ac);
             
-            // SORA 2.5 Annex F Rounding: iGRC = ⌈raw - 0.5⌉
             const shifted = raw_iGRC - 0.5;
             let rounded = Math.ceil(shifted);
             
@@ -61,66 +82,60 @@ document.addEventListener("DOMContentLoaded", function() {
             exactResult.textContent = "N/A";
             finalIgrc.textContent = "N/A";
             finalIgrc.className = "badge igrc-na";
-            if(calcSteps) calcSteps.innerHTML = "Population density and Critical Area must be strictly greater than 0.";
+            if(calcSteps) calcSteps.innerHTML = "Population density and Critical Area must be valid.";
         }
     }
 
-    // Hjelpefunksjon for logaritmisk skala (Log-Linear mapping)
-    // Map slider (0-1000) -> value (min-max)
-    function setupLogarithmicSlider(slider, input, minVal, maxVal, storageKey) {
-        
-        const minLog = Math.log(minVal);
+    // Log-slider som håndterer 0 korrekt
+    function setupLogSlider(slider, input, minVal, maxVal, storageKey) {
+        const minLog = Math.log(minVal); 
         const maxLog = Math.log(maxVal);
-        // Vi antar nå at slideren går fra 0 til 1000 i HTML
-        const sliderRange = 1000; 
-        const scale = (maxLog - minLog) / sliderRange;
+        const scale = (maxLog - minLog) / 1000;
 
-        const updateFromSlider = (e) => {
-            let pos = parseFloat(e.target.value);
-            // Logaritmisk beregning: value = e^(minLog + scale * pos)
-            let val = Math.exp(minLog + scale * pos);
+        slider.addEventListener('input', function() {
+            const pos = parseFloat(slider.value);
             
-            // Pen avrunding basert på størrelse
-            if (val < 10) val = Math.round(val * 100) / 100; // 2 desimaler for små tall
-            else if (val < 100) val = Math.round(val * 10) / 10;
-            else val = Math.round(val);
-
-            // Sørg for at vi holder oss innenfor grensene
-            val = Math.max(minVal, Math.min(val, maxVal));
+            if (pos === 0) {
+                input.value = 0;
+            } else {
+                let val = Math.exp(minLog + scale * pos);
+                if (val < 10) val = Math.round(val * 100) / 100;
+                else if (val < 100) val = Math.round(val * 10) / 10;
+                else val = Math.round(val);
+                val = Math.max(minVal, Math.min(val, maxVal));
+                input.value = val;
+            }
             
-            input.value = val;
-            localStorage.setItem(storageKey, val);
+            localStorage.setItem(storageKey, input.value);
             calculateIGRC();
-        };
+        });
 
-        const updateFromInput = (e) => {
-            let val = parseFloat(e.target.value) || minVal;
-            val = Math.max(minVal, Math.min(val, maxVal)); // Clamp input
-
-            // Revers formel: position = (log(val) - log(min)) / scale
-            let pos = (Math.log(val) - minLog) / scale;
+        input.addEventListener('input', function() {
+            let val = parseFloat(input.value);
             
-            slider.value = pos;
-            localStorage.setItem(storageKey, val);
+            if (val === 0) {
+                slider.value = 0;
+            } else if (val > 0) {
+                val = Math.max(minVal, Math.min(val, maxVal));
+                const pos = (Math.log(val) - minLog) / scale;
+                slider.value = pos;
+            }
+            
+            localStorage.setItem(storageKey, input.value);
             calculateIGRC();
-        };
+        });
 
-        slider.addEventListener('input', updateFromSlider);
-        input.addEventListener('input', updateFromInput);
-
-        // Initialiser slider posisjon korrekt basert på verdien som ble lastet inn
-        let initialVal = parseFloat(input.value) || minVal;
-        initialVal = Math.max(minVal, initialVal); 
-        let initialPos = (Math.log(initialVal) - minLog) / scale;
-        slider.value = initialPos;
+        let startVal = parseFloat(input.value);
+        if (startVal === 0) {
+            slider.value = 0;
+        } else {
+            startVal = Math.max(minVal, startVal || minVal);
+            slider.value = (Math.log(startVal) - minLog) / scale;
+        }
     }
 
-    // Befolkningstetthet (1 - 200,000) - Logaritmisk
-    setupLogarithmicSlider(dpopSlider, dpopInput, 1, 200000, 'igrc_analytical_pop');
+    setupLogSlider(dpopSlider, dpopInput, 1, 200000, 'igrc_analytical_pop');
+    setupLogSlider(acSlider, acInput, 0.1, 200000, 'igrc_analytical_ac');
 
-    // Critical Area (0.1 - 10,000) - Logaritmisk
-    setupLogarithmicSlider(acSlider, acInput, 0.1, 10000, 'igrc_analytical_ac');
-
-    // Kjør en gang ved oppstart
     calculateIGRC();
 });
