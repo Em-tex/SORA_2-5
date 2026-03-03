@@ -13,6 +13,11 @@ document.addEventListener("DOMContentLoaded", function() {
     const originalContainer = document.getElementById('original-table-container');
     const tablesContainer = document.getElementById('tradeoff-tables-container');
 
+    // Tillat desimaltall
+    velInput.step = "0.1";
+    dimInput.step = "0.1";
+    densInput.step = "any";
+
     const baseDimLimits = [1, 3, 8, 20, 40];
     const baseVelLimits = [25, 35, 75, 120, 200];
     const basePopLimits = [0, 5, 50, 500, 5000, 50000]; 
@@ -38,11 +43,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if(velInput && localStorage.getItem('igrc_vel')) {
         velInput.value = localStorage.getItem('igrc_vel');
-        if(velSlider) velSlider.value = velInput.value;
     }
     if(dimInput && localStorage.getItem('igrc_dim')) {
         dimInput.value = localStorage.getItem('igrc_dim');
-        if(dimSlider) dimSlider.value = dimInput.value;
     }
     if(densInput && localStorage.getItem('igrc_pop')) {
         densInput.value = localStorage.getItem('igrc_pop');
@@ -51,53 +54,84 @@ document.addEventListener("DOMContentLoaded", function() {
         velUnit.value = localStorage.getItem('igrc_unit');
     }
 
-    function sync(slider, input, type) {
-        if (!slider || !input) return;
-
+    // Helper for log scale sync
+    function syncLogarithmic(slider, input, minVal, maxVal, storageKey) {
+        const minLog = Math.log(minVal);
+        const maxLog = Math.log(maxVal);
+        const range = parseFloat(slider.max) - parseFloat(slider.min); 
+        
         const updateFromSlider = (e) => {
-            let val = parseFloat(e.target.value);
-            if (type === 'pop') {
-                let rawVal = Math.exp((val / 1000) * Math.log(100001)) - 1;
-                if (rawVal < 10) val = Math.round(rawVal);
-                else if (rawVal < 100) val = Math.round(rawVal / 5) * 5;
-                else if (rawVal < 1000) val = Math.round(rawVal / 10) * 10;
-                else if (rawVal < 10000) val = Math.round(rawVal / 100) * 100;
-                else val = Math.round(rawVal / 1000) * 1000;
-            }
+            const pos = parseFloat(e.target.value);
+            // Normalized position (0 to 1) 
+            const pct = (pos - parseFloat(slider.min)) / range;
+            
+            let val = Math.exp(minLog + pct * (maxLog - minLog));
+            
+            // Nice rounding
+            if (val < 10) val = Math.round(val * 100) / 100;
+            else if (val < 100) val = Math.round(val * 10) / 10;
+            else val = Math.round(val);
+            
+            // Clamp
+            val = Math.max(minVal, Math.min(val, maxVal));
+
             input.value = val;
-            localStorage.setItem('igrc_' + type, val);
-            if (type === 'pop' && cgaHint) cgaHint.style.display = (parseFloat(val) === 0) ? 'block' : 'none';
+            localStorage.setItem(storageKey, val);
+            
+            // Special CGA logic for density (handling 0)
+            if(storageKey === 'igrc_pop' && cgaHint) {
+                 if (pos == slider.min) input.value = 0;
+                 cgaHint.style.display = (parseFloat(input.value) === 0) ? 'block' : 'none';
+            }
+
             renderAll();
         };
 
         const updateFromInput = (e) => {
-            let val = parseFloat(e.target.value) || 0;
-            if (type === 'pop') {
-                let cappedVal = Math.min(val, 100000); 
-                slider.value = 1000 * Math.log(cappedVal + 1) / Math.log(100001);
-            } else {
-                slider.value = val;
+            let val = parseFloat(e.target.value) || minVal;
+            // Handle 0 for pop density separately
+            if (storageKey === 'igrc_pop' && val <= 0) {
+                slider.value = slider.min;
+                localStorage.setItem(storageKey, 0);
+                if(cgaHint) cgaHint.style.display = 'block';
+                renderAll();
+                return;
             }
-            localStorage.setItem('igrc_' + type, val);
-            if (type === 'pop' && cgaHint) cgaHint.style.display = (val === 0) ? 'block' : 'none';
+
+            val = Math.max(minVal, Math.min(val, maxVal));
+            const pct = (Math.log(val) - minLog) / (maxLog - minLog);
+            const pos = parseFloat(slider.min) + (pct * range);
+            
+            slider.value = pos;
+            localStorage.setItem(storageKey, val);
+            if(storageKey === 'igrc_pop' && cgaHint) cgaHint.style.display = 'none';
             renderAll();
         };
 
         slider.addEventListener('input', updateFromSlider);
         input.addEventListener('input', updateFromInput);
         
-        if(type === 'pop') {
-            let initialVal = parseFloat(input.value) || 0;
-            if(cgaHint) cgaHint.style.display = (initialVal === 0) ? 'block' : 'none';
-            let cappedVal = Math.min(initialVal, 100000);
-            slider.value = 1000 * Math.log(cappedVal + 1) / Math.log(100001);
-        } 
+        // Init slider position
+        let initialVal = parseFloat(input.value);
+        if (storageKey === 'igrc_pop' && initialVal <= 0) {
+            slider.value = slider.min;
+        } else {
+            initialVal = Math.max(minVal, initialVal);
+            const pct = (Math.log(initialVal) - minLog) / (maxLog - minLog);
+            slider.value = parseFloat(slider.min) + (pct * range);
+        }
     }
 
-    sync(velSlider, velInput, 'vel');
-    sync(dimSlider, dimInput, 'dim');
-    sync(densSlider, densInput, 'pop');
+    // Velocity: Log scale 1 to 250
+    syncLogarithmic(velSlider, velInput, 1, 250, 'igrc_vel');
+
+    // Dimension: Log scale 0.1 to 50
+    syncLogarithmic(dimSlider, dimInput, 0.1, 50, 'igrc_dim');
+
+    // Population: Log scale 1 to 100,000 (handling 0 as CGA)
+    syncLogarithmic(densSlider, densInput, 1, 100000, 'igrc_pop');
     
+
     if (velUnit) {
         velUnit.addEventListener('change', e => {
             localStorage.setItem('igrc_unit', e.target.value);

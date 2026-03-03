@@ -24,7 +24,6 @@
         <h1>Critical Area Calculator (SORA 2.5)</h1>
         <p class="intro-text">
             Calculate the precise <strong>Critical Area (A<sub>c</sub>)</strong> according to SORA 2.5 Annex F. 
-            A calculated A<sub>c</sub> lower than the standard value may allow you to use a lower "Characteristic Dimension" column in the iGRC table.
         </p>
 
         <div class="calculator-grid">
@@ -45,34 +44,34 @@
                     <label for="mtom">MTOM</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-weight-hanging input-icon"></i>
-                        <input type="number" id="mtom" step="0.1" min="0" max="200" placeholder="e.g. 2.5">
+                        <input type="number" id="mtom" step="0.1" min="0" max="500" placeholder="e.g. 2.5">
                         <span class="unit-label">kg</span>
                     </div>
-                    <input type="range" id="mtomSlider" min="0" max="200" step="0.1" value="0" class="custom-slider">
+                    <input type="range" id="mtomSlider" min="0" max="1000" step="1" value="0" class="custom-slider">
                 </div>
 
                 <div class="form-group">
                     <label for="dimension">Characteristic Dimension</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-ruler-horizontal input-icon"></i>
-                        <input type="number" id="dimension" step="0.1" min="0.1" max="15" placeholder="e.g. 0.8">
+                        <input type="number" id="dimension" step="0.1" min="0.1" max="50" placeholder="e.g. 0.8">
                         <span class="unit-label">m</span>
                     </div>
-                    <input type="range" id="dimensionSlider" min="0.1" max="15" step="0.1" value="0.1" class="custom-slider">
+                    <input type="range" id="dimensionSlider" min="0" max="1000" step="1" value="0" class="custom-slider">
                 </div>
 
                 <div class="form-group">
                     <label for="cruiseSpeed">Max Cruise Speed</label>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-gauge-high input-icon"></i>
-                        <input type="number" id="cruiseSpeed" step="1" min="0" max="100" placeholder="e.g. 15">
+                        <input type="number" id="cruiseSpeed" step="1" min="0" max="150" placeholder="e.g. 15">
                         <select id="speedUnit" class="unit-select">
                             <option value="ms">m/s</option>
                             <option value="kmh">km/h</option>
                             <option value="kt">kt</option>
                         </select>
                     </div>
-                    <input type="range" id="cruiseSpeedSlider" min="0" max="100" step="1" value="0" class="custom-slider">
+                    <input type="range" id="cruiseSpeedSlider" min="0" max="1000" step="1" value="0" class="custom-slider">
                 </div>
 
                 <div class="form-group" id="altitudeGroup" style="display: none;">
@@ -89,6 +88,9 @@
                     <button id="resetCriticalAreaForm" class="btn btn-primary">
                         <i class="fa-solid fa-rotate-left"></i> Reset Values
                     </button>
+                    <a href="igrc_analytical.html" class="btn" style="background-color: #03477F; color: white; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                        To iGRC Formula <i class="fa-solid fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
 

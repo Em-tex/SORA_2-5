@@ -41,10 +41,10 @@ function loadCriticalAreaForm() {
 
     caInputIds.forEach(id => {
          const el = caInputElements[id];
-         const sliderEl = caSliderElements[id];
          if (el && data[id] !== undefined) {
              el.value = data[id];
-             if (sliderEl) sliderEl.value = data[id]; 
+             // Trigger input event to update sliders logic
+             el.dispatchEvent(new Event('input'));
          }
     });
 
@@ -66,6 +66,49 @@ function toggleAltitudeVisibility() {
     if(altitudeGroup) {
         altitudeGroup.style.display = isRotorcraft ? 'block' : 'none';
     }
+}
+
+// --- LOGARITHMIC SLIDER SETUP ---
+function setupLogSlider(sliderId, inputId, minVal, maxVal) {
+    const slider = document.getElementById(sliderId);
+    const input = document.getElementById(inputId);
+    if (!slider || !input) return;
+
+    // Vi antar slideren har min=0 og max=1000 i HTML
+    const minLog = Math.log(minVal);
+    const maxLog = Math.log(maxVal);
+    const scale = (maxLog - minLog) / 1000;
+
+    // Slider -> Input
+    slider.addEventListener('input', () => {
+        const pos = parseFloat(slider.value);
+        let val = Math.exp(minLog + scale * pos);
+        
+        // Pen avrunding
+        if (val < 10) val = Math.round(val * 100) / 100;
+        else if (val < 100) val = Math.round(val * 10) / 10;
+        else val = Math.round(val);
+        
+        // Clamp
+        val = Math.max(minVal, Math.min(val, maxVal));
+
+        // Oppdater kun hvis endret for å unngå loop
+        if (parseFloat(input.value) !== val) {
+            input.value = val;
+            calculateCriticalArea();
+        }
+    });
+
+    // Input -> Slider
+    input.addEventListener('input', () => {
+        let val = parseFloat(input.value);
+        if (!val || val <= 0) return;
+
+        val = Math.max(minVal, Math.min(val, maxVal));
+        const pos = (Math.log(val) - minLog) / scale;
+        slider.value = pos;
+        calculateCriticalArea();
+    });
 }
 
 // --- CONSTANTS ---
@@ -102,7 +145,7 @@ function calculateImpactAngle(initialHorizontalSpeed, altitude, frontalArea, mas
     let vHorizontal = initialHorizontalSpeed;
     let vVertical = 0;
     let verticalPosition = 0;
-    const dt = 0.01;
+    const dt = 0.05; // Slightly coarser step for performance
     let time = 0;
     
     while (verticalPosition > -altitude && time < 300) {
@@ -135,7 +178,7 @@ function findTransitionAltitude(speedMS, frontalArea, mass) {
     let low = 0; let high = 2000; 
     if(calculateImpactAngle(speedMS, high, frontalArea, mass) < HIGH_ANGLE_THRESHOLD_DEG) return Infinity; 
     if(calculateImpactAngle(speedMS, 0.1, frontalArea, mass) >= HIGH_ANGLE_THRESHOLD_DEG) return 0; 
-    for(let i = 0; i < 30; i++) {
+    for(let i = 0; i < 20; i++) {
         let mid = (low + high) / 2;
         let angle = calculateImpactAngle(speedMS, mid, frontalArea, mass);
         if(angle >= HIGH_ANGLE_THRESHOLD_DEG) high = mid; else low = mid;
@@ -147,7 +190,7 @@ function findTransitionSpeed(altitude, frontalArea, mass) {
     let low = 0; let high = 500; 
     if(calculateImpactAngle(high, altitude, frontalArea, mass) >= HIGH_ANGLE_THRESHOLD_DEG) return Infinity; 
     if(calculateImpactAngle(low, altitude, frontalArea, mass) < HIGH_ANGLE_THRESHOLD_DEG) return 0; 
-    for(let i = 0; i < 30; i++) {
+    for(let i = 0; i < 20; i++) {
         let mid = (low + high) / 2;
         let angle = calculateImpactAngle(mid, altitude, frontalArea, mass);
         if(angle >= HIGH_ANGLE_THRESHOLD_DEG) low = mid; else high = mid;
@@ -156,10 +199,10 @@ function findTransitionSpeed(altitude, frontalArea, mass) {
 }
 
 function findTransitionDimension(speedMS, altitude, mass) {
-    let low = 0.01; let high = 20; 
+    let low = 0.01; let high = 50; 
     if(calculateImpactAngle(speedMS, altitude, interpolateFrontalArea(high), mass) < HIGH_ANGLE_THRESHOLD_DEG) return Infinity; 
     if(calculateImpactAngle(speedMS, altitude, interpolateFrontalArea(low), mass) >= HIGH_ANGLE_THRESHOLD_DEG) return 0; 
-    for(let i = 0; i < 30; i++) {
+    for(let i = 0; i < 20; i++) {
         let mid = (low + high) / 2;
         let angle = calculateImpactAngle(speedMS, altitude, interpolateFrontalArea(mid), mass);
         if(angle >= HIGH_ANGLE_THRESHOLD_DEG) high = mid; else low = mid;
@@ -168,11 +211,11 @@ function findTransitionDimension(speedMS, altitude, mass) {
 }
 
 function findTransitionMass(speedMS, altitude, dimension) {
-    let low = 0.01; let high = 500; 
+    let low = 0.01; let high = 1000; 
     let frontalArea = interpolateFrontalArea(dimension);
     if(calculateImpactAngle(speedMS, altitude, frontalArea, high) >= HIGH_ANGLE_THRESHOLD_DEG) return Infinity; 
     if(calculateImpactAngle(speedMS, altitude, frontalArea, low) < HIGH_ANGLE_THRESHOLD_DEG) return 0; 
-    for(let i = 0; i < 30; i++) {
+    for(let i = 0; i < 20; i++) {
         let mid = (low + high) / 2;
         let angle = calculateImpactAngle(speedMS, altitude, frontalArea, mid);
         if(angle >= HIGH_ANGLE_THRESHOLD_DEG) low = mid; else high = mid;
@@ -649,6 +692,10 @@ function calculateCriticalArea() {
         vizData = { isValid: true, isRotorcraft: false, dimension: dimension, angle: 35, glide: phys.dGlide, slide: phys.dSlideReduced, area: criticalArea, rD: phys.rD, isHighImpact: false };
     }
 
+    // --- NYTT: Lagre resultatet for bruk i Analytical Formula ---
+    localStorage.setItem('sora_last_calculated_ac', criticalArea.toFixed(2));
+    // -----------------------------------------------------------
+
     resultValueEl.textContent = criticalArea.toFixed(2);
     modelUsedEl.textContent = `Model Used: ${modelUsed}`;
     highlightTableColumn(criticalArea);
@@ -694,11 +741,25 @@ function initializeApp() {
         caInputElements[id] = inputEl;
         caSliderElements[id] = sliderEl;
 
-        if (inputEl && sliderEl) {
-            inputEl.addEventListener('input', (e) => { sliderEl.value = e.target.value; calculateCriticalArea(); });
-            sliderEl.addEventListener('input', (e) => { inputEl.value = e.target.value; calculateCriticalArea(); });
-        }
+        // Skip standard listener if using Log Slider helper (it adds its own)
+        // But for safety, keep existing logic unless overridden
     });
+
+    // --- SETT OPP LOGARITMISKE SLIDERE ---
+    // Dimension: 0.1m til 50m (Utvidet range)
+    setupLogSlider('dimensionSlider', 'dimension', 0.1, 50);
+    // MTOM: 0.1kg til 500kg
+    setupLogSlider('mtomSlider', 'mtom', 0.1, 500);
+    // Speed: 0 til 150 (enhet varierer, men slider dekker verdiene)
+    setupLogSlider('cruiseSpeedSlider', 'cruiseSpeed', 1, 150);
+
+    // Altitude: Lineær
+    const altSlider = document.getElementById('minAltitudeSlider');
+    const altInput = document.getElementById('minAltitude');
+    if(altSlider && altInput) {
+        altSlider.addEventListener('input', () => { altInput.value = altSlider.value; calculateCriticalArea(); });
+        altInput.addEventListener('input', () => { altSlider.value = altInput.value; calculateCriticalArea(); });
+    }
 
     const isRotorcraftEl = document.getElementById('isRotorcraft');
     if (isRotorcraftEl) {
@@ -711,15 +772,25 @@ function initializeApp() {
     const speedUnitEl = document.getElementById('speedUnit');
     if(speedUnitEl) speedUnitEl.addEventListener('change', calculateCriticalArea);
 
-    // KUDOS: Her tvinger vi feltene tomme før vi kalkulerer på nytt
     document.getElementById('resetCriticalAreaForm').addEventListener('click', (e) => {
         e.preventDefault();
         localStorage.removeItem(CRITICAL_AREA_KEY);
+        // Remove also the result calculation if resetting
+        localStorage.removeItem('sora_last_calculated_ac'); 
         
         caInputIds.forEach(id => {
             if (caInputElements[id]) caInputElements[id].value = '';
-            if (caSliderElements[id]) caSliderElements[id].value = (id === 'dimension' ? 0.1 : 0);
         });
+
+        // Set reasonable defaults to avoid errors
+        if(caInputElements['dimension']) caInputElements['dimension'].value = 1;
+        if(caInputElements['mtom']) caInputElements['mtom'].value = 2.5;
+        if(caInputElements['cruiseSpeed']) caInputElements['cruiseSpeed'].value = 15;
+        if(caInputElements['minAltitude']) caInputElements['minAltitude'].value = 50;
+        
+        // Trigger updates
+        if(caInputElements['dimension']) caInputElements['dimension'].dispatchEvent(new Event('input'));
+        if(caInputElements['mtom']) caInputElements['mtom'].dispatchEvent(new Event('input'));
 
         const rotorEl = document.getElementById('isRotorcraft');
         if (rotorEl) rotorEl.checked = false;
